@@ -1,13 +1,13 @@
 # @okxweb3/coin-near
 Near SDK is used to interact with the Near protocol, it contains the main functions you need when interact with Near Ecosystem.
 
-# Getting Started
+## Getting Started
 **Installing Near SDK**
 ```shell
 npm install @okxweb3/coin-near
 ```
 
-# What Can Near SDK Do
+## What Can Near SDK Do
 
 ```typescript
 - getAddress
@@ -19,7 +19,8 @@ npm install @okxweb3/coin-near
 - fullAccessKey
 ```
 
-# Using Near SDK
+## Using Near SDK
+
 ### Get Address / Validate Address
 ```typescript
 const seedHex = 'seed hex'
@@ -28,6 +29,7 @@ const addr = getAddress(seedHex)
 // validate address
 const ok = validateAddress(addr)
 ```
+
 ### Transfer
 ```typescript
 // from, to is account id, not public key
@@ -73,4 +75,4 @@ const [_, signedTx] = await signTransaction(tx, seedHex)
 const result = base.toBase64(signedTx.encode())
 ```
 
-# License: MIT
+## License: MIT

@@ -5,7 +5,7 @@ SUI SDK is used to interact with the SUI blockchain, it contains various functio
 
 ### Npm
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply require the project using npm :
 
 ```shell
 npm install @okxweb3/coin-sui

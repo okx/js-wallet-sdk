@@ -5,7 +5,7 @@ Stacks SDK is used to interact with the Stacks blockchain, it contains various f
 
 ### Npm
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply require the project using npm :
 
 ```shell
 npm install @okxweb3/coin-stacks
