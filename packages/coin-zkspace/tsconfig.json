@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,                        // Allows javascript files to be compiled
+
+    "resolveJsonModule" : true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.json"
+  ],
+  "exclude": [
+    "**/node_modules"
+  ]
+}
