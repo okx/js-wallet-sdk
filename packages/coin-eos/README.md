@@ -2,13 +2,13 @@
 EOS SDK is used to interact with the EOS blockchain, it contains various functions can be used to web3 wallet.
 The SDK not only support EOS, it also supports WAX.
 
-# Getting Started
+## Getting Started
 **Installing EOS SDK**
 ```shell
 npm install @okxweb3/coin-eos 
 ```
 
-# Using EOS SDK
+## Using EOS SDK
 ### Supported Functions
 
 ```typescript
@@ -19,6 +19,7 @@ npm install @okxweb3/coin-eos
 - signTransaction
 - calcTxHash
 ```
+
 ### Get Private Key
 get random private key
 
@@ -28,6 +29,7 @@ import { WaxWallet } from "@okxweb3/coin-eos";
 let wallet = new WaxWallet()
 let privateKey = await wallet.getRandomPrivateKey();
 ```
+
 get derived private key
 ```typescript
 import { WaxWallet } from "@okxweb3/coin-eos";
@@ -40,6 +42,7 @@ let params = {
 };
 let privateKey = await wallet.getDerivedPrivateKey(params);
 ```
+
 ### Get New Address
 get new address by private key
 ```typescript
@@ -51,6 +54,7 @@ let params = {
 };
 let address = await wallet.getNewAddress(params);
 ```
+
 ### Sign Transaction
 create account
 ```typescript
@@ -88,6 +92,7 @@ const txParams = {
 };
 const tx = await wallet.signTransaction(txParams);
 ```
+
 transfer token
 ```typescript
 import { WaxWallet } from "@okxweb3/coin-eos";
@@ -113,6 +118,7 @@ const txParams = {
 };
 const tx = await wallet.signTransaction(txParams);
 ```
+
 calc tx hash
 ```typescript
 import { WaxWallet } from "@okxweb3/coin-eos";
@@ -124,5 +130,6 @@ const calcTxHashParams = {
 
 const txId = await wallet.calcTxHash(calcTxHashParams);
 ```
-# License: MIT
+
+## License: MIT
 

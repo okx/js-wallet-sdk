@@ -5,15 +5,15 @@ This is a base package on which all currencies depend. You need to install this 
   npm install @okxweb3/crypto-lib
 ```
 
-# Provides
-We provide common functions about bip32\bip39\ecdsa\ed25519\hash.
+## Provides
+We provide common functions about bip32, bip39, ecdsa, ed25519, etc.
 
 #### bip32 method
 ```typescript
 let node: bip32.BIP32Interface = bip32.fromSeed(base.fromHex("000102030405060708090a0b0c0d0e0f"));
-console.info("node1-publicKey: ", base.toHex(node.publicKey));
-console.info("node1-privateKey: ", base.toHex(node.privateKey!));
-console.info("node1-chainCode: ", base.toHex(node.chainCode));
+console.info("publicKey: ", base.toHex(node.publicKey));
+console.info("privateKey: ", base.toHex(node.privateKey!));
+console.info("chainCode: ", base.toHex(node.chainCode));
 ```
 
 #### bip39 generate private key and public key, sign message,
@@ -120,6 +120,6 @@ const bb = signUtil.secp256k1.verifyWithNoRecovery(msgHash, s.signature, publicK
 console.info(bb);
 ```
 
-# License
+## License
 
 Current package is [MIT](<https://github.com/okx/js-wallet-sdk/blob/main/LICENSE>) licensed.

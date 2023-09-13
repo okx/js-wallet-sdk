@@ -1,13 +1,13 @@
 # @okxweb3/coin-solana
 Solana SDK is used to interact with the Solana Chain, it contains the main functions you need when interact with Solana Ecosystem.
 
-# Getting Started
+## Getting Started
 **Installing Solana SDK**
 ```shell
 npm install @okxweb3/coin-solana
 ```
 
-# What Can Solana SDK Do
+## What Can Solana SDK Do
 
 ```typescript
 - getRandomPrivateKey
@@ -19,7 +19,7 @@ npm install @okxweb3/coin-solana
 - validSignedTransaction
 ```
 
-# Using Solana SDK
+## Using Solana SDK
 ### Get Private Key
 
 random private key
@@ -56,6 +56,7 @@ let addrParam{
 };
 let valid = await wallet.validAddress(addrParam);
 ```
+
 ### Transaction
 transfer
 ```typescript
@@ -150,4 +151,4 @@ let param = {
 const tx = await wallet.calcTxHash(param);
 ```
 
-# License: MIT
+## License: MIT

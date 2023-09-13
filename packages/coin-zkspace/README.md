@@ -2,13 +2,13 @@
 ZKSpace SDK is used to interact with the ZK contract, it contains various functions can be used to web3 wallet. 
 The SDK not only support ZKSpace, it also supports ZKSync.
 
-# Getting Started
+## Getting Started
 **Installing ZKSpace SDK**
 ```shell
 npm install @okxweb3/coin-zkspace
 ```
 
-# What Can ZKSpace SDK Do
+## What Can ZKSpace SDK Do
 ```typescript
 - getDerivedPrivateKey
 - getNewAddress
@@ -16,7 +16,8 @@ npm install @okxweb3/coin-zkspace
 - signTransaction
 ```
 
-# Using ZKSpace SDK
+## Using ZKSpace SDK
+
 ### Get Private Key
 
 ```typescript
@@ -30,6 +31,7 @@ let param = {
 };
 let privateKey = await wallet.getDerivedPrivateKey(param);
 ```
+
 ### Get New Address / Validate Address
 ```typescript
 import {ZkspaceWallet} from "@okxweb3/coin-zkspace";
@@ -92,4 +94,4 @@ let param = {
 let tx = await wallet.signTransaction(param);
 ```
 
-# License: MIT
+## License: MIT

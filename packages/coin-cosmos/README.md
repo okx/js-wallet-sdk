@@ -1,6 +1,6 @@
 # @okxweb3/coin-cosmos
 Cosmos SDK is used to interact with the Cosmos blockchain, it contains various functions can be used to web3 wallet.
-The SDK not only support Atom, it also supports following Chains:
+The SDK not only support Atom, it also supports following chains:
 - Atom
 - Axelar
 - Cronos
@@ -15,13 +15,14 @@ The SDK not only support Atom, it also supports following Chains:
 - Stargaze
 - Terra
 
-# Getting Started
+## Getting Started
 **Installing Cosmos SDK**
 ```shell
 npm install @okxweb3/coin-cosmos
 ```
 
-# Using Cosmos SDK
+## Using Cosmos SDK
+
 ### Supported Functions
 
 ```typescript
@@ -34,6 +35,7 @@ npm install @okxweb3/coin-cosmos
 - signMessage
 - validSignedTransaction
 ```
+
 ### Get New Address
 get new address
 ```typescript
@@ -63,8 +65,8 @@ let param = {
 }
 let addr = await wallet.getAddressByPublicKey(param);
 ```
-validate address
 
+validate address
 ```typescript
 import {AtomWallet} from "@okxweb3/coin-cosmos";
 
@@ -73,6 +75,7 @@ let prefix = "osmo"
 let addr = "osmo1lyjxk4t835yj6u8l2mg6a6t2v9x3nj7ulaljz2"
 let ok = wallet.validAddress(addr, prefix)
 ```
+
 ### Sign Transaction
 transfer
 ```typescript
@@ -109,6 +112,7 @@ const validParam = {
 }
 const ok = await wallet.validSignedTransaction(validParam);
 ```
+
 ibc transfer
 ```typescript
 import { AtomWallet } from "@okxweb3/coin-cosmos";
@@ -138,6 +142,7 @@ const params: SignTxParams = {
 }
 let result = await wallet.signTransaction(params);
 ```
+
 sign message
 ```typescript
 import { AtomWallet } from "@okxweb3/coin-cosmos";
@@ -171,6 +176,7 @@ const param2: SignTxParams = {
 }
 let res2 = await wallet.signMessage(param2);
 ```
+
 calc tx hash
 ```typescript
 import { AtomWallet } from "@okxweb3/coin-cosmos";
@@ -183,4 +189,4 @@ let calcTxHashParams = {
 const txHash = await wallet.calcTxHash(calcTxHashParams);
 ```
 
-# License: Apache-2.0
+## License: Apache-2.0
