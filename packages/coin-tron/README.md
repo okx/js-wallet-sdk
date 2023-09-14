@@ -1,13 +1,13 @@
 # @okxweb3/coin-tron
 TRX SDK is used to interact with the TRON blockchain, it contains various functions can be used to web3 wallet.
 
-# Getting Started
+## Getting Started
 **Installing TRX SDK**
 ```shell
 npm install @okxweb3/coin-tron
 ```
 
-# Using TRX SDK
+## Using TRX SDK
 ### Supported Functions
 
 ```typescript
@@ -20,6 +20,7 @@ npm install @okxweb3/coin-tron
 - ecRecover
 - calcTxHash
 ```
+
 ### Get New Address
 get new address by private key
 
@@ -35,6 +36,7 @@ const addr = await wallet.getNewAddress(params);
 // validate address
 const ok = await wallet.validAddress({ address: addr });
 ```
+
 get new address by public key
 ```typescript
 import { TrxWallet } from "@okxweb3/coin-tron";
@@ -48,6 +50,7 @@ let addr = await wallet.getAddressByPublicKey(param);
 // validate address
 const ok = await wallet.validAddress({ address: addr });
 ```
+
 ### Transaction
 sign transaction
 ```typescript
@@ -85,6 +88,7 @@ const param1 = {
 }
 const v = await wallet.validSignedTransaction(param1)
 ```
+
 sign message
 ```typescript
 import { TrxWallet } from "@okxweb3/coin-tron";
@@ -102,6 +106,7 @@ const params: SignTxParams = {
 };
 const result = await wallet.signMessage(params);
 ```
+
 calculate tx hash
 ```typescript
 import { TrxWallet } from "@okxweb3/coin-tron";
@@ -113,4 +118,5 @@ let calcTxHashParams = {
 
 const txHash = await wallet.calcTxHash(calcTxHashParams);
 ```
-# License: LGPL3
+
+## License: LGPL3

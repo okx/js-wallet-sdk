@@ -5,7 +5,7 @@ Ethereum SDK is used to interact with the Ethereum blockchain or Evm blockchains
 
 ### Npm
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply require the project using npm :
 
 ```shell
 npm install @okxweb3/coin-ethereum

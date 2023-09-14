@@ -5,15 +5,16 @@ blockchains, and will gradually release the source codes for each blockchain.
 
 ## Npm Install
 To obtain the latest version, simply require the project using npm:
+
 ```shell
-// needed for all coins
+# needed for all coins
 npm install @okxweb3/crypto-lib
 npm install @okxweb3/coin-base
 
-// for eth
+# for eth
 npm install @okxweb3/coin-ethereum
 
-// for bitcoin
+# for bitcoin
 npm install @okxweb3/coin-bitcoin
 ```
 
