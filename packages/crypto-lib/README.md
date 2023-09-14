@@ -2,7 +2,7 @@
 This is a base package on which all currencies depend. You need to install this library.
 
 ```shell
-  npm install @okxweb3/crypto-lib
+npm install @okxweb3/crypto-lib
 ```
 
 ## Provides

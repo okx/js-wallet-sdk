@@ -15,7 +15,7 @@
     "url": "https://github.com/okx/js-wallet-sdk"
   },
   "keywords": [],
-  "author": "",
+  "author": "okx",
   "license": "MIT",
   "files": [
     "dist"

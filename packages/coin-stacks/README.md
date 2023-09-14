@@ -62,7 +62,7 @@ let wallet = new StxWallet()
 let param = {
     address: "SP1BJMEXW9J908SGBCNWQXKCHRGC4H4YYAE0EAVDW"
 } 
-const ok = await validAddress(param)
+const ok = await wallet.validAddress(param)
 ```
 
 ### Transfer Stx
