@@ -5,7 +5,7 @@ Starknet SDK is used to interact with the Starknet blockchain, it contains vario
 
 ### Npm
 
-To obtain the latest version, simply require the project using `npm`:
+To obtain the latest version, simply require the project using npm :
 
 ```shell
 npm install @okxweb3/coin-starknet

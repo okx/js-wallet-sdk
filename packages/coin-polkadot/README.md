@@ -1,13 +1,13 @@
 # @okxweb3/coin-polkadot
 Polkadot SDK is used to interact with the Polkadot blockchain, it contains the main functions you need when interact with Polkadot Ecosystem.
 
-# Getting Started
+## Getting Started
 **Installing Polkadot SDK**
 ```shell
 npm install @okxweb3/coin-polkadot
 ```
 
-# What Can Polkadot SDK Do
+## What Can Polkadot SDK Do
 
 ```typescript
 - getAddress
@@ -15,7 +15,8 @@ npm install @okxweb3/coin-polkadot
 - SignTx
 ```
 
-# Using Polkadot SDK
+## Using Polkadot SDK
+
 ### Get Address / Validate Address
 ```typescript
 const seed = "e7cfd179d6537a676cb94bac3b5c5c9cb1550e846ac4541040d077dfbac2e7fd"
@@ -23,6 +24,7 @@ const address = getNewAddress(seed, NetWork.polkadot)
 // validate
 const ok = validateAddress(address, NetWork.polkadot)
 ```
+
 ### Transfer
 ```typescript
 const from = "12VS5aVsZp3qywuC6wjkhAJdkfNp2SC1WPNfoMFevpovCsxr"
@@ -46,4 +48,4 @@ const privateKey = "e7cfd179d6537a676cb94bac3b5c5c9cb1550e846ac4541040d077dfbac2
 const b = SignTx(tx, TxType.Transfer, privateKey)
 ```
 
-# License: MIT
+## License: MIT

@@ -1,6 +1,6 @@
 # @okxweb3/coin-bitcoin
-BitCoin SDK is used to interact with the BitCoin Mainnet or Testnet, it contains various functions can be used to web3 wallet.
-The SDK not only support BitCoin, it also supports following Chains:
+Bitcoin SDK is used to interact with the Bitcoin Mainnet or Testnet, it contains various functions can be used to web3 wallet.
+The SDK not only support Bitcoin, it also supports following chains:
 
 - BTC
 - BSV
@@ -8,13 +8,13 @@ The SDK not only support BitCoin, it also supports following Chains:
 - LTC
 - TBTC
 
-# Getting Started
+## Getting Started
 **Installing BitCoin SDK**
 ```shell
 npm install @okxweb3/coin-bitcoin
 ```
 
-# What Can BitCoin SDK Do
+## What Can BitCoin SDK Do
 ```typescript
 - getMnemonic
 - getRandomPrivateKey
@@ -29,7 +29,8 @@ npm install @okxweb3/coin-bitcoin
 - verifyMessage
 ```
 
-# Using BitCoin SDK
+## Using BitCoin SDK
+
 ### Get Private Key
 get random private key
 ```typescript
@@ -50,6 +51,7 @@ let param = {
 };
 let privateKey = await wallet.getDerivedPrivateKey(param);
 ```
+
 ### Get New Address
 get new address from private key
 ```typescript
@@ -84,6 +86,7 @@ let params4: NewAddressParams = {
 };
 let address4 = await wallet.getNewAddress(params4);
 ```
+
 get new address from public key
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
@@ -95,6 +98,7 @@ let params5 = {
 }
 let address5 = await wallet.getAddressByPublicKey(params5);
 ```
+
 ### Sign Transaction
 sign transaction
 ```typescript
@@ -129,6 +133,7 @@ let signParams: SignTxParams = {
 };
 let tx = await wallet.signTransaction(signParams);
 ```
+
 sign legacy transaction
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
@@ -166,4 +171,4 @@ let signParams: SignTxParams = {
 let tx = await wallet.signTransaction(signParams);
 ```
 
-# License: MIT
+## License: MIT

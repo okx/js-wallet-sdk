@@ -4,7 +4,7 @@ This is a base library on which all currencies depend. You need to install this 
 npm install @okxweb3/coin-base
 ```
 
-# Provides
+## Provides
 We provide common functionality for these chains or coins so that access to these chains is very simple.
 
 ### Supporting chains
