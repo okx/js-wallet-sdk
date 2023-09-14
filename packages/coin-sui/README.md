@@ -78,6 +78,7 @@ let param = {
 ### Transfer SUI
 Input coins with 3 fields objectId,version,digest
 ```typescript
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {SuiWallet} from "@okxweb3/coin-sui";
 
 let wallet = new SuiWallet()
