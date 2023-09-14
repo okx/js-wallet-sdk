@@ -16,18 +16,24 @@ npm install @okxweb3/coin-aptos
 ### Generate private key
 
 ```typescript
-let randomPrivateKey = await getRandomPrivateKey(Currency.APTOS.valueOf());
+import {AptosWallet} from "@okxweb3/coin-aptos";
+
+let wallet = new AptosWallet()
+let key = await wallet.getRandomPrivateKey();
 ```
 
 ### Private key derivation
 
 ```typescript
+import {AptosWallet} from "@okxweb3/coin-aptos";
+
+let wallet = new AptosWallet()
 let mnemonic = "bean mountain minute enemy state always weekend accuse flag wait island tortoise";
 let param = {
     mnemonic: mnemonic,
     hdPath: "m/44'/637'/0'/0'/0'"
 };
-let privateKey = await getDerivedPrivateKey(Currency.APTOS, param);
+let privateKey = await wallet.getDerivedPrivateKey(param);
 ```
 
 ### Generate address

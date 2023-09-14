@@ -123,10 +123,10 @@ let param: SignTxParams = {
         message: "0xec04138ec537328244f24236a84bb72d0fe428f6d4955ca20a5f6420066b5"
     }
 }
-const sig = await signMessage(Currency.Starknet, param);
-console.log(sig)
+const sig = await wallet.signMessage(param);
 
-const param2: VerifyMessageParams = {
+// verify
+const verifyParam: VerifyMessageParams = {
     signature: "",
     data: {
         signature: sig.signature,
@@ -134,8 +134,7 @@ const param2: VerifyMessageParams = {
         publicKey: sig.publicKey,
     }
 }
-const v = await verifyMessage(Currency.Starknet, param2);
-console.log(v)
+const ok = await wallet.verifyMessage(verifyParam);
 ```
 
 
