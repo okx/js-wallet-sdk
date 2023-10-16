@@ -4,6 +4,18 @@ import {base, signUtil} from '@okxweb3/crypto-lib';
 declare const TextEncoder: any;
 
 describe("cryptography", () => {
+    test("getDerivedPrivateKey", async () => {
+        let wallet = new sui.SuiWallet()
+
+        let mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
+        let param = {
+            mnemonic: mnemonic,
+            hdPath: await wallet.getDerivedPath({index:0})
+        };
+        let privateKey = await wallet.getDerivedPrivateKey(param);
+        console.info(privateKey);
+    });
+
     test("ed25519", async () => {
         const b64Key = "vdgPRCGWgUKzpKbCeh2Eo2IzhNCFoEqJXxCf2NSc7wo="
         const kp = sui.Ed25519Keypair.fromSeed(base.fromBase64(b64Key));
