@@ -55,7 +55,7 @@ export type SuiSignData = {
 
 export class SuiWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
-        return `m/44'/784'/0'/0/${param.index}`;
+        return `m/44'/784'/0'/0'/${param.index}'`;
     }
 
     async getRandomPrivateKey(): Promise<any> {
