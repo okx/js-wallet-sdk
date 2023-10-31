@@ -35,6 +35,7 @@ export enum Currency {
     SEI = 2837,
     WAX = 14001,
     Starknet = 9004,
+    ADA = 1815,
 }
 
 export enum segwitType {
