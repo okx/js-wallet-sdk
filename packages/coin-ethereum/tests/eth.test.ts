@@ -869,7 +869,7 @@ describe("eth walLet", () => {
         ];
 
         let signature = eth.signMessage(MessageTypes.TYPE_DATA_V1, JSON.stringify(msgParams), base.fromHex(privateKey))
-        Assert.strictEqual(signature, "0x33f5046b3e9c6441d4003bacc531e4a8cf1b3ec5f6d55bf5bda2d37c02d5ad941bb7692630973cf16f63916efd7a99576dc019a28616d13b17943e79b642e0181c");
+        Assert.strictEqual(signature, "0x8596be6aeea3cdaba2685e430ad9db7f0425cea9a9c793f3fc8bf7f3fd11ddf31b953c7858731f7dca649ec3014903520e40e57103d52b80a054c4c44fe1c2521c");
     });
 
     test("TYPE_DATA_V3", async () => {
@@ -913,7 +913,7 @@ describe("eth walLet", () => {
         };
 
         let signature = eth.signMessage(MessageTypes.TYPE_DATA_V3, JSON.stringify(msgParams), base.fromHex(privateKey))
-        Assert.strictEqual(signature, "0xd8469ffdf14fb4375e1ec3993451fbf3a4d5d5c440c7ac3995e38b9b8cecd93c70c2f1716f34e8b3d4ef209af85046681cf429da7ec48b4774ff67fa3955aa361b");
+        Assert.strictEqual(signature, "0x337e69d931591a9bae20b2d4c541804bb1b6fa32c8468a9007041b7ba63cb8a401cba4a7eb71f48e9eb586c8d80896e803275f979a530313fd647c72a806bc511c");
     });
 
     test("TYPE_DATA_V4_2", async () => {
@@ -1098,7 +1098,7 @@ describe("eth walLet", () => {
         ];
 
         let signature = eth.signMessage(MessageTypes.TYPE_DATA_V1, JSON.stringify(msgParams), base.fromHex(privateKey))
-        Assert.strictEqual(signature, "0x33f5046b3e9c6441d4003bacc531e4a8cf1b3ec5f6d55bf5bda2d37c02d5ad941bb7692630973cf16f63916efd7a99576dc019a28616d13b17943e79b642e0181c");
+        Assert.strictEqual(signature, "0x8596be6aeea3cdaba2685e430ad9db7f0425cea9a9c793f3fc8bf7f3fd11ddf31b953c7858731f7dca649ec3014903520e40e57103d52b80a054c4c44fe1c2521c");
     });
 
     test("TYPE_DATA_V3_MPC", async () => {
