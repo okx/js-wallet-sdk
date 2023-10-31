@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-ethereum",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+    "@okxweb3/coin-base": "^1.0.0",
+    "eth-sig-util": "^3.0.1"
   }
 }

@@ -13,7 +13,9 @@ import {
     recoverFromSignature
 } from "./sdk";
 import {MessageTypes, hashMessage} from "./message"
-import { padWithZeroes } from './sdk/eth-sig-util';
+import { padWithZeroes, } from './sdk/eth-sig-util';
+import {typedSignatureHash, TypedDataUtils, signTypedMessage} from "eth-sig-util";
+
 
 export function getNewAddress(privateKeyHex: string) {
     const privateKey = base.fromHex(privateKeyHex)
@@ -50,13 +52,33 @@ export function signTransaction(privateKeyHex: string, txData: TxData | AccessLi
     return base.toHex(signedTx.serialize(), true);
 }
 
-export function signMessage(messageType: MessageTypes, message: string, privateKey: Buffer) : string {
-    const msgHash = hashMessage(messageType, message)
+export function signMessage(messageType: MessageTypes, message: string, privateKey?: Buffer) : string {
     if (!privateKey) {
-        return msgHash
+        return signMPCMessage(messageType, message)
     }
+
+    if( messageType == MessageTypes.TYPE_DATA_V1) {
+        return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V1");
+    } else if( messageType == MessageTypes.TYPE_DATA_V3) {
+        return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V3");
+    } else if( messageType == MessageTypes.TYPE_DATA_V4) {
+        return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V4");
+    }
+
+    const msgHash = hashMessage(messageType, message)
     const {v, r, s} = ecdsaSign(base.fromHex(msgHash), privateKey)
     return makeSignature(v, r, s)
+}
+
+export function signMPCMessage(messageType: MessageTypes, message: string) : string {
+    if( messageType == MessageTypes.TYPE_DATA_V1) {
+        return typedSignatureHash(JSON.parse(message));
+    } else if( messageType == MessageTypes.TYPE_DATA_V3) {
+        return base.toHex(TypedDataUtils.sign(JSON.parse(message), false));
+    } else if( messageType == MessageTypes.TYPE_DATA_V4) {
+        return base.toHex(TypedDataUtils.sign(JSON.parse(message)));
+    }
+    return hashMessage(messageType, message)
 }
 
 export function verifyMessage(messageType: MessageTypes, message: string, signature: Buffer) : Buffer {
