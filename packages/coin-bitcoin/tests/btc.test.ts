@@ -16,7 +16,8 @@ import {
     networks,
     utxoInput,
     utxoOutput,
-    utxoTx, wif2Public, payments, BtcWallet
+    utxoTx, wif2Public, payments, BtcWallet,
+    oneKeyBuildBtcTx,
 } from '../src';
 import { base } from '@okxweb3/crypto-lib';
 

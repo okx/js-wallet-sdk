@@ -9,6 +9,7 @@ type utxoInput = {
   sequence?: number,
   nonWitnessUtxo?: string,
   bip32Derivation?: Bip32Derivation[],
+  derivationPath?: string
 }
 
 type Bip32Derivation = {
@@ -23,6 +24,8 @@ type utxoOutput = {
   amount: number // min unit: satoshi
   omniScript?: string
   bip32Derivation?: Bip32Derivation[]
+  derivationPath?: string
+  isChange?: boolean
 }
 
 type omniOutput = {
@@ -40,6 +43,7 @@ type utxoTx = {
   omni?: omniOutput
   dustSize?: number
   bip32Derivation?: Bip32Derivation[] // derivation info
+  derivationPath?: string
 }
 
 export {
