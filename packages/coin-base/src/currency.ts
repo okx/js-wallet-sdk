@@ -36,6 +36,9 @@ export enum Currency {
     WAX = 14001,
     Starknet = 9004,
     ADA = 1815,
+    INJ = 2892,
+    Celestia = 2854,
+    DYDX = 2897,
 }
 
 export enum segwitType {
@@ -77,6 +80,10 @@ export const CoinCurveMap = new Map<Currency, string>([
     [Currency.Stargaze, secp256k1],
     [Currency.Terra, secp256k1],
     [Currency.SEI, secp256k1],
+    [Currency.INJ, secp256k1],
+    [Currency.Celestia, secp256k1],
+    [Currency.DYDX, secp256k1],
+
 
     // [Currency.ZKSPACE, secp256k1],
     // [Currency.ZKSYNC, secp256k1],
