@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-ethereum:** signMessage supports more data types ([]())
+- **coin-ethereum:** signMessage supports more data types ([ef53b09](https://github.com/okx/js-wallet-sdk/commit/ef53b095efd880b2b863e8780933754a39f78f10))
