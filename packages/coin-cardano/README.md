@@ -1,5 +1,5 @@
 # @okxweb3/coin-cardano
-ADA SDK is used to interact with the Cardano blockchain, it contains various functions can be used to web3 wallet.
+Cardano SDK is used to interact with the Cardano blockchain, it contains various functions can be used to web3 wallet.
 The SDK only runs in the browser environment.
 
 ## Installation
@@ -134,8 +134,7 @@ let minAda = await AdaWallet.minAda("addr1q8tx7q99lgd3upff0rtjxu437z6ddvzdjj4wr7
 ### Calculate min fee
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-cardano" +
-    "";
+import { AdaWallet } from "@okxweb3/coin-cardano" ;
 
 const param: AdaParam =  {
     data: {
