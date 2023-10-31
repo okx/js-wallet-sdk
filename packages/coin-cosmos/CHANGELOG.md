@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-cosmos:** add Dydx、Injective、Celestia support ([ca707772](https://github.com/okx/js-wallet-sdk/pull/4/commits/ca7077722560cb15aea484ad14f7bdf5b0f12224))
+- **coin-cosmos:** add Dydx、Injective、Celestia support ([ca707772](https://github.com/okx/js-wallet-sdk/commit/ca7077722560cb15aea484ad14f7bdf5b0f12224))
