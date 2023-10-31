@@ -32,7 +32,7 @@ export async function signSimple(message: string, address: string, privateKey: s
   txToSpend.addInput(prevoutHash, prevoutIndex, sequence, scriptSig);
   txToSpend.addOutput(outputScript, 0);
 
-  const psbtToSign = new Psbt();
+  const psbtToSign = new Psbt({ network });
   psbtToSign.setVersion(0);
   psbtToSign.addInput({
     hash: txToSpend.getHash(),
@@ -45,7 +45,7 @@ export async function signSimple(message: string, address: string, privateKey: s
   });
   if (isP2TR(outputScript)) {
     psbtToSign.updateInput(0, {
-      tapInternalKey: wif2Public(privateKey).slice(1),
+      tapInternalKey: wif2Public(privateKey, network).slice(1),
     });
   }
   psbtToSign.addOutput({ script: Buffer.from('6a', 'hex'), value: 0 });
