@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-ethereum:** signMessage support more types ([]())
+- **coin-ethereum:** signMessage supports more data types ([]())
