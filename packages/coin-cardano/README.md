@@ -1,4 +1,4 @@
-# @okxweb3/coin-ada
+# @okxweb3/coin-cardano
 ADA SDK is used to interact with the Cardano blockchain, it contains various functions can be used to web3 wallet.
 The SDK only runs in the browser environment.
 
@@ -9,7 +9,7 @@ The SDK only runs in the browser environment.
 To obtain the latest version, simply require the project using npm :
 
 ```shell
-npm install @okxweb3/coin-ada
+npm install @okxweb3/coin-cardano
 ```
 
 ## Usage
@@ -17,16 +17,16 @@ npm install @okxweb3/coin-ada
 ### Set wasm path
 
 ```typescript
-import { Loader } from "@okxweb3/coin-ada";
+import { Loader } from "@okxweb3/coin-cardano";
 
-Loader.setCardanoUrl("http://localhost:63344/ada-test/node_modules/@okxweb3/coin-ada/dist/cardano_multiplatform_lib_bg.wasm");
-Loader.setMessageUrl("http://localhost:63344/ada-test/node_modules/@okxweb3/coin-ada/dist/cardano_message_signing_bg.wasm");
+Loader.setCardanoUrl("http://localhost:63344/ada-test/node_modules/@okxweb3/coin-cardano/dist/cardano_multiplatform_lib_bg.wasm");
+Loader.setMessageUrl("http://localhost:63344/ada-test/node_modules/@okxweb3/coin-cardano/dist/cardano_message_signing_bg.wasm");
 ```
 
 ### Private key derivation
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano";
 
 let wallet = new AdaWallet();
 let mnemonic = "bean mountain minute enemy state always weekend accuse flag wait island tortoise";
@@ -40,7 +40,7 @@ let privateKey = await wallet.getDerivedPrivateKey(param);
 ### Generate address
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano";
 
 let wallet = new AdaWallet();
 let params: NewAddressParams = {
@@ -52,7 +52,7 @@ let address = await wallet.getNewAddress(params);
 ### Verify address
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano";
 
 let wallet = new AdaWallet();
 let p: ValidAddressParams = {
@@ -64,7 +64,7 @@ let valid = await wallet.validAddress(p);
 ### Transfer ADA/MultiAsset
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano";
 
 let wallet = new AdaWallet();
 const param: AdaParam =  {
@@ -116,7 +116,7 @@ let tx = await wallet.signTransaction(signParams);
 ### Calculate min ADA
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano";
 
 let minAda = await AdaWallet.minAda("addr1q8tx7q99lgd3upff0rtjxu437z6ddvzdjj4wr7e2s3c3zx5ryzpxwtxglcpnttjnpaar9x8mkv5etwzvfyglgzs6xg9qzrwylf", [
     {
@@ -134,7 +134,8 @@ let minAda = await AdaWallet.minAda("addr1q8tx7q99lgd3upff0rtjxu437z6ddvzdjj4wr7
 ### Calculate min fee
 
 ```typescript
-import { AdaWallet } from "@okxweb3/coin-ada";
+import { AdaWallet } from "@okxweb3/coin-cardano" +
+    "";
 
 const param: AdaParam =  {
     data: {
