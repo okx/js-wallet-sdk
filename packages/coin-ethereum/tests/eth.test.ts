@@ -1,8 +1,10 @@
 import * as eth from "../src"
 import {randomBytes} from "crypto";
 import {abi, base, BigNumber} from "@okxweb3/crypto-lib";
+import {ecdsaSign, makeSignature, MessageTypes} from "../src"
 import { NewAddressParams, SignTxParams, ValidAddressParams, VerifyMessageParams } from "@okxweb3/coin-base";
 import Assert from "assert";
+
 
 const TOKEN_TRANSFER_FUNCTION_SIGNATURE = '0xa9059cbb';
 const privateKey = "0x49c0722d56d6bac802bdf5c480a17c870d1d18bc4355d8344aa05390eb778280";
@@ -675,5 +677,518 @@ describe("eth walLet", () => {
 
         const data2 = await wallet.decrypt(data, "808e50dd63f3749405dfb0ac9a965804a33919fb82c4676bb00ac435ead6b4e8");
         Assert.strictEqual(data2, d)
+    });
+
+
+    test("TYPE_DATA_V4", async () => {
+        const privateKey = "0x808e50dd63f3749405dfb0ac9a965804a33919fb82c4676bb00ac435ead6b4e8";
+        const msg = "{\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}],\"ChangePubKey\":[{\"name\":\"pubKeyHash\",\"type\":\"bytes20\"},{\"name\":\"nonce\",\"type\":\"uint32\"},{\"name\":\"accountId\",\"type\":\"uint32\"}]},\"domain\":{\"name\":\"ZkLink\",\"version\":\"1\",\"chainId\":56,\"verifyingContract\":\"0xb86934fa6e53e15320911485c775d4ba4020fa5a\"},\"primaryType\":\"ChangePubKey\",\"message\":{\"pubKeyHash\":\"0x54c7620448d2df78dece4eededa3bd7b9f8badba\",\"nonce\":0,\"accountId\":80666}}";
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, base.fromHex(privateKey))
+        console.info(signature)
+    });
+
+    test("TYPE_DATA_V4_2", async () => {
+        const privateKey = "0x808e50dd63f3749405dfb0ac9a965804a33919fb82c4676bb00ac435ead6b4e8";
+        const msg = "{\n" +
+            "    \"domain\":{\n" +
+            "        \"chainId\":\"66\",\n" +
+            "        \"name\":\"OKX_NFT\",\n" +
+            "        \"version\":\"1.1\",\n" +
+            "        \"verifyingContract\":\"0x34DF5c035e31c0edfd104f3EA83d9548F108Df56\"\n" +
+            "    },\n" +
+            "    \"message\":{\n" +
+            "        \"startTime\":1667184663,\n" +
+            "        \"endTime\":1667443863,\n" +
+            "        \"orderType\":2,\n" +
+            "        \"zone\":\"0xa472fAd4B6cAdFDEd63f7aE5BFEe6eCf4F08Ae95\",\n" +
+            "        \"zoneHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\n" +
+            "        \"salt\":\"52760315571824630\",\n" +
+            "        \"conduitKey\":\"0x618Cf13c76c1FFC2168fC47c98453dCc6134F5c8888888888888888888888888\",\n" +
+            "        \"counter\":\"0\",\n" +
+            "        \"offerer\":\"0x12910188b68a7817a0592406f1ffe0c31676b417\",\n" +
+            "        \"offer\":[\n" +
+            "            {\n" +
+            "                \"itemType\":1,\n" +
+            "                \"token\":\"0x382bb369d343125bfb2117af9c149795c6c65c50\",\n" +
+            "                \"identifierOrCriteria\":\"0\",\n" +
+            "                \"startAmount\":\"1000000000000000\",\n" +
+            "                \"endAmount\":\"1000000000000000\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"consideration\":[\n" +
+            "            {\n" +
+            "                \"itemType\":2,\n" +
+            "                \"token\":\"0xf8b973fdf2e6f700a775aa94ff72180688b5a044\",\n" +
+            "                \"identifierOrCriteria\":\"46201\",\n" +
+            "                \"startAmount\":\"1\",\n" +
+            "                \"endAmount\":\"1\",\n" +
+            "                \"recipient\":\"0x12910188b68a7817a0592406f1ffe0c31676b417\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"totalOriginalConsiderationItems\":1\n" +
+            "    },\n" +
+            "    \"primaryType\":\"OrderComponents\",\n" +
+            "    \"types\":{\n" +
+            "        \"EIP712Domain\":[\n" +
+            "            {\n" +
+            "                \"name\":\"name\",\n" +
+            "                \"type\":\"string\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"version\",\n" +
+            "                \"type\":\"string\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"chainId\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"verifyingContract\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"OrderComponents\":[\n" +
+            "            {\n" +
+            "                \"name\":\"offerer\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"zone\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"offer\",\n" +
+            "                \"type\":\"OfferItem[]\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"consideration\",\n" +
+            "                \"type\":\"ConsiderationItem[]\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"orderType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startTime\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endTime\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"zoneHash\",\n" +
+            "                \"type\":\"bytes32\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"salt\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"conduitKey\",\n" +
+            "                \"type\":\"bytes32\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"counter\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"OfferItem\":[\n" +
+            "            {\n" +
+            "                \"name\":\"itemType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"token\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"identifierOrCriteria\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"ConsiderationItem\":[\n" +
+            "            {\n" +
+            "                \"name\":\"itemType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"token\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"identifierOrCriteria\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"recipient\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            }\n" +
+            "        ]\n" +
+            "    }\n" +
+            "}";
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x66cc18bf698319d578566b8ed26bf5d59f7d2f880c4fae85e26e04c52203899c2f1bc4410bcd796d5c9398477e6cf44842d2ef0df77555a77a30cd93e274b6671b");
+    });
+
+    test("TYPE_DATA_V4_3", async () => {
+        const privateKey = "a375a510fc9599102c1f4697581162ea4d431cd6c45877e55fc4a1c091ab378a";
+        const msg = "{\"domain\":{\"name\":\"EtchMarket\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\"},\"primaryType\":\"EthscriptionOrder\",\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}],\"EthscriptionOrder\":[{\"name\":\"signer\",\"type\":\"address\"},{\"name\":\"creator\",\"type\":\"address\"},{\"name\":\"ethscriptionId\",\"type\":\"bytes32\"},{\"name\":\"quantity\",\"type\":\"uint256\"},{\"name\":\"currency\",\"type\":\"address\"},{\"name\":\"price\",\"type\":\"uint256\"},{\"name\":\"nonce\",\"type\":\"uint256\"},{\"name\":\"startTime\",\"type\":\"uint64\"},{\"name\":\"endTime\",\"type\":\"uint64\"},{\"name\":\"protocolFeeDiscounted\",\"type\":\"uint16\"},{\"name\":\"creatorFee\",\"type\":\"uint16\"},{\"name\":\"params\",\"type\":\"bytes\"}]},\"message\":{\"signer\":\"0x7bbc6cf96b7faa0c1f8acc9a5ab383fe8dc507bc\",\"creator\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\",\"quantity\":\"1000\",\"ethscriptionId\":\"0x78e7b34c766c6a174340ef2687732b68649d2bd722351d2ef10de0ea23182ec5\",\"currency\":\"0x0000000000000000000000000000000000000000\",\"price\":\"1890000000000000\",\"nonce\":\"1\",\"startTime\":1696786756,\"endTime\":1699378756,\"protocolFeeDiscounted\":200,\"creatorFee\":0,\"params\":\"0x\"}}";
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x3cc3098f5c463365c4308a087587cf51a4db71e52e32a14e61f6f7ac8f37876d70137a56da703421e036f9c7a5db089d3dc9d8787be339ad77ac3170bd00b51f1c");
+    });
+
+    test("TYPE_DATA_V1", async () => {
+        const msgParams = [
+            {
+                type: "string",
+                name: "Message",
+                value: "Hi, Alice!"
+            },
+            {
+                type: "uint32",
+                name: "A number",
+                value: "1337"
+            }
+        ];
+
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V1, JSON.stringify(msgParams), base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x33f5046b3e9c6441d4003bacc531e4a8cf1b3ec5f6d55bf5bda2d37c02d5ad941bb7692630973cf16f63916efd7a99576dc019a28616d13b17943e79b642e0181c");
+    });
+
+    test("TYPE_DATA_V3", async () => {
+        const chainId = 42;
+        const msgParams = {
+            types: {
+                EIP712Domain: [
+                    { name: "name", type: "string" },
+                    { name: "version", type: "string" },
+                    { name: "chainId", type: "uint256" },
+                    { name: "verifyingContract", type: "address" }
+                ],
+                Person: [
+                    { name: "name", type: "string" },
+                    { name: "wallet", type: "address" }
+                ],
+                Mail: [
+                    { name: "from", type: "Person" },
+                    { name: "to", type: "Person" },
+                    { name: "contents", type: "string" }
+                ]
+            },
+            primaryType: "Mail",
+            domain: {
+                name: "Ether Mail",
+                version: "1",
+                chainId,
+                verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+            },
+            message: {
+                from: {
+                    name: "Cow",
+                    wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+                },
+                to: {
+                    name: "Bob",
+                    wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+                },
+                contents: "Hello, Bob!"
+            }
+        };
+
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V3, JSON.stringify(msgParams), base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0xd8469ffdf14fb4375e1ec3993451fbf3a4d5d5c440c7ac3995e38b9b8cecd93c70c2f1716f34e8b3d4ef209af85046681cf429da7ec48b4774ff67fa3955aa361b");
+    });
+
+    test("TYPE_DATA_V4_2", async () => {
+        const privateKey = "0x808e50dd63f3749405dfb0ac9a965804a33919fb82c4676bb00ac435ead6b4e8";
+        const msg = "{\n" +
+            "    \"domain\":{\n" +
+            "        \"chainId\":\"66\",\n" +
+            "        \"name\":\"OKX_NFT\",\n" +
+            "        \"version\":\"1.1\",\n" +
+            "        \"verifyingContract\":\"0x34DF5c035e31c0edfd104f3EA83d9548F108Df56\"\n" +
+            "    },\n" +
+            "    \"message\":{\n" +
+            "        \"startTime\":1667184663,\n" +
+            "        \"endTime\":1667443863,\n" +
+            "        \"orderType\":2,\n" +
+            "        \"zone\":\"0xa472fAd4B6cAdFDEd63f7aE5BFEe6eCf4F08Ae95\",\n" +
+            "        \"zoneHash\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\n" +
+            "        \"salt\":\"52760315571824630\",\n" +
+            "        \"conduitKey\":\"0x618Cf13c76c1FFC2168fC47c98453dCc6134F5c8888888888888888888888888\",\n" +
+            "        \"counter\":\"0\",\n" +
+            "        \"offerer\":\"0x12910188b68a7817a0592406f1ffe0c31676b417\",\n" +
+            "        \"offer\":[\n" +
+            "            {\n" +
+            "                \"itemType\":1,\n" +
+            "                \"token\":\"0x382bb369d343125bfb2117af9c149795c6c65c50\",\n" +
+            "                \"identifierOrCriteria\":\"0\",\n" +
+            "                \"startAmount\":\"1000000000000000\",\n" +
+            "                \"endAmount\":\"1000000000000000\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"consideration\":[\n" +
+            "            {\n" +
+            "                \"itemType\":2,\n" +
+            "                \"token\":\"0xf8b973fdf2e6f700a775aa94ff72180688b5a044\",\n" +
+            "                \"identifierOrCriteria\":\"46201\",\n" +
+            "                \"startAmount\":\"1\",\n" +
+            "                \"endAmount\":\"1\",\n" +
+            "                \"recipient\":\"0x12910188b68a7817a0592406f1ffe0c31676b417\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"totalOriginalConsiderationItems\":1\n" +
+            "    },\n" +
+            "    \"primaryType\":\"OrderComponents\",\n" +
+            "    \"types\":{\n" +
+            "        \"EIP712Domain\":[\n" +
+            "            {\n" +
+            "                \"name\":\"name\",\n" +
+            "                \"type\":\"string\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"version\",\n" +
+            "                \"type\":\"string\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"chainId\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"verifyingContract\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"OrderComponents\":[\n" +
+            "            {\n" +
+            "                \"name\":\"offerer\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"zone\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"offer\",\n" +
+            "                \"type\":\"OfferItem[]\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"consideration\",\n" +
+            "                \"type\":\"ConsiderationItem[]\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"orderType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startTime\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endTime\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"zoneHash\",\n" +
+            "                \"type\":\"bytes32\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"salt\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"conduitKey\",\n" +
+            "                \"type\":\"bytes32\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"counter\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"OfferItem\":[\n" +
+            "            {\n" +
+            "                \"name\":\"itemType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"token\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"identifierOrCriteria\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"ConsiderationItem\":[\n" +
+            "            {\n" +
+            "                \"name\":\"itemType\",\n" +
+            "                \"type\":\"uint8\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"token\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"identifierOrCriteria\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"startAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"endAmount\",\n" +
+            "                \"type\":\"uint256\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"name\":\"recipient\",\n" +
+            "                \"type\":\"address\"\n" +
+            "            }\n" +
+            "        ]\n" +
+            "    }\n" +
+            "}";
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x66cc18bf698319d578566b8ed26bf5d59f7d2f880c4fae85e26e04c52203899c2f1bc4410bcd796d5c9398477e6cf44842d2ef0df77555a77a30cd93e274b6671b");
+    });
+
+    test("TYPE_DATA_V4_3", async () => {
+        const privateKey = "a375a510fc9599102c1f4697581162ea4d431cd6c45877e55fc4a1c091ab378a";
+        const msg = "{\"domain\":{\"name\":\"EtchMarket\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\"},\"primaryType\":\"EthscriptionOrder\",\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}],\"EthscriptionOrder\":[{\"name\":\"signer\",\"type\":\"address\"},{\"name\":\"creator\",\"type\":\"address\"},{\"name\":\"ethscriptionId\",\"type\":\"bytes32\"},{\"name\":\"quantity\",\"type\":\"uint256\"},{\"name\":\"currency\",\"type\":\"address\"},{\"name\":\"price\",\"type\":\"uint256\"},{\"name\":\"nonce\",\"type\":\"uint256\"},{\"name\":\"startTime\",\"type\":\"uint64\"},{\"name\":\"endTime\",\"type\":\"uint64\"},{\"name\":\"protocolFeeDiscounted\",\"type\":\"uint16\"},{\"name\":\"creatorFee\",\"type\":\"uint16\"},{\"name\":\"params\",\"type\":\"bytes\"}]},\"message\":{\"signer\":\"0x7bbc6cf96b7faa0c1f8acc9a5ab383fe8dc507bc\",\"creator\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\",\"quantity\":\"1000\",\"ethscriptionId\":\"0x78e7b34c766c6a174340ef2687732b68649d2bd722351d2ef10de0ea23182ec5\",\"currency\":\"0x0000000000000000000000000000000000000000\",\"price\":\"1890000000000000\",\"nonce\":\"1\",\"startTime\":1696786756,\"endTime\":1699378756,\"protocolFeeDiscounted\":200,\"creatorFee\":0,\"params\":\"0x\"}}";
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x3cc3098f5c463365c4308a087587cf51a4db71e52e32a14e61f6f7ac8f37876d70137a56da703421e036f9c7a5db089d3dc9d8787be339ad77ac3170bd00b51f1c");
+    });
+
+    test("TYPE_DATA_V1", async () => {
+        const msgParams = [
+            {
+                type: "string",
+                name: "Message",
+                value: "Hi, Alice!"
+            },
+            {
+                type: "uint32",
+                name: "A number",
+                value: "1337"
+            }
+        ];
+
+        let signature = eth.signMessage(MessageTypes.TYPE_DATA_V1, JSON.stringify(msgParams), base.fromHex(privateKey))
+        Assert.strictEqual(signature, "0x33f5046b3e9c6441d4003bacc531e4a8cf1b3ec5f6d55bf5bda2d37c02d5ad941bb7692630973cf16f63916efd7a99576dc019a28616d13b17943e79b642e0181c");
+    });
+
+    test("TYPE_DATA_V3_MPC", async () => {
+        const chainId = 42;
+        const msgParams = {
+            types: {
+                EIP712Domain: [
+                    { name: "name", type: "string" },
+                    { name: "version", type: "string" },
+                    { name: "chainId", type: "uint256" },
+                    { name: "verifyingContract", type: "address" }
+                ],
+                Person: [
+                    { name: "name", type: "string" },
+                    { name: "wallet", type: "address" }
+                ],
+                Mail: [
+                    { name: "from", type: "Person" },
+                    { name: "to", type: "Person" },
+                    { name: "contents", type: "string" }
+                ]
+            },
+            primaryType: "Mail",
+            domain: {
+                name: "Ether Mail",
+                version: "1",
+                chainId,
+                verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
+            },
+            message: {
+                from: {
+                    name: "Cow",
+                    wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826"
+                },
+                to: {
+                    name: "Bob",
+                    wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB"
+                },
+                contents: "Hello, Bob!"
+            }
+        };
+
+        let msgHash = eth.signMessage(MessageTypes.TYPE_DATA_V3, JSON.stringify(msgParams), undefined)
+        const {v, r, s} = ecdsaSign(base.fromHex(msgHash), base.fromHex(privateKey))
+        const result = makeSignature(v, r, s)
+        Assert.strictEqual(result, "0x337e69d931591a9bae20b2d4c541804bb1b6fa32c8468a9007041b7ba63cb8a401cba4a7eb71f48e9eb586c8d80896e803275f979a530313fd647c72a806bc511c");
+    });
+
+    test("TYPE_DATA_V4_3_MPC", async () => {
+        const privateKey = "a375a510fc9599102c1f4697581162ea4d431cd6c45877e55fc4a1c091ab378a";
+        const msg = "{\"domain\":{\"name\":\"EtchMarket\",\"version\":\"1\",\"chainId\":1,\"verifyingContract\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\"},\"primaryType\":\"EthscriptionOrder\",\"types\":{\"EIP712Domain\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"version\",\"type\":\"string\"},{\"name\":\"chainId\",\"type\":\"uint256\"},{\"name\":\"verifyingContract\",\"type\":\"address\"}],\"EthscriptionOrder\":[{\"name\":\"signer\",\"type\":\"address\"},{\"name\":\"creator\",\"type\":\"address\"},{\"name\":\"ethscriptionId\",\"type\":\"bytes32\"},{\"name\":\"quantity\",\"type\":\"uint256\"},{\"name\":\"currency\",\"type\":\"address\"},{\"name\":\"price\",\"type\":\"uint256\"},{\"name\":\"nonce\",\"type\":\"uint256\"},{\"name\":\"startTime\",\"type\":\"uint64\"},{\"name\":\"endTime\",\"type\":\"uint64\"},{\"name\":\"protocolFeeDiscounted\",\"type\":\"uint16\"},{\"name\":\"creatorFee\",\"type\":\"uint16\"},{\"name\":\"params\",\"type\":\"bytes\"}]},\"message\":{\"signer\":\"0x7bbc6cf96b7faa0c1f8acc9a5ab383fe8dc507bc\",\"creator\":\"0x57b8792c775d34aa96092400983c3e112fcbc296\",\"quantity\":\"1000\",\"ethscriptionId\":\"0x78e7b34c766c6a174340ef2687732b68649d2bd722351d2ef10de0ea23182ec5\",\"currency\":\"0x0000000000000000000000000000000000000000\",\"price\":\"1890000000000000\",\"nonce\":\"1\",\"startTime\":1696786756,\"endTime\":1699378756,\"protocolFeeDiscounted\":200,\"creatorFee\":0,\"params\":\"0x\"}}";
+        let msgHash = eth.signMessage(MessageTypes.TYPE_DATA_V4, msg, undefined)
+        const {v, r, s} = ecdsaSign(base.fromHex(msgHash), base.fromHex(privateKey))
+        const result = makeSignature(v, r, s)
+        Assert.strictEqual(result, "0x3cc3098f5c463365c4308a087587cf51a4db71e52e32a14e61f6f7ac8f37876d70137a56da703421e036f9c7a5db089d3dc9d8787be339ad77ac3170bd00b51f1c");
+    });
+
+    test("TYPE_DATA_V1_MPC", async () => {
+        const msgParams = [
+            {
+                type: "string",
+                name: "Message",
+                value: "Hi, Alice!"
+            },
+            {
+                type: "uint32",
+                name: "A number",
+                value: "1337"
+            }
+        ];
+
+        let msgHash = eth.signMessage(MessageTypes.TYPE_DATA_V1, JSON.stringify(msgParams), undefined)
+        const {v, r, s} = ecdsaSign(base.fromHex(msgHash), base.fromHex(privateKey))
+        const result = makeSignature(v, r, s)
+        Assert.strictEqual(result, "0x8596be6aeea3cdaba2685e430ad9db7f0425cea9a9c793f3fc8bf7f3fd11ddf31b953c7858731f7dca649ec3014903520e40e57103d52b80a054c4c44fe1c2521c");
+    });
+
+    test("ETH_SIGN_MPC", async () => {
+        let expected = "0xa4a11b0526c248576756292f420f3cf4c5bb744a8491f8c1a33838b95f401aed7afe88e296edf246291e3f9fcd125a7fe795c76ab118d5abb97421e1f03fa36f1b";
+        const msgHash = eth.signMessage(MessageTypes.ETH_SIGN, "0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0")
+        const {v, r, s} = ecdsaSign(base.fromHex(msgHash), base.fromHex(privateKey))
+        const result = makeSignature(v, r, s)
+        Assert.strictEqual(result, expected);
+    });
+
+    test("PERSONAL_SIGN", async () => {
+        let expected = "0xbf0c8d5f1a1519a24fe3d717c54d3a69265e1afe8935808d7f79fc8eded79c095ab3d54a9df224331da76ffd5db3a1393dfc805ba9bbcfecf8eaeabdfa2e1f3d1b";
+        const msgHash = eth.signMessage(MessageTypes.PERSONAL_SIGN, "0x4578616d706c652060706572736f6e616c5f7369676e60206d657373616765")
+        const {v, r, s} = ecdsaSign(base.fromHex(msgHash), base.fromHex("0x5127a0b292a7fbe02c382e373f113102931c2b514e93360e60c574d340e7f390"))
+        const result = makeSignature(v, r, s)
+        Assert.strictEqual(result, expected);
     });
 });

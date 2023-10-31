@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-base:** support ADA ([14dd4b](https://github.com/okx/js-wallet-sdk/commit/14dd4b171355dfba8a401db769425c200172e900))
+- **coin-ethereum:** signMessage support more types ([]())
