@@ -1,0 +1,107 @@
+import { BaseWallet } from "@okxweb3/coin-base";
+import {
+    CalcTxHashParams,
+    DerivePriKeyParams,
+    GetDerivedPathParam,
+    NewAddressData,
+    NewAddressParams,
+    SignTxParams,
+    ValidAddressData,
+    ValidAddressParams,
+} from "@okxweb3/coin-base";
+import { ed25519_getRandomPrivateKey } from "@okxweb3/coin-base";
+import {
+    CalcTxHashError,
+    GenPrivateKeyError,
+    NewAddressError,
+    SignTxError,
+} from "@okxweb3/coin-base";
+import { base } from "@okxweb3/crypto-lib";
+import { getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey } from "./account";
+import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee } from "./transaction";
+
+export class AdaWallet extends BaseWallet {
+    async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
+        return `m/1852'/1815'/0'/0/${param.index}`;
+    }
+
+    async getRandomPrivateKey(): Promise<any> {
+        try {
+            return Promise.resolve(ed25519_getRandomPrivateKey(false, "hex"))
+        } catch (e) {
+            return Promise.reject(GenPrivateKeyError);
+        }
+    }
+
+    async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
+        try {
+            const key = await getDerivedPrivateKey(param.mnemonic, param.hdPath);
+            return Promise.resolve(key);
+        } catch (e) {
+            return Promise.reject(GenPrivateKeyError);
+        }
+    }
+
+    async getNewAddress(param: NewAddressParams): Promise<any> {
+        try {
+            const address = await getNewAddress(param.privateKey)
+            let data: NewAddressData = {
+                address: address,
+                publicKey: await pubKeyFromPrivateKey(param.privateKey)
+            };
+            return Promise.resolve(data);
+        } catch (e) {
+            return Promise.reject(NewAddressError)
+        }
+    }
+
+    async validAddress(param: ValidAddressParams): Promise<any> {
+        let isValid: boolean;
+        try {
+            const [hrp, data] = base.fromBech32(param.address, false);
+            isValid = hrp === "addr" && data.length > 0;
+        } catch (e) {
+            isValid = false;
+        }
+
+        let data: ValidAddressData = {
+            isValid: isValid,
+            address: param.address,
+        };
+        return Promise.resolve(data);
+    }
+
+    async signTransaction(param: SignTxParams): Promise<any> {
+        try {
+            const data: TxData = param.data;
+            return transfer(data);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async calcTxHash(param: CalcTxHashParams): Promise<string> {
+        try {
+            return calcTxHash(param.data);
+        } catch (e) {
+            return Promise.reject(CalcTxHashError);
+        }
+    }
+
+    static async minAda(address: string, multiAsset?: MultiAssetData): Promise<string> {
+        try {
+            return minAda(address, multiAsset);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    static async minFee(param: SignTxParams): Promise<string> {
+        try {
+            const data: TxData = param.data;
+            return minFee(data);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+}
