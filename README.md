@@ -39,6 +39,7 @@ sh build.sh
 | Sui      | ✅                 | ✅                    | ✅                   |
 | Tron     | ✅                 | ✅                    | ✅                   |
 | Osmosis  | ✅                 | ✅                    | ✅                   |
+| Cardano  | ✅                 | ✅                    | ✅                   |
 
 
 *BTC: Supports Supports BRC20-related functions, including inscription creation, BRC20 buying and selling.
