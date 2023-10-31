@@ -38,7 +38,7 @@ import {
 import { base, bip32, bip39 } from '@okxweb3/crypto-lib';
 import * as bitcoin from "./index"
 
-function convert2UtxoTx(utxoTx: any): bitcoin.utxoTx {
+export function convert2UtxoTx(utxoTx: any): bitcoin.utxoTx {
   const tx = cloneObject(utxoTx)
   tx.inputs.forEach((it: any)=>{
     it.amount = convert2Number(it.amount)
@@ -301,8 +301,11 @@ export class BtcWallet extends BaseWallet {
       const utxoTx = convert2UtxoTx(param.data);
       if (type === 2) { // psbt
         const change = bitcoin.signBtc(utxoTx, "", this.network(), undefined, true, true);
-        const changeUtxo = {address: utxoTx.address, amount: parseInt(change), bip32Derivation: utxoTx.bip32Derivation} as bitcoin.utxoOutput
-        utxoTx.outputs.push(changeUtxo as never)
+        const dustSize = utxoTx.dustSize || 546;
+        if (parseInt(change) >= dustSize) {
+          const changeUtxo = {address: utxoTx.address, amount: parseInt(change), bip32Derivation: utxoTx.bip32Derivation} as bitcoin.utxoOutput
+          utxoTx.outputs.push(changeUtxo as never)
+        }
         const hex = bitcoin.buildPsbt(utxoTx, this.network());
         return Promise.resolve(hex);
       } else {
@@ -390,6 +393,14 @@ export class BtcWallet extends BaseWallet {
       return Promise.reject(EstimateFeeError);
     }
   }
+
+  static async oneKeyBuildBtcTx(txData: bitcoin.utxoTx): Promise<any> {
+    try {
+      return Promise.resolve(bitcoin.oneKeyBuildBtcTx(txData));
+    } catch (e) {
+      return Promise.reject(SignTxError);
+    }
+  }
 }
 
 export class TBtcWallet extends BtcWallet {
@@ -398,7 +409,7 @@ export class TBtcWallet extends BtcWallet {
   }
 }
 
-function number2Hex(n: number, length: number): string {
+export function number2Hex(n: number, length: number): string {
   let s = n.toString(16)
   const d = length - s.length
   if(d > 0) {
