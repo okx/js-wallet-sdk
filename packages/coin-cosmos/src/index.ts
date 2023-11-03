@@ -71,7 +71,8 @@ export async function sendToken(
   timeoutHeight?: number,
   memo?: string,
   useEthSecp256k1?: boolean,
-  publicKey?: string): Promise<any> {
+  publicKey?: string,
+  pubKeyUrl?: string): Promise<any> {
     const sendMsg: EncodeObject = {
         typeUrl: "/cosmos.bank.v1beta1.MsgSend",
         value: {
@@ -87,6 +88,7 @@ export async function sendToken(
         privateKey: privateKey,
         useEthSecp256k1: useEthSecp256k1 || false,
         publicKey: publicKey,
+        pubKeyUrl: pubKeyUrl,
     });
     if (!privateKey) {
         return result;
@@ -111,7 +113,8 @@ export async function sendIBCToken(
   ibcTimeoutTimestamp?: number,
   memo?: string,
   useEthSecp256k1?: boolean,
-  publicKey?: string): Promise<string> {
+  publicKey?: string,
+  pubKeyUrl?: string): Promise<string> {
     const timeoutTimestampNanoseconds = ibcTimeoutTimestamp
       ? Long.fromNumber(ibcTimeoutTimestamp).multiply(1_000_000_000)
       : undefined;
@@ -134,6 +137,7 @@ export async function sendIBCToken(
         privateKey: privateKey,
         useEthSecp256k1: useEthSecp256k1 || false,
         publicKey: publicKey,
+        pubKeyUrl: pubKeyUrl,
     });
     if (!privateKey) {
         return result;
@@ -152,14 +156,16 @@ export async function sendMessages(
   extraTypes?: ReadonlyArray<[string, GeneratedType]>,
   timeoutHeight?: number,
   memo?: string,
-  useEthSecp256k1?: boolean): Promise<string> {
+  useEthSecp256k1?: boolean,
+  pubKeyUrl?: string): Promise<string> {
     registerExtraTypes(extraTypes)
     const result = await signTx(messages, fee, memo,  Long.fromNumber(timeoutHeight || 0), {
         accountNumber: accountNumber,
         sequence: sequence,
         chainId: chainId,
         privateKey: privateKey,
-        useEthSecp256k1: useEthSecp256k1 || false
+        useEthSecp256k1: useEthSecp256k1 || false,
+        pubKeyUrl: pubKeyUrl
     })
     return Promise.resolve(base.toBase64(result))
 }
@@ -218,7 +224,8 @@ export async function sendAminoMessage(privateKey: Uint8Array,
                                        data: string,
                                        extraConverters?: AminoConverters,
                                        extraTypes?: ReadonlyArray<[string, GeneratedType]>,
-                                       useEthSecp256k1?: boolean) {
+                                       useEthSecp256k1?: boolean,
+                                       pubKeyUrl?: string) {
     registerExtraTypes(extraTypes)
     const m: AminoMsgData = JSON.parse(data)
     let converters = createDefaultAminoConverters(prefix)
@@ -232,7 +239,8 @@ export async function sendAminoMessage(privateKey: Uint8Array,
         sequence: Number(m.sequence),
         chainId: m.chain_id,
         privateKey: privateKey,
-        useEthSecp256k1: useEthSecp256k1 || false
+        useEthSecp256k1: useEthSecp256k1 || false,
+        pubKeyUrl: pubKeyUrl
     })
     return Promise.resolve(base.toBase64(result))
 }
