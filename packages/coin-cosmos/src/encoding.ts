@@ -72,12 +72,20 @@ export interface StdSignature {
   readonly signature: string;
 }
 
-export function encodePubkey(pubkey: string, useEthSecp256k1: boolean): Any {
+export function encodePubkey(pubkey: string, useEthSecp256k1: boolean, pubKeyUrl?: string): Any {
   const pubkeyProto = PubKey.fromPartial({
     key: base.fromBase64(pubkey),
   });
+
+  let typeUrl;
+  if(pubKeyUrl) {
+    typeUrl = pubKeyUrl;
+  } else {
+    typeUrl = useEthSecp256k1 ? "/ethermint.crypto.v1.ethsecp256k1.PubKey" : "/cosmos.crypto.secp256k1.PubKey"
+  }
+
   return Any.fromPartial({
-    typeUrl: useEthSecp256k1 ? "/ethermint.crypto.v1.ethsecp256k1.PubKey" : "/cosmos.crypto.secp256k1.PubKey",
+    typeUrl: typeUrl,
     value: Uint8Array.from(PubKey.encode(pubkeyProto).finish()),
   });
 }

@@ -83,6 +83,7 @@ export abstract class CosmosWallet extends BaseWallet {
   abstract getSlip44CoinType(): number
   abstract getAminoConverters(): AminoConverters | undefined
   abstract getExtraTypes(): ReadonlyArray<[string, GeneratedType]> | undefined
+  abstract pubKeyUrl(): string | undefined
 
   async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
     return `m/44'/${this.getSlip44CoinType()}'/0'/0/${param.index}`;
@@ -115,6 +116,7 @@ export abstract class CosmosWallet extends BaseWallet {
   async signTransaction(param: SignTxParams): Promise<any> {
     try {
       const ethSign = this.supportEthSign()
+      const pubKeyUrl = this.pubKeyUrl();
       const privateKey = (param.privateKey && base.fromHex(param.privateKey)) as Buffer
       const common = param.data as CosmosSignParam
 
@@ -134,7 +136,7 @@ export abstract class CosmosWallet extends BaseWallet {
           common.timeoutHeight,
           common.memo,
           ethSign,
-          common.publicKey)
+          common.publicKey, pubKeyUrl)
         return Promise.resolve(result);
       } else if(common.type === "ibcTransfer") {
         const transfer = common.data as CosmosIbcTransferParam
@@ -156,7 +158,7 @@ export abstract class CosmosWallet extends BaseWallet {
           transfer.ibcTimeoutTimestamp,
           common.memo,
           ethSign,
-          common.publicKey)
+          common.publicKey, pubKeyUrl)
         return Promise.resolve(result);
       }
     } catch (e) {
@@ -269,6 +271,10 @@ export class AtomWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 118;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class OsmoWallet extends CosmosWallet {
@@ -290,6 +296,10 @@ export class OsmoWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -314,6 +324,10 @@ export class EvmosWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 60;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class AxelarWallet extends CosmosWallet {
@@ -335,6 +349,10 @@ export class AxelarWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -358,6 +376,10 @@ export class CronosWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 394;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class IrisWallet extends CosmosWallet {
@@ -379,6 +401,10 @@ export class IrisWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -402,6 +428,10 @@ export class JunoWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 118;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class KavaWallet extends CosmosWallet {
@@ -423,6 +453,10 @@ export class KavaWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 459;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -446,6 +480,10 @@ export class KujiraWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 118;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class SecretWallet extends CosmosWallet {
@@ -467,6 +505,10 @@ export class SecretWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 529;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -490,6 +532,10 @@ export class StargazeWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 118;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class TerraWallet extends CosmosWallet {
@@ -511,6 +557,10 @@ export class TerraWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 330;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -534,6 +584,10 @@ export class SeiWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 118;
   }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
+  }
 }
 
 export class DydxWallet extends CosmosWallet {
@@ -555,6 +609,10 @@ export class DydxWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
@@ -578,6 +636,10 @@ export class InjectiveWallet extends CosmosWallet {
   getSlip44CoinType(): number {
     return 60;
   }
+
+  pubKeyUrl(): string | undefined {
+    return "/injective.crypto.v1beta1.ethsecp256k1.PubKey";
+  }
 }
 
 export class CelestiaWallet extends CosmosWallet {
@@ -599,5 +661,9 @@ export class CelestiaWallet extends CosmosWallet {
 
   getSlip44CoinType(): number {
     return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
