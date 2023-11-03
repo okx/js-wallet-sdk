@@ -21,6 +21,7 @@ export interface SignerData {
     readonly privateKey: Uint8Array
     readonly useEthSecp256k1: boolean
     readonly publicKey?: string
+    readonly pubKeyUrl?: string
 }
 
 /**
@@ -108,10 +109,10 @@ export async function signDirect(
   fee: StdFee,
   memo: string,
   timeoutHeight: Long,
-  {accountNumber, sequence, chainId, privateKey, useEthSecp256k1, publicKey}: SignerData,
+  {accountNumber, sequence, chainId, privateKey, useEthSecp256k1, publicKey, pubKeyUrl}: SignerData,
 ): Promise<any> {
     const calcPublicKey = privateKey ? private2Public(privateKey, true) : base.fromHex(publicKey!);
-    const pubkey = encodePubkey(encodeSecp256k1Pubkey(calcPublicKey), useEthSecp256k1);
+    const pubkey = encodePubkey(encodeSecp256k1Pubkey(calcPublicKey), useEthSecp256k1, pubKeyUrl);
     const txBodyEncodeObject: TxBodyEncodeObject = {
         typeUrl: "/cosmos.tx.v1beta1.TxBody",
         value: {
