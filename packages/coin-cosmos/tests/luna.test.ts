@@ -10,7 +10,7 @@ import {
     sendAminoMessage,
     sendMessages,
     GammRegistry,
-    GammAminoConverters, AtomWallet
+    GammAminoConverters, AtomWallet, InjectiveWallet
 } from '../src';
 
 describe("luna", () => {
@@ -172,9 +172,7 @@ describe("sei", () => {
             0,
             ""
         )
-        if( v !== "CosBCogBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmgKKnNlaTFzOTV6dnB4d3hjcjB5a2RrajN5bXNjcmV2ZGFtN3d2czI0ZGs1NxIqc2VpMXVyZGVkZWVqMGZkNGtzbHpuM3VxNnM4bW5kaDh3dDd1c2s2YTR6Gg4KBHVzZWkSBjEwMDAwMBJmClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiECWzs64TTLQ3sGP88eAUtzXoHtGHUYauDmYZWgBLyYUesSBAoCCAEYARISCgwKBHVzZWkSBDEwMDAQoI0GGkAPt3BsqAL807wgpPtKQdF8mYsPwM52HjRaScsc27rIdh30d6JxWnu9Zy1Tm9funsAYIOtStq7GKTfekctaIRK/") {
-            console.info(v)
-        }
+        expect(v).toStrictEqual("CosBCogBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmgKKnNlaTFzOTV6dnB4d3hjcjB5a2RrajN5bXNjcmV2ZGFtN3d2czI0ZGs1NxIqc2VpMXVyZGVkZWVqMGZkNGtzbHpuM3VxNnM4bW5kaDh3dDd1c2s2YTR6Gg4KBHVzZWkSBjEwMDAwMBJmClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED953XAppZBeVXkGFCsMV+wh9HRfEpuMBXrsz0LidQum4SBAoCCAEYARISCgwKBHVzZWkSBDEwMDAQoI0GGkBlZgZ/cEnlDfAcos8pXAv/qsawqIqaCOXovSEbYGq0QUdUmW0BiVHI8I4QR3CUBbQIMzFdP78TqhAvvF4zJAEg");
     });
 
     test("sendIBCTransfer", async () => {
@@ -194,10 +192,70 @@ describe("sei", () => {
             amount2StdFee(demon, 1000, 100000),
             0,
             undefined,
-            Math.ceil(Date.now() / 1000) + 300,
+            1699006300,
             ""
         )
         // curl -X POST -d '{"tx_bytes":"CrkBCrYBCikvaWJjLmFwcGxpY2F0aW9ucy50cmFuc2Zlci52MS5Nc2dUcmFuc2ZlchKIAQoIdHJhbnNmZXISCWNoYW5uZWwtNxoMCgR1c2VpEgQxMDAwIipzZWkxczk1enZweHd4Y3IweWtka2ozeW1zY3JldmRhbTd3dnMyNGRrNTcqLWF4ZWxhcjFydnM1eHBoNGwzcHgyZWZ5bnFzdGh1czhwNnI0ZXh5cjZrcXZkZDiA9Ofjmd6ksRcSZgpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohAls7OuE0y0N7Bj/PHgFLc16B7Rh1GGrg5mGVoAS8mFHrEgQKAggBGAYSEgoMCgR1c2VpEgQxMDAwEKCNBhpAoLCuHtNe5N1/awOucEB9ZGfxlC4JriSXBL9oNa0HKiId741gOW/52phhnQbstHx32z9/Zj5sd2BqnkShLR8tbg==","mode":"BROADCAST_MODE_SYNC"}' https://rest.atlantic-2.seinetwork.io/cosmos/tx/v1beta1/txs
+        expect(v).toStrictEqual("CrgBCrUBCikvaWJjLmFwcGxpY2F0aW9ucy50cmFuc2Zlci52MS5Nc2dUcmFuc2ZlchKHAQoIdHJhbnNmZXISCmNoYW5uZWwtODkaDAoEdXNlaRIEMTAwMCIqc2VpMXM5NXp2cHh3eGNyMHlrZGtqM3ltc2NyZXZkYW03d3ZzMjRkazU3Kitvc21vMWx5anhrNHQ4MzV5ajZ1OGwybWc2YTZ0MnY5eDNuajd1bGFsanoyOICwmrWmp4XKFxJmClAKRgofL2Nvc21vcy5jcnlwdG8uc2VjcDI1NmsxLlB1YktleRIjCiED953XAppZBeVXkGFCsMV+wh9HRfEpuMBXrsz0LidQum4SBAoCCAEYChISCgwKBHVzZWkSBDEwMDAQoI0GGkCKTpQDTQJMsLUs2SPPuHpJA4i0/dI5Gl3hhMsJEgDdVS7flIA+VfARfyclJ7NSWT7RguGe1uNtSAzTEMkjUInK");
+    });
+});
+
+describe("injective", () => {
+    test("address", async () => {
+        const prefix = "inj"
+        const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
+        const address = getNewAddress(privateKey, prefix)
+        console.info(address)
+
+        const v = validateAddress(address, prefix)
+        console.info(v)
+    });
+
+    test("sendToken", async () => {
+        const demon = "inj"
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const pk = base.fromHex(privateKey)
+        const v = await sendToken(pk,
+            "injective-1",
+            3,
+            102711,
+            "inj1ywqe8057srngat8rtz95tkx0ffl2urarkegcc8",
+            "inj1ywqe8057srngat8rtz95tkx0ffl2urarkegcc8",
+            amount2Coins(demon, 100000000000000000),
+            amount2StdFee(demon, 200000000000000, 400000),
+            0,
+            "",
+            true,
+            undefined,
+            "/injective.crypto.v1beta1.ethsecp256k1.PubKey",
+        )
+        expect(v).toStrictEqual("CpYBCpMBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnMKKmluajF5d3FlODA1N3NybmdhdDhydHo5NXRreDBmZmwydXJhcmtlZ2NjOBIqaW5qMXl3cWU4MDU3c3JuZ2F0OHJ0ejk1dGt4MGZmbDJ1cmFya2VnY2M4GhkKA2luahISMTAwMDAwMDAwMDAwMDAwMDAwEn4KXgpUCi0vaW5qZWN0aXZlLmNyeXB0by52MWJldGExLmV0aHNlY3AyNTZrMS5QdWJLZXkSIwohA/ed1wKaWQXlV5BhQrDFfsIfR0XxKbjAV67M9C4nULpuEgQKAggBGAMSHAoWCgNpbmoSDzIwMDAwMDAwMDAwMDAwMBCAtRgaQbpuj/SziuBDOtG/8q2NdcNgsZMdpCw17yDdnae/Gh+NFBl6YhIsYUGBEKrkbd3C9hkr5dwA14yke6Qm3qknl9MB");
+    });
+
+    test("sendIBCTransfer", async () => {
+        const demon = "inj"
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const pk = base.fromHex(privateKey)
+        const v = await sendIBCToken(
+            pk,
+            "injective-1",
+            3,
+            102711,
+            "inj1ywqe8057srngat8rtz95tkx0ffl2urarkegcc8",
+            "osmo18vu3jy77d0xvlg5gguud5h0kv2repg83ehwngf",
+            amount2Coin(demon, 100000000000000000),
+            "transfer",
+            "channel-8",
+            amount2StdFee(demon, 200000000000000, 400000),
+            0,
+            undefined,
+            Math.ceil(Date.now() / 1000) + 300,
+            "",
+            true,
+            undefined,
+            "/injective.crypto.v1beta1.ethsecp256k1.PubKey",
+        )
         console.info(v)
     });
 });
+
