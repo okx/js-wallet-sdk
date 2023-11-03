@@ -667,3 +667,69 @@ export class CelestiaWallet extends CosmosWallet {
     return undefined;
   }
 }
+
+export class DydxWallet extends CosmosWallet {
+  getPrefix(): string {
+    return 'dydx';
+  }
+
+  supportEthSign(): boolean {
+    return false;
+  }
+
+  getAminoConverters(): AminoConverters | undefined {
+    return undefined;
+  }
+
+  getExtraTypes(): ReadonlyArray<[string, GeneratedType]> | undefined {
+    return undefined;
+  }
+
+  getSlip44CoinType(): number {
+    return 118;
+  }
+}
+
+export class InjectiveWallet extends CosmosWallet {
+  getPrefix(): string {
+    return 'inj';
+  }
+
+  supportEthSign(): boolean {
+    return true;
+  }
+
+  getAminoConverters(): AminoConverters | undefined {
+    return undefined;
+  }
+
+  getExtraTypes(): ReadonlyArray<[string, GeneratedType]> | undefined {
+    return undefined;
+  }
+
+  getSlip44CoinType(): number {
+    return 60;
+  }
+}
+
+export class CelestiaWallet extends CosmosWallet {
+  getPrefix(): string {
+    return 'celestia';
+  }
+
+  supportEthSign(): boolean {
+    return false;
+  }
+
+  getAminoConverters(): AminoConverters | undefined {
+    return undefined;
+  }
+
+  getExtraTypes(): ReadonlyArray<[string, GeneratedType]> | undefined {
+    return undefined;
+  }
+
+  getSlip44CoinType(): number {
+    return 118;
+  }
+}
