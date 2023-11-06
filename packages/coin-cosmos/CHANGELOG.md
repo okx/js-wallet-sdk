@@ -16,6 +16,6 @@ All notable changes to this project will be documented in this file.
 
 # [1.0.3](https://github.com/okx/js-wallet-sdk) (2023-11-03)
 
-- **coin-cosmos:** add cosmos common wallet ([16](https://github.com/okx/js-wallet-sdk/pull/16))
+- **coin-cosmos:** add cosmos common wallet ([17](https://github.com/okx/js-wallet-sdk/pull/17))
 
 

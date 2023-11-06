@@ -19,4 +19,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-base:** add hrp to address param ([16](https://github.com/okx/js-wallet-sdk/pull/16))
+- **coin-base:** add hrp to address param ([17](https://github.com/okx/js-wallet-sdk/pull/17))
