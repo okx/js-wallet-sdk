@@ -14,4 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - **coin-cosmos:** fix Injective public key url ([15](https://github.com/okx/js-wallet-sdk/pull/15))
 
+# [1.0.3](https://github.com/okx/js-wallet-sdk) (2023-11-03)
+
+- **coin-cosmos:** add cosmos common wallet ([16](https://github.com/okx/js-wallet-sdk/pull/16))
+
 
