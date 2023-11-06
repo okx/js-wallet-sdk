@@ -10,7 +10,9 @@ import {
     sendAminoMessage,
     sendMessages,
     GammRegistry,
-    GammAminoConverters, AtomWallet, InjectiveWallet
+    GammAminoConverters,
+    SeiWallet,
+    CommonCosmosWallet
 } from '../src';
 
 describe("luna", () => {
@@ -256,6 +258,36 @@ describe("injective", () => {
             "/injective.crypto.v1beta1.ethsecp256k1.PubKey",
         )
         console.info(v)
+    });
+});
+
+describe("common_wallet", () => {
+    test("address", async () => {
+        {
+            const sei = new SeiWallet()
+            const address = await sei.getNewAddress({
+                privateKey: "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347",
+            });
+            console.info(address)
+            console.info(await sei.validAddress({address: address.address}))
+
+            console.info(await sei.getAddressByPublicKey({publicKey: "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e"}));
+        }
+
+        {
+            const hrp = "sei";
+            const sei = new CommonCosmosWallet()
+            const address = await sei.getNewAddress({
+                privateKey: "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347",
+                hrp: hrp,
+            });
+            console.info(address)
+            console.info(await sei.validAddress({address: address.address, hrp}))
+            console.info(await sei.getAddressByPublicKey({
+                publicKey: "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e",
+                hrp
+            }));
+        }
     });
 });
 
