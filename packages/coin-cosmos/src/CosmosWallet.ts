@@ -91,10 +91,11 @@ export abstract class CosmosWallet extends BaseWallet {
 
   async getNewAddress(param: NewAddressParams): Promise<any> {
     try {
+      const prefix = param.hrp || this.getPrefix()
       const privateKey = base.fromHex(param.privateKey)
       const ethSign = this.supportEthSign()
       const publicKey = private2Public(privateKey, !ethSign)
-      const address = getNewAddress(privateKey, this.getPrefix(), ethSign)
+      const address = getNewAddress(privateKey, prefix, ethSign)
       const data: NewAddressData = {
         address: address,
         publicKey: base.toHex(publicKey)
@@ -106,8 +107,9 @@ export abstract class CosmosWallet extends BaseWallet {
   }
 
   async validAddress(param: ValidAddressParams): Promise<any> {
+    const prefix = param.hrp || this.getPrefix()
     const data: ValidAddressData = {
-      isValid: validateAddress(param.address, this.getPrefix()),
+      isValid: validateAddress(param.address, prefix),
       address: param.address
     };
     return Promise.resolve(data);
@@ -187,7 +189,8 @@ export abstract class CosmosWallet extends BaseWallet {
   }
 
   getAddressByPublicKey(param: GetAddressParams): Promise<string> {
-    return Promise.resolve(addressFromPublic(param.publicKey, this.getPrefix(), this.supportEthSign()));
+    const prefix = param.hrp || this.getPrefix()
+    return Promise.resolve(addressFromPublic(param.publicKey, prefix, this.supportEthSign()));
   }
 
   async getMPCRawTransaction(param: MpcRawTransactionParam): Promise<any> {
@@ -248,6 +251,32 @@ export abstract class CosmosWallet extends BaseWallet {
     } catch (e) {
       return Promise.reject(validSignedTransactionError);
     }
+  }
+}
+
+export class CommonCosmosWallet extends CosmosWallet {
+  getPrefix(): string {
+    throw new Error("common wallet must input prefix in param")
+  }
+
+  supportEthSign(): boolean {
+    return false;
+  }
+
+  getAminoConverters(): AminoConverters | undefined {
+    return undefined;
+  }
+
+  getExtraTypes(): ReadonlyArray<[string, GeneratedType]> | undefined {
+    return undefined;
+  }
+
+  getSlip44CoinType(): number {
+    return 118;
+  }
+
+  pubKeyUrl(): string | undefined {
+    return undefined;
   }
 }
 
