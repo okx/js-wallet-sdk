@@ -7,6 +7,7 @@ export type NewAddressParams = {
   privateKey: string; // hex private key
   addressType?: string;
   version?: string;
+  hrp?: string;
 };
 
 export type NewAddressData = {
@@ -18,6 +19,7 @@ export type NewAddressData = {
 export type ValidAddressParams = {
   address: string
   addressType?: string
+  hrp?: string
 }
 
 export type ValidAddressData = {
@@ -60,6 +62,7 @@ export type GetDerivedPathParam = {
 export type GetAddressParams = {
   publicKey: string;
   addressType?: string;
+  hrp?: string;
 };
 
 export type MpcRawTransactionParam = {
