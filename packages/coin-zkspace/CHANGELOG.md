@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-zkspace:** fix getCloseAmountsByLocal method  ([]())
+- **coin-zkspace:** fix getCloseAmountsByLocal method  ([18](https://github.com/okx/js-wallet-sdk/pull/18))
