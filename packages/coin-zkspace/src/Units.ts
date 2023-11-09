@@ -5,49 +5,37 @@ const names = ['wei', 'kwei', 'mwei', 'gwei', 'szabo', 'finney', 'ether'];
 const Zero = BigNumber.from(0);
 const NegativeOne = BigNumber.from(-1);
 
-export function formatUnits(
-  value: BigNumberish,
-  unitName?: string | BigNumberish,
-): string {
-  if (typeof unitName === 'string') {
+export function formatUnits(value: BigNumberish, unitName?: string | BigNumberish): string {
+  if (typeof(unitName) === "string") {
     const index = names.indexOf(unitName);
-    if (index !== -1) {
-      unitName = 3 * index;
+    if (index !== -1) { unitName = 3 * index; }
     }
-  }
-  return formatFixed(value, unitName != null ? unitName : 18);
+  return formatFixed(value, (unitName != null) ? unitName: 18);
 }
 
 // Constant to pull zeros from for multipliers
-let zeros = '0';
+let zeros = "0";
 while (zeros.length < 256) {
   zeros += zeros;
 }
 
 // Returns a string "1" followed by decimal "0"s
 function getMultiplier(decimals: BigNumberish): string {
-  if (typeof decimals !== 'number') {
+
+  if (typeof(decimals) !== "number") {
     try {
       decimals = BigNumber.from(decimals).toNumber();
     } catch (e) {}
   }
 
-  if (
-    typeof decimals === 'number' &&
-    decimals >= 0 &&
-    decimals <= 256 &&
-    !(decimals % 1)
-  ) {
-    return '1' + zeros.substring(0, decimals);
+  if (typeof(decimals) === "number" && decimals >= 0 && decimals <= 256 && !(decimals % 1)) {
+    return ("1" + zeros.substring(0, decimals));
   }
 
-  throw new Error('invalid decimal size');
+  throw new Error("invalid decimal size");
 }
 
-export function formatFixed(
-  value: BigNumberish,
-  decimals?: string | BigNumberish,
-): string {
+export function formatFixed(value: BigNumberish, decimals?: string | BigNumberish): string {
   if (decimals == null) {
     decimals = 0;
   }
@@ -62,23 +50,20 @@ export function formatFixed(
   }
 
   let fraction = value.mod(multiplier).toString();
-  while (fraction.length < multiplier.length - 1) {
-    fraction = '0' + fraction;
-  }
+  while (fraction.length < multiplier.length - 1) { fraction = "0" + fraction; }
 
   // Strip training 0
-  fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)![1];
+  // @ts-ignore
+  fraction = fraction.match(/^([0-9]*[1-9]|0)(0*)/)[1];
 
   const whole = value.div(multiplier).toString();
   if (multiplier.length === 1) {
     value = whole;
   } else {
-    value = whole + '.' + fraction;
+    value = whole + "." + fraction;
   }
 
-  if (negative) {
-    value = '-' + value;
-  }
+  if (negative) { value = "-" + value; }
 
   return value;
 }
