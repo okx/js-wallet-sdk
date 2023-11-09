@@ -110,6 +110,13 @@ export async function zksyncChangePubkey(
   return tx;
 }
 
+function PrefixInteger(num:string, length:number) {
+  for(var len = (num + "").length; len < length; len = num.length) {
+    num = "0" + num;
+  }
+  return num;
+}
+
 // transfer
 export async function zksyncTransfer(
   l1PrivateKey: string,
@@ -167,7 +174,7 @@ Nonce: ${nonce}`;
   const fromBytes = base.fromHex(from);
   const toBytes = base.fromHex(to);
   const tokenIdBytes = base.fromHex(numberToBytes(tokenId, 4));
-  const amountbytes = base.fromHex(packedAmount.toHexString());
+  const amountbytes = base.fromHex(PrefixInteger(packedAmount.toHexString().replace('0x', ''),10));
   const feeBytes = base.fromHex(packedFee.toHexString());
   const nonceBytes = base.fromHex(numberToBytes(nonce, 4));
   const validFromBytes = base.fromHex(numberToBytes(0, 8));

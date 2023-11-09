@@ -11,16 +11,16 @@ import {
 export class ZksyncWallet extends EthWallet {
   async signTransaction(param: SignTxParams): Promise<any> {
     try {
-      let result: any;
-      const data: ZksyncSignParam = param.data;
-      const fees_number = parseInt(data.fees);
+      let result;
+      const data: ZksyncSignParam = param.data
+      const fees_number=parseInt(data.fees)
       const closeFees_number = getCloseFeeBylocal(data.fees);
       if (closeFees_number != fees_number) {
         let rejectParam = {
           code: '402',
           reason: 'Fee is not packable',
-          closeFees_number: closeFees_number,
-        };
+          closeFees_number:closeFees_number
+        }
         return Promise.resolve(rejectParam);
       }
       if (data.type === 'transfer') {
@@ -79,6 +79,7 @@ export class ZksyncWallet extends EthWallet {
         return Promise.reject(SignTxError);
       }
 
+      // @ts-ignore
       return Promise.resolve(result);
     } catch (e) {
       return Promise.reject(SignTxError);
@@ -106,9 +107,10 @@ export type ZksyncSignParam = {
   nonce: number;
 };
 
+// @ts-ignore
 function getCloseAmountsByLocal(amounts: string) {
-  const originAmounts = parseInt(amounts);
-  const hexString = closestPackableTransactionAmount(amounts);
+  const originAmounts=parseInt(amounts)
+  const hexString=closestPackableTransactionAmount(amounts)
   // @ts-ignore
   const closeAmounts = parseInt(hexString, 10);
   if (closeAmounts > originAmounts) {
@@ -118,8 +120,8 @@ function getCloseAmountsByLocal(amounts: string) {
 }
 
 function getCloseFeeBylocal(fees: string) {
-  const originFee = parseInt(fees);
-  const hexString = closestPackableTransactionFee(fees);
+  const originFee=parseInt(fees)
+  const hexString=closestPackableTransactionFee(fees)
   // @ts-ignore
   const closeFee = parseInt(hexString, 10);
   if (closeFee > originFee) {
