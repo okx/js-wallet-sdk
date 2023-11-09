@@ -109,7 +109,8 @@ export type ZksyncSignParam = {
 function getCloseAmountsByLocal(amounts: string) {
   const originAmounts = parseInt(amounts);
   const hexString = closestPackableTransactionAmount(amounts);
-  const closeAmounts = parseInt(hexString.toHexString(), 10);
+  // @ts-ignore
+  const closeAmounts = parseInt(hexString, 10);
   if (closeAmounts > originAmounts) {
     throw new Error('closeAmounts great than origin');
   }
@@ -119,7 +120,8 @@ function getCloseAmountsByLocal(amounts: string) {
 function getCloseFeeBylocal(fees: string) {
   const originFee = parseInt(fees);
   const hexString = closestPackableTransactionFee(fees);
-  const closeFee = parseInt(hexString.toHexString(), 10);
+  // @ts-ignore
+  const closeFee = parseInt(hexString, 10);
   if (closeFee > originFee) {
     throw new Error('closeFee great than origin');
   }
