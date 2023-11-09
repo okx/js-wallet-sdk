@@ -6,29 +6,17 @@ import * as zkspace from './index';
 export class ZkspaceWallet extends EthWallet {
   async signTransaction(param: SignTxParams): Promise<any> {
     try {
-      let result: any;
-      const data: ZkspaceSignParam = param.data;
-      if (data.type === 'transfer') {
+      let result;
+      const data: ZkspaceSignParam = param.data
+      if (data.type === "transfer") {
         if (data.from == null || data.to == null) {
           return Promise.reject(SignTxError);
         }
-        result = zkspace.transfer(
-          param.privateKey,
-          data.from,
-          data.nonce,
-          data.accountId,
-          data.chainId,
-          data.to,
-          data.tokenId,
-          data.tokenSymbol,
-          data.decimals,
-          data.feeTokenId,
-          data.feeTokenSymbol,
-          data.feeDecimals,
-          data.amounts,
-          data.fee,
-        );
-      } else if (data.type === 'changePubkey') {
+        result= zkspace.transfer(param.privateKey,data.from,data.nonce,data.accountId,data.chainId
+          ,data.to,data.tokenId,data.tokenSymbol,data.decimals,data.feeTokenId,data.feeTokenSymbol,
+          data.feeDecimals,data.amounts,data.fee);
+
+      } else if (data.type === "changePubkey") {
         if (data.from == null || data.nonce == null || data.accountId == null) {
           return Promise.reject(SignTxError);
         }
@@ -42,6 +30,7 @@ export class ZkspaceWallet extends EthWallet {
         return Promise.reject(SignTxError);
       }
 
+      // @ts-ignore
       return Promise.resolve(result);
     } catch (e) {
       return Promise.reject(SignTxError);

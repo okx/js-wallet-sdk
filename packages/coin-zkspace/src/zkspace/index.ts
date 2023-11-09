@@ -114,6 +114,7 @@ export async function transfer(
   const seed = base.fromHex(signature_pri);
   const l2PrivateKey = zksync.privateKeyFromSeed(seed);
 
+  // @ts-ignore
   const amount = BigNumber.from(amounts); //BigNumber.from(amounts).mul(BigNumber.from(10).pow(decimals));
   const packedAmount = packAmount(amount, 35, 5, 10);
   const closestAmount = unpackAmount(packedAmount, 35, 5);
