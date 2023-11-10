@@ -210,7 +210,7 @@ Nonce: ${nonce}`;
         signature: pubKey_signature,
       },
       to: to,
-      token: 0,
+      token: tokenId,
       type: 'Transfer',
       validFrom: 0,
       validUntil: 4294967295,
