@@ -84,6 +84,7 @@ export const CoinCurveMap = new Map<Currency, string>([
     [Currency.INJ, secp256k1],
     [Currency.Celestia, secp256k1],
     [Currency.DYDX, secp256k1],
+    [Currency.Kaspa, secp256k1],
 
 
     // [Currency.ZKSPACE, secp256k1],
@@ -93,4 +94,5 @@ export const CoinCurveMap = new Map<Currency, string>([
     [Currency.SOL, ed25519],
     [Currency.APTOS, ed25519],
     [Currency.SUI, ed25519],
+    [Currency.ADA, ed25519],
 ]);
