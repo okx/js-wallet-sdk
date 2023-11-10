@@ -39,6 +39,7 @@ export enum Currency {
     INJ = 2892,
     Celestia = 2854,
     DYDX = 2897,
+    Kaspa = 111111,
 }
 
 export enum segwitType {
