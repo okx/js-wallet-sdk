@@ -5,13 +5,13 @@ All notable changes to this project will be documented in this file.
 
 # [1.0.1](https://github.com/okx/js-wallet-sdk) (2023-10-31)
 
-### Bug Fixes
+### Feature
 
 - **coin-base:** support ADA ([14dd4b](https://github.com/okx/js-wallet-sdk/commit/14dd4b171355dfba8a401db769425c200172e900))
 
 # [1.0.2](https://github.com/okx/js-wallet-sdk) (2023-10-31)
 
-### Bug Fixes
+### Feature
 
 - **coin-base:** support INJ、Celestia、DYDX ([13](https://github.com/okx/js-wallet-sdk/pull/13))
 
@@ -20,3 +20,9 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - **coin-base:** add hrp to address param ([17](https://github.com/okx/js-wallet-sdk/pull/17))
+
+# [1.0.4](https://github.com/okx/js-wallet-sdk) (2023-11-10)
+
+### Feature
+
+- **coin-base:** support Kaspa validate address ([22](https://github.com/okx/js-wallet-sdk/pull/22))
