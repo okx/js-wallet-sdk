@@ -186,6 +186,33 @@ export interface SignDocMessage {
     accountNumber: string;
 }
 
+export async function SignWithSignDocForINJ(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
+    const m: SignDocMessage = JSON.parse(message)
+    const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
+    if (!privateKey) {
+        const signDocBytes = makeSignBytes(signDoc);
+        const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const publicKey = private2Public(privateKey, true)
+    const signDocBytes = makeSignBytes(signDoc);
+    const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+    const { signature } = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
+}
+
+export async function signWithStdSignDocForINJ(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
+    const m: amino.StdSignDoc = JSON.parse(message)
+    const signDocBytes = amino.serializeSignDoc(m)
+    const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+    if (!privateKey) {
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const { signature } = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    const publicKey = private2Public(privateKey, true)
+    return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
+}
+
 export async function SignWithSignDoc(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
     const m: SignDocMessage = JSON.parse(message)
     const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
