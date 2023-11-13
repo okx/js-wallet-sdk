@@ -1,18 +1,20 @@
-import { base} from '@okxweb3/crypto-lib';
+import {base} from '@okxweb3/crypto-lib';
 import {
-    getNewAddress,
-    validateAddress,
-    sendToken,
     amount2Coin,
-    amount2StdFee,
     amount2Coins,
-    sendIBCToken,
-    sendAminoMessage,
-    sendMessages,
-    GammRegistry,
+    amount2StdFee,
+    CommonCosmosWallet,
     GammAminoConverters,
+    GammRegistry,
+    getNewAddress,
+    InjectiveWallet,
     SeiWallet,
-    CommonCosmosWallet
+    sendAminoMessage,
+    sendIBCToken,
+    sendMessages,
+    sendToken,
+    SignMessageData,
+    validateAddress
 } from '../src';
 
 describe("luna", () => {
@@ -257,6 +259,62 @@ describe("injective", () => {
             undefined,
             "/injective.crypto.v1beta1.ethsecp256k1.PubKey",
         )
+        console.info(v)
+    });
+
+    test("injective-signmessage", async () => {
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const wallet = new InjectiveWallet()
+        const message = "{\n" +
+            "    \"accountNumber\": \"6666\",\n" +
+            "    \"chainId\": \"injective-1\",\n" +
+            "    \"body\": \"0a00\",\n" +
+            "    \"authInfo\": \"0a0912040a02087f188a3412110a0f0a03696e6a12083433393939393939\"\n" +
+            "}";
+        const data: SignMessageData = {type: "signDoc", data: message}
+        const v = await wallet.signMessage({privateKey, data})
+        console.info(v)
+    });
+
+    test("injective-signmessage-2", async () => {
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const wallet = new InjectiveWallet()
+        const message = "{\n" +
+            "    \"account_number\": \"833360\",\n" +
+            "    \"chain_id\": \"injective-1\",\n" +
+            "    \"fee\": {\n" +
+            "        \"amount\": [\n" +
+            "            {\n" +
+            "                \"amount\": \"100000000000000000\",\n" +
+            "                \"denom\": \"inj\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"gas\": \"174651\"\n" +
+            "    },\n" +
+            "    \"memo\": \"\",\n" +
+            "    \"msgs\": [\n" +
+            "        {\n" +
+            "            \"type\": \"sei/poolmanager/swap-exact-amount-in\",\n" +
+            "            \"value\": {\n" +
+            "                \"routes\": [\n" +
+            "                    {\n" +
+            "                        \"pool_id\": \"1\",\n" +
+            "                        \"token_out_denom\": \"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2\"\n" +
+            "                    }\n" +
+            "                ],\n" +
+            "                \"sender\": \"inj1ywqe8057srngat8rtz95tkx0ffl2urarkegcc8\",\n" +
+            "                \"token_in\": {\n" +
+            "                    \"amount\": \"10000\",\n" +
+            "                    \"denom\": \"inj\"\n" +
+            "                },\n" +
+            "                \"token_out_min_amount\": \"545\"\n" +
+            "            }\n" +
+            "        }\n" +
+            "    ],\n" +
+            "    \"sequence\": \"20\"\n" +
+            "}";
+        const data: SignMessageData = {type: "amino", data: message}
+        const v = await wallet.signMessage({privateKey, data})
         console.info(v)
     });
 });

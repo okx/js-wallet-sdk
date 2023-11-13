@@ -42,7 +42,9 @@ import {
   getMPCTransaction,
   validSignedTransaction,
   getMPCSignedMessage,
-} from './index';
+  signWithStdSignDocForINJ,
+  SignWithSignDocForINJ,
+} from './';
 
 export interface CosmosTransferParam {
   fromAddress: string
@@ -668,6 +670,26 @@ export class InjectiveWallet extends CosmosWallet {
 
   pubKeyUrl(): string | undefined {
     return "/injective.crypto.v1beta1.ethsecp256k1.PubKey";
+  }
+
+  async signMessage(param: SignTxParams): Promise<string> {
+    try {
+      const ethSign = this.supportEthSign()
+      let privateKey;
+      if (param.privateKey) {
+        privateKey = base.fromHex(param.privateKey);
+      }
+      const message = param.data as SignMessageData
+      if (message.type == "amino") {
+        const result = await signWithStdSignDocForINJ(privateKey as Buffer, message.data, ethSign)
+        return Promise.resolve(result);
+      } else {
+        const result = await SignWithSignDocForINJ(privateKey as Buffer, message.data, ethSign)
+        return Promise.resolve(result);
+      }
+    } catch (e) {
+      return Promise.reject(SignMsgError);
+    }
   }
 }
 
