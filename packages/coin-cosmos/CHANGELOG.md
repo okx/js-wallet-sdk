@@ -18,4 +18,8 @@ All notable changes to this project will be documented in this file.
 
 - **coin-cosmos:** add cosmos common wallet ([17](https://github.com/okx/js-wallet-sdk/pull/17))
 
+# [1.0.4](https://github.com/okx/js-wallet-sdk) (2023-11-13)
+
+- **coin-cosmos:** fix injective wallet sign message bug ([17](https://github.com/okx/js-wallet-sdk/pull/17))
+
 
