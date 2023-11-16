@@ -1,2 +1,2 @@
 export * from "./misc";
-export * from "./memoize-decorator";
+export * from "./memoize_decorator";
