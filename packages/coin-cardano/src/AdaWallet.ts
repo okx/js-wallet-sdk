@@ -18,7 +18,7 @@ import {
 } from "@okxweb3/coin-base";
 import { base } from "@okxweb3/crypto-lib";
 import { getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey } from "./account";
-import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee } from "./transaction";
+import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData } from "./transaction";
 
 export class AdaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -74,6 +74,9 @@ export class AdaWallet extends BaseWallet {
     async signTransaction(param: SignTxParams): Promise<any> {
         try {
             const data: TxData = param.data;
+            if (data.type === "rawTx") {
+                return signTx(data.tx!, data.privateKey || param.privateKey)
+            }
             return transfer(data);
         } catch (e) {
             return Promise.reject(SignTxError);
@@ -100,6 +103,14 @@ export class AdaWallet extends BaseWallet {
         try {
             const data: TxData = param.data;
             return minFee(data);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async signMessage(param: SignTxParams): Promise<any> {
+        try {
+            return signData(param.data.address, param.data.message, param.data.privateKey || param.privateKey);
         } catch (e) {
             return Promise.reject(SignTxError);
         }

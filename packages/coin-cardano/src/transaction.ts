@@ -26,6 +26,9 @@ export type TxData = {
     changeAddress: string
     fee?: string
     ttl?: string
+    type?: string
+    tx?: string
+    privateKey?: string
 };
 
 export async function transfer(txData: TxData) {
@@ -187,3 +190,153 @@ export async function minFee(txData: TxData) {
 
     return txBuilder.min_fee().to_str();
 }
+
+export const signData = async (
+  address: string,
+  payload: string,
+  privateKey: string,
+) => {
+    await Loader.load();
+    // @ts-ignore
+    const { PrivateKey } = Loader.Cardano;
+    // @ts-ignore
+    const { HeaderMap, Label, AlgorithmId, CBORValue, ProtectedHeaderMap, Headers, COSESign1Builder, COSEKey, KeyType, Int, BigNum } = Loader.Message;
+
+    const keyHash = await extractKeyHash(address);
+    const prefix = keyHash.startsWith('addr_vkh') ? 'addr_vkh' : 'stake_vkh';
+    const paymentKey = PrivateKey.from_extended_bytes(base.fromHex(privateKey.slice(0, 128)));
+    const stakeKey = PrivateKey.from_extended_bytes(base.fromHex(privateKey.slice(128)));
+    const accountKey = prefix === 'addr_vkh' ? paymentKey : stakeKey;
+
+    const publicKey = accountKey.to_public();
+    if (keyHash !== publicKey.hash().to_bech32(prefix))
+        throw new Error("Private key does not match address");
+    const protectedHeaders = HeaderMap.new();
+    protectedHeaders.set_algorithm_id(
+      Label.from_algorithm_id(AlgorithmId.EdDSA)
+    );
+    protectedHeaders.set_header(
+      Label.new_text('address'),
+      CBORValue.new_bytes((await addressFromHexOrBech32(address)).to_bytes())
+    );
+    const protectedSerialized =
+      ProtectedHeaderMap.new(protectedHeaders);
+    const unprotectedHeaders = HeaderMap.new();
+    const headers = Headers.new(
+      protectedSerialized,
+      unprotectedHeaders
+    );
+    const builder = COSESign1Builder.new(
+      headers,
+      base.fromHex(payload),
+      false
+    );
+    const toSign = builder.make_data_to_sign().to_bytes();
+
+    const signedSigStruc = accountKey.sign(toSign).to_bytes();
+    const coseSign1 = builder.build(signedSigStruc);
+
+    const key = COSEKey.new(
+      Label.from_key_type(KeyType.OKP)
+    );
+    key.set_algorithm_id(
+      Label.from_algorithm_id(AlgorithmId.EdDSA)
+    );
+    key.set_header(
+      Label.new_int(
+        Int.new_negative(BigNum.from_str('1'))
+      ),
+      CBORValue.new_int(
+        Int.new_i32(6) // Loader.Message.CurveType.Ed25519
+      )
+    ); // crv (-1) set to Ed25519 (6)
+    key.set_header(
+      Label.new_int(
+        Int.new_negative(BigNum.from_str('2'))
+      ),
+      CBORValue.new_bytes(publicKey.as_bytes())
+    ); // x (-2) set to public key
+
+    return {
+        signature: base.toHex(coseSign1.to_bytes()),
+        key: base.toHex(key.to_bytes()),
+    };
+};
+
+export const signTx = async (
+  tx: string,
+  privateKey: string,
+  partialSign: boolean = false,
+) => {
+    await Loader.load();
+    // @ts-ignore
+    const { PrivateKey } = Loader.Cardano;
+    // @ts-ignore
+    const { Transaction, TransactionWitnessSet, Vkeywitnesses, hash_transaction, make_vkey_witness } = Loader.Cardano;
+
+    const paymentKey = PrivateKey.from_extended_bytes(base.fromHex(privateKey.slice(0, 128)));
+    const stakeKey = PrivateKey.from_extended_bytes(base.fromHex(privateKey.slice(128)));
+    const paymentKeyHash = base.toHex(paymentKey.to_public().hash().to_bytes());
+    const stakeKeyHash = base.toHex(stakeKey.to_public().hash().to_bytes());
+
+    const rawTx = Transaction.from_bytes(base.fromHex(tx));
+
+    const txWitnessSet = TransactionWitnessSet.new();
+    const vkeyWitnesses = Vkeywitnesses.new();
+    const txHash = hash_transaction(rawTx.body());
+    const keyHashes = [paymentKeyHash];
+    keyHashes.forEach((keyHash) => {
+        let signingKey;
+        if (keyHash === paymentKeyHash) signingKey = paymentKey;
+        else if (keyHash === stakeKeyHash) signingKey = stakeKey;
+        else if (!partialSign) throw new Error("Could not sign the data");
+        else return;
+        const vkey = make_vkey_witness(txHash, signingKey);
+        vkeyWitnesses.add(vkey);
+    });
+
+    txWitnessSet.set_vkeys(vkeyWitnesses);
+    return base.toHex(txWitnessSet.to_bytes());
+};
+
+const addressFromHexOrBech32 = async (address: string) => {
+    await Loader.load();
+    // @ts-ignore
+    const { Address } = Loader.Cardano;
+
+    try {
+        return Address.from_bytes(base.fromHex(address));
+    } catch (e) {
+        try {
+            return Address.from_bech32(address);
+        } catch (e) {
+            throw new Error("Could not deserialize address.");
+        }
+    }
+}
+
+const extractKeyHash = async (address: string) => {
+    await Loader.load();
+    // @ts-ignore
+    const { BaseAddress, EnterpriseAddress, PointerAddress, RewardAddress } = Loader.Cardano;
+
+
+    const parsedAddress = await addressFromHexOrBech32(address);
+    try {
+        const baseAddress = BaseAddress.from_address(parsedAddress);
+        return baseAddress.payment_cred().to_keyhash().to_bech32('addr_vkh');
+    } catch (e) {}
+    try {
+        const enterpriseAddress = EnterpriseAddress.from_address(parsedAddress);
+        return enterpriseAddress.payment_cred().to_keyhash().to_bech32('addr_vkh');
+    } catch (e) {}
+    try {
+        const pointerAddress = PointerAddress.from_address(parsedAddress);
+        return pointerAddress.payment_cred().to_keyhash().to_bech32('addr_vkh');
+    } catch (e) {}
+    try {
+        const rewardAddress = RewardAddress.from_address(parsedAddress);
+        return rewardAddress.payment_cred().to_keyhash().to_bech32('stake_vkh');
+    } catch (e) {}
+    throw new Error("Address not pk");
+};
