@@ -41,7 +41,7 @@ export class ArgumentABI {
     this.type_tag.serialize(serializer);
   }
 
-  static deserialize(deserializer: Deserializer): TypeArgumentABI {
+  static deserialize(deserializer: Deserializer): ArgumentABI {
     const name = deserializer.deserializeStr();
     const typeTag = TypeTag.deserialize(deserializer);
     return new ArgumentABI(name, typeTag);
@@ -74,11 +74,11 @@ export class TransactionScriptABI extends ScriptABI {
    * @param args
    */
   constructor(
-    public readonly name: string,
-    public readonly doc: string,
-    public readonly code: Bytes,
-    public readonly ty_args: Seq<TypeArgumentABI>,
-    public readonly args: Seq<ArgumentABI>,
+      public readonly name: string,
+      public readonly doc: string,
+      public readonly code: Bytes,
+      public readonly ty_args: Seq<TypeArgumentABI>,
+      public readonly args: Seq<ArgumentABI>,
   ) {
     super();
   }
@@ -112,11 +112,11 @@ export class EntryFunctionABI extends ScriptABI {
    * @param args
    */
   constructor(
-    public readonly name: string,
-    public readonly module_name: ModuleId,
-    public readonly doc: string,
-    public readonly ty_args: Seq<TypeArgumentABI>,
-    public readonly args: Seq<ArgumentABI>,
+      public readonly name: string,
+      public readonly module_name: ModuleId,
+      public readonly doc: string,
+      public readonly ty_args: Seq<TypeArgumentABI>,
+      public readonly args: Seq<ArgumentABI>,
   ) {
     super();
   }

@@ -1,9 +1,17 @@
 import { HexString, MaybeHexString } from "./hex_string";
 import { MoveTypes } from "./transaction_builder";
-import { base, signUtil } from '@okxweb3/crypto-lib';
-
+import nacl from "tweetnacl";
+import * as bip39 from "@scure/bip39";
+import { bytesToHex } from "@noble/hashes/utils";
+import { sha256 } from "@noble/hashes/sha256";
+import { sha3_256 as sha3Hash } from "@noble/hashes/sha3";
+import { derivePath } from "./utils/hd-key";
+import {  Memoize } from "./utils";
+import {AccountAddress, AuthenticationKey, Ed25519PublicKey} from "./transaction_builder/aptos_types";
+import {bcsToBytes} from "./transaction_builder/bcs";
+import {TextEncoder} from "util";
 export interface AptosAccountObject {
-  address?: string;
+  address?: MoveTypes.HexEncodedBytes;
   publicKeyHex?: MoveTypes.HexEncodedBytes;
   privateKeyHex: MoveTypes.HexEncodedBytes;
 }
@@ -15,17 +23,49 @@ export class AptosAccount {
   /**
    * A private key and public key, associated with the given account
    */
-  private readonly publicKey: Uint8Array
-  private readonly privateKey: Uint8Array
+  readonly signingKey: nacl.SignKeyPair;
 
   /**
    * Address associated with the given account
    */
   private readonly accountAddress: HexString;
 
-  // Generate an account from the private key
+  static fromAptosAccountObject(obj: AptosAccountObject): AptosAccount {
+    return new AptosAccount(HexString.ensure(obj.privateKeyHex).toUint8Array(), obj.address);
+  }
+
   static fromPrivateKey(privateKey: HexString): AptosAccount {
     return new AptosAccount(privateKey.toUint8Array());
+  }
+
+  /**
+   * Check's if the derive path is valid
+   */
+  static isValidPath(path: string): boolean {
+    return /^m\/44'\/637'\/[0-9]+'\/[0-9]+'\/[0-9]+'+$/.test(path);
+  }
+
+  /**
+   * Creates new account with bip44 path and mnemonics,
+   * @param path. (e.g. m/44'/637'/0'/0'/0')
+   * Detailed description: {@link https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki}
+   * @param mnemonics.
+   * @returns AptosAccount
+   */
+  static fromDerivePath(path: string, mnemonics: string): AptosAccount {
+    if (!AptosAccount.isValidPath(path)) {
+      throw new Error("Invalid derivation path");
+    }
+
+    const normalizeMnemonics = mnemonics
+        .trim()
+        .split(/\s+/)
+        .map((part) => part.toLowerCase())
+        .join(" ");
+
+    const { key } = derivePath(path, bytesToHex(bip39.mnemonicToSeedSync(normalizeMnemonics)));
+
+    return new AptosAccount(key);
   }
 
   /**
@@ -33,12 +73,16 @@ export class AptosAccount {
    * to handle account key rotation, where auth_key != public_key
    * @param privateKeyBytes  Private key from which account key pair will be generated.
    * If not specified, new key pair is going to be created.
+   * @param address Account address (e.g. 0xe8012714cd17606cee7188a2a365eef3fe760be598750678c8c5954eb548a591).
    * If not specified, a new one will be generated from public key
    */
-  constructor(privateKeyBytes: Uint8Array) {
-    this.privateKey = privateKeyBytes
-    this.publicKey = signUtil.ed25519.publicKeyCreate(privateKeyBytes)
-    this.accountAddress = HexString.ensure(this.authKey().hex());
+  constructor(privateKeyBytes?: Uint8Array | undefined, address?: MaybeHexString) {
+    if (privateKeyBytes) {
+      this.signingKey = nacl.sign.keyPair.fromSeed(privateKeyBytes.slice(0, 32));
+    } else {
+      this.signingKey = nacl.sign.keyPair();
+    }
+    this.accountAddress = HexString.ensure(address || this.authKey().hex());
   }
 
   /**
@@ -54,14 +98,46 @@ export class AptosAccount {
   /**
    * This key enables account owners to rotate their private key(s)
    * associated with the account without changing the address that hosts their account.
-   * See here for more info: {@link https://aptos.dev/basics/basics-accounts#single-signer-authentication}
+   * See here for more info: {@link https://aptos.dev/concepts/accounts#single-signer-authentication}
    * @returns Authentication key for the associated account
    */
+  @Memoize()
   authKey(): HexString {
-      const hash = base.sha3_256.create();
-      hash.update(Buffer.from(this.publicKey));
-      hash.update("\x00");
-      return new HexString(base.toHex(hash.digest()))
+    const pubKey = new Ed25519PublicKey(this.signingKey.publicKey);
+    const authKey = AuthenticationKey.fromEd25519PublicKey(pubKey);
+    return authKey.derivedAddress();
+  }
+
+  /**
+   * Takes source address and seeds and returns the resource account address
+   * @param sourceAddress Address used to derive the resource account
+   * @param seed The seed bytes
+   * @returns The resource account address
+   */
+  static getResourceAccountAddress(sourceAddress: MaybeHexString, seed: Uint8Array): HexString {
+    const source = bcsToBytes(AccountAddress.fromHex(sourceAddress));
+
+    const bytes = new Uint8Array([...source, ...seed, AuthenticationKey.DERIVE_RESOURCE_ACCOUNT_SCHEME]);
+
+    const hash = sha3Hash.create();
+    hash.update(bytes);
+
+    return HexString.fromUint8Array(hash.digest());
+  }
+
+  /**
+   * Takes creator address and collection name and returns the collection id hash.
+   * Collection id hash are generated as sha256 hash of (`creator_address::collection_name`)
+   *
+   * @param creatorAddress Collection creator address
+   * @param collectionName The collection name
+   * @returns The collection id hash
+   */
+  static getCollectionID(creatorAddress: MaybeHexString, collectionName: string): HexString {
+    const seed = new TextEncoder().encode(`${creatorAddress}::${collectionName}`);
+    const hash = sha256.create();
+    hash.update(seed);
+    return HexString.fromUint8Array(hash.digest());
   }
 
   /**
@@ -70,7 +146,7 @@ export class AptosAccount {
    * @returns The public key for the associated account
    */
   pubKey(): HexString {
-    return HexString.ensure(base.toHex(this.publicKey));
+    return HexString.fromUint8Array(this.signingKey.publicKey);
   }
 
   /**
@@ -78,9 +154,9 @@ export class AptosAccount {
    * @param buffer A buffer to sign
    * @returns A signature HexString
    */
-  signBuffer(buffer: Buffer): HexString {
-    const signature = signUtil.ed25519.sign(buffer, this.privateKey);
-    return HexString.ensure(base.toHex(signature).slice(0, 128));
+  signBuffer(buffer: Uint8Array): HexString {
+    const signature = nacl.sign.detached(buffer, this.signingKey.secretKey);
+    return HexString.fromUint8Array(signature);
   }
 
   /**
@@ -89,8 +165,19 @@ export class AptosAccount {
    * @returns A signature HexString
    */
   signHexString(hexString: MaybeHexString): HexString {
-    const toSign = HexString.ensure(hexString).toBuffer();
+    const toSign = HexString.ensure(hexString).toUint8Array();
     return this.signBuffer(toSign);
+  }
+
+  /**
+   * Verifies the signature of the message with the public key of the account
+   * @param message a signed message
+   * @param signature the signature of the message
+   */
+  verifySignature(message: MaybeHexString, signature: MaybeHexString): boolean {
+    const rawMessage = HexString.ensure(message).toUint8Array();
+    const rawSignature = HexString.ensure(signature).toUint8Array();
+    return nacl.sign.detached.verify(rawMessage, rawSignature, this.signingKey.publicKey);
   }
 
   /**
@@ -110,7 +197,12 @@ export class AptosAccount {
     return {
       address: this.address().hex(),
       publicKeyHex: this.pubKey().hex(),
-      privateKeyHex: HexString.fromUint8Array(this.privateKey.slice(0, 32)).hex(),
+      privateKeyHex: HexString.fromUint8Array(this.signingKey.secretKey.slice(0, 32)).hex(),
     };
   }
+}
+
+// Returns an account address as a HexString given either an AptosAccount or a MaybeHexString.
+export function getAddressFromAccountOrAddress(accountOrAddress: AptosAccount | MaybeHexString): HexString {
+  return accountOrAddress instanceof AptosAccount ? accountOrAddress.address() : HexString.ensure(accountOrAddress);
 }

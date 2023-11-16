@@ -7,7 +7,14 @@
  * */
 
 /* eslint-disable no-bitwise */
-import { MAX_U128_BIG_INT, MAX_U16_NUMBER, MAX_U32_NUMBER, MAX_U64_BIG_INT, MAX_U8_NUMBER } from "./consts";
+import {
+  MAX_U128_BIG_INT,
+  MAX_U16_NUMBER,
+  MAX_U256_BIG_INT,
+  MAX_U32_NUMBER,
+  MAX_U64_BIG_INT,
+  MAX_U8_NUMBER
+} from "./consts";
 import { AnyNumber, Bytes, Uint16, Uint32, Uint8 } from "./types";
 declare const TextEncoder: any;
 
@@ -36,9 +43,9 @@ export class Serializer {
   }
 
   private serializeWithFunction(
-    fn: (byteOffset: number, value: number, littleEndian?: boolean) => void,
-    bytesLength: number,
-    value: number,
+      fn: (byteOffset: number, value: number, littleEndian?: boolean) => void,
+      bytesLength: number,
+      value: number,
   ) {
     this.ensureBufferWillHandleSize(bytesLength);
     const dv = new DataView(this.buffer, this.offset);
@@ -152,7 +159,7 @@ export class Serializer {
    * assert(serializer.getBytes() === new Uint8Array([0x00, 0xEF, 0xCD, 0xAB, 0x78, 0x56, 0x34, 0x12]));
    * ```
    */
-  @checkNumberRange(0n, MAX_U64_BIG_INT)
+  @checkNumberRange(BigInt(0), MAX_U64_BIG_INT)
   serializeU64(value: AnyNumber): void {
     const low = BigInt(value.toString()) & BigInt(MAX_U32_NUMBER);
     const high = BigInt(value.toString()) >> BigInt(32);
@@ -167,7 +174,7 @@ export class Serializer {
    *
    * BCS layout for "uint128": Sixteen bytes. Binary format in little-endian representation.
    */
-  @checkNumberRange(0n, MAX_U128_BIG_INT)
+  @checkNumberRange(BigInt(0), MAX_U128_BIG_INT)
   serializeU128(value: AnyNumber): void {
     const low = BigInt(value.toString()) & MAX_U64_BIG_INT;
     const high = BigInt(value.toString()) >> BigInt(64);
@@ -175,6 +182,21 @@ export class Serializer {
     // write little endian number
     this.serializeU64(low);
     this.serializeU64(high);
+  }
+
+  /**
+   * Serializes a uint256 number.
+   *
+   * BCS layout for "uint256": Sixteen bytes. Binary format in little-endian representation.
+   */
+  @checkNumberRange(BigInt(0), MAX_U256_BIG_INT)
+  serializeU256(value: AnyNumber): void {
+    const low = BigInt(value.toString()) & MAX_U128_BIG_INT;
+    const high = BigInt(value.toString()) >> BigInt(128);
+
+    // write little endian number
+    this.serializeU128(low);
+    this.serializeU128(high);
   }
 
   /**
