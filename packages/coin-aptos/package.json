@@ -34,6 +34,7 @@
   "dependencies": {
     "@okxweb3/coin-base": "^1.0.0",
     "@okxweb3/crypto-lib": "^1.0.0",
+    "@scure/bip39": "^1.2.1",
     "tweetnacl": "^1.0.3"
   }
 }

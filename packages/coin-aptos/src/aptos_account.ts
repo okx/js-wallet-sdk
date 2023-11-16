@@ -5,7 +5,7 @@ import * as bip39 from "@scure/bip39";
 import { bytesToHex } from "@noble/hashes/utils";
 import { sha256 } from "@noble/hashes/sha256";
 import { sha3_256 as sha3Hash } from "@noble/hashes/sha3";
-import { derivePath } from "./utils/hd-key";
+import { derivePath } from "./utils/hd_key";
 import {  Memoize } from "./utils";
 import {AccountAddress, AuthenticationKey, Ed25519PublicKey} from "./transaction_builder/aptos_types";
 import {bcsToBytes} from "./transaction_builder/bcs";
