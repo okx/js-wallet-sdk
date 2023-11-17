@@ -6,7 +6,7 @@ import {
     SignTxParams,
     NotImplementedError,
 } from "@okxweb3/coin-base";
-import { Address } from "@kaspa/core-lib";
+import { validateAddress } from "./address";
 
 export class KaspaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -18,8 +18,7 @@ export class KaspaWallet extends BaseWallet {
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {
-        // @ts-ignore
-        return Promise.resolve(Address.isValid(param.address, "kaspa"));
+        return Promise.resolve(validateAddress(param.address));
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
