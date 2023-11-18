@@ -2,18 +2,22 @@ import { HexString, MaybeHexString } from './hex_string';
 import { AptosAccount } from './aptos_account';
 
 import {
-  TxnBuilderTypes,
-  TransactionBuilderEd25519,
-  BCS, buildRawTransactionByABI, ABIBuilderConfig, TransactionBuilder,
+    TxnBuilderTypes,
+    TransactionBuilderEd25519,
+    BCS, buildRawTransactionByABI, ABIBuilderConfig, TransactionBuilder, fetchABI, TransactionBuilderABI,
 } from './transaction_builder';
 import {
-  SignedTransaction,
-  TransactionAuthenticatorEd25519,
-  TransactionPayload,
+    AccountAddress,
+    ModuleId,
+    RawTransaction,
+    SignedTransaction, StructTag,
+    TransactionAuthenticatorEd25519,
+    TransactionPayload, TypeTag, TypeTagParser,
 } from './transaction_builder/aptos_types';
-import { AnyNumber, Deserializer, Uint64, Uint8 } from './transaction_builder/bcs';
-import { MoveModuleBytecode } from './transaction_builder/move_types';
+import {AnyNumber, bcsToBytes, Deserializer, Uint64, Uint8} from './transaction_builder/bcs';
+import {EntryFunctionId, MoveModuleBytecode, MoveType} from './transaction_builder/move_types';
 import { base, signUtil } from '@okxweb3/crypto-lib';
+import {ArgumentABI, EntryFunctionABI, TypeArgumentABI} from "./transaction_builder/aptos_types/abi";
 declare const TextEncoder: any;
 
 /**
@@ -75,10 +79,10 @@ export function simulateTransaction(account: AptosAccount,
 }
 
 
-// Move modules must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
+// Move models must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
 export function transferPayload(recipientAddress: string | HexString, amount: AnyNumber) {
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       '0x1::aptos_account',
       'transfer',
       [],
@@ -94,7 +98,7 @@ export function registerCoin(tyArg: string) {
   );
 
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural("0x1::managed_coin", "register", [token], []),
+    TxnBuilderTypes.EntryFunction.natural("0x1::managed_coin", "register", [token], []),
   );
 }
 
@@ -105,7 +109,7 @@ export function mintCoin(tyArg: string, receiverAddress: string, amount: AnyNumb
   );
 
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x1::managed_coin",
       "mint",
       [token],
@@ -120,7 +124,7 @@ export function burnCoin(tyArg: string, amount: AnyNumber) {
   );
 
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x1::managed_coin",
       "burn",
       [token],
@@ -135,7 +139,7 @@ export function transferCoin(tyArg: string, receiverAddress: string, amount: Any
   );
 
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x1::coin",
       "transfer",
       [token],
@@ -194,7 +198,7 @@ function serializeVectorBool(vecBool: boolean[]) {
 export function createNFTCollectionPayload(name: string, description: string, uri: string) {
   const NUMBER_MAX: number = 9007199254740991;
   return  new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x3::token",
       "create_collection_script",
       [],
@@ -222,7 +226,7 @@ export function createNFTTokenPayload(account: AptosAccount,
   serializer.serializeU32AsUleb128(0);
 
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x3::token",
       "create_token_script",
       [],
@@ -253,7 +257,7 @@ export function offerNFTTokenPayload( receiver: HexString,
                                       version: bigint,
                                       amount: bigint) {
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x3::token_transfers",
       "offer_script",
       [],
@@ -269,13 +273,30 @@ export function offerNFTTokenPayload( receiver: HexString,
   );
 }
 
+export function offerNFTTokenPayloadObject( nftObject: HexString,
+                                            receiver: HexString,
+                                      amount: bigint) {
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x1::object",
+            "transfer",
+            [StructTag.fromString("0x1::object::ObjectCore")],
+            [
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(nftObject.hex())),
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiver.hex())),
+                BCS.bcsSerializeUint64(amount),
+            ],
+        ),
+    );
+}
+
 export function claimNFTTokenPayload(sender: HexString,
                                      creator: HexString,
                                      collection_name: string,
                                      token_name: string,
                                      version: bigint) {
   return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.ScriptFunction.natural(
+    TxnBuilderTypes.EntryFunction.natural(
       "0x3::token_transfers",
       "claim_script",
       [],
@@ -297,7 +318,7 @@ export function generateBCSTransaction(
 ): Uint8Array {
   const txnBuilder = new TransactionBuilderEd25519(
     (signingMessage: TxnBuilderTypes.SigningMessage) => {
-      const sigHexStr = accountFrom.signBuffer(signingMessage);
+      const sigHexStr = accountFrom.signBuffer(Buffer.from(signingMessage));
       return new TxnBuilderTypes.Ed25519Signature(sigHexStr.toUint8Array());
     },
     accountFrom.pubKey().toUint8Array()
@@ -334,7 +355,7 @@ export function createRawTransactionByABI(sender: HexString,
     sequenceNumber: sequenceNumber,
     gasUnitPrice: gasUnitPrice,
     maxGasAmount: maxGasAmount,
-    expTimestampSec: expirationTimestampSecs,
+    expSecFromNow: expirationTimestampSecs.toString(),
     chainId: chainId,
   }
 
@@ -368,3 +389,4 @@ export function validSignedTransaction(tx: string, skipCheckSig: boolean) {
   }
   return transaction;
 }
+
