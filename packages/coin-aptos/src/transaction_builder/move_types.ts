@@ -61,17 +61,42 @@ export type MoveFunctionGenericTypeParam = {
 export type MoveFunction = {
   name: IdentifierWrapper;
   visibility: MoveFunctionVisibility;
+  /**
+   * Whether the function can be called as an entry function directly in a transaction
+   */
   is_entry: boolean;
+  /**
+   * Whether the function is a view function or not
+   */
+  is_view: boolean;
+  /**
+   * Generic type params associated with the Move function
+   */
   generic_type_params: Array<MoveFunctionGenericTypeParam>;
+  /**
+   * Parameters associated with the move function
+   */
   params: Array<MoveType>;
+  /**
+   * Return type of the function
+   */
   return: Array<MoveType>;
 };
 
 export type MoveModule = {
   address: Address;
   name: IdentifierWrapper;
+  /**
+   * Friends of the module
+   */
   friends: Array<MoveModuleId>;
+  /**
+   * Public functions of the module
+   */
   exposed_functions: Array<MoveFunction>;
+  /**
+   * Structs of the module
+   */
   structs: Array<MoveStruct>;
 };
 
@@ -111,4 +136,26 @@ export type HexEncodedBytes = string;
 export type MoveModuleBytecode = {
   bytecode: HexEncodedBytes;
   abi?: MoveModule;
+};
+
+export type MoveStructValue = {
+};
+export type U64 = string;
+export type AccountData = {
+  sequence_number: U64;
+  authentication_key: HexEncodedBytes;
+};
+export type GasEstimation = {
+  /**
+   * The deprioritized estimate for the gas unit price
+   */
+  deprioritized_gas_estimate?: number;
+  /**
+   * The current estimate for the gas unit price
+   */
+  gas_estimate: number;
+  /**
+   * The prioritized estimate for the gas unit price
+   */
+  prioritized_gas_estimate?: number;
 };

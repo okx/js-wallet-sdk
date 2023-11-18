@@ -10,11 +10,12 @@ import { HexString } from "../../hex_string";
 import { Bytes } from "../bcs";
 import { MultiEd25519PublicKey } from "./multi_ed25519";
 import { base } from '@okxweb3/crypto-lib';
-
+import { sha3_256 as sha3Hash } from "@noble/hashes/sha3";
+import {Ed25519PublicKey} from "./ed25519";
 /**
  * Each account stores an authentication key. Authentication key enables account owners to rotate
  * their private key(s) associated with the account without changing the address that hosts their account.
- * @see {@link * https://aptos.dev/basics/basics-accounts | Account Basics}
+ * @see {@link * https://aptos.dev/concepts/accounts | Account Basics}
  *
  * Account addresses can be derived from AuthenticationKey
  */
@@ -22,6 +23,10 @@ export class AuthenticationKey {
   static readonly LENGTH: number = 32;
 
   static readonly MULTI_ED25519_SCHEME: number = 1;
+
+  static readonly ED25519_SCHEME: number = 0;
+
+  static readonly DERIVE_RESOURCE_ACCOUNT_SCHEME: number = 255;
 
   readonly bytes: Bytes;
 
@@ -38,9 +43,29 @@ export class AuthenticationKey {
    * authenticating the transaction. `0x01` is the 1-byte scheme for multisig.
    */
   static fromMultiEd25519PublicKey(publicKey: MultiEd25519PublicKey): AuthenticationKey {
-    const bytes = new Uint8Array([...publicKey.toBytes(), AuthenticationKey.MULTI_ED25519_SCHEME]);
-    const hash = base.sha3_256(bytes);
-    return new AuthenticationKey(hash);
+    const pubKeyBytes = publicKey.toBytes();
+
+    const bytes = new Uint8Array(pubKeyBytes.length + 1);
+    bytes.set(pubKeyBytes);
+    bytes.set([AuthenticationKey.MULTI_ED25519_SCHEME], pubKeyBytes.length);
+
+    const hash = sha3Hash.create();
+    hash.update(bytes);
+
+    return new AuthenticationKey(hash.digest());
+  }
+
+  static fromEd25519PublicKey(publicKey: Ed25519PublicKey): AuthenticationKey {
+    const pubKeyBytes = publicKey.value;
+
+    const bytes = new Uint8Array(pubKeyBytes.length + 1);
+    bytes.set(pubKeyBytes);
+    bytes.set([AuthenticationKey.ED25519_SCHEME], pubKeyBytes.length);
+
+    const hash = sha3Hash.create();
+    hash.update(bytes);
+
+    return new AuthenticationKey(hash.digest());
   }
 
   /**

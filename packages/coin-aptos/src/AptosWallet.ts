@@ -30,6 +30,7 @@ import {
   generateBCSTransaction,
   mintCoin,
   offerNFTTokenPayload,
+  offerNFTTokenPayloadObject,
   registerCoin,
   transferCoin,
   transferPayload,
@@ -37,7 +38,7 @@ import {
 import * as client from './client'
 
 export type AptosParam = {
-  type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" | "claimNft" | "offerNft_simulate" | "claimNft_simulate"
+  type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft"| "offerNftObject"| "claimNft" | "offerNft_simulate" | "claimNft_simulate"
   base: AptosBasePram,
   data: any
 }
@@ -79,6 +80,11 @@ export type AptosOfferNFTParam = {
   collectionName: string,
   tokenName: string,
   version: string
+  amount: string
+}
+export type AptosOfferNFTObjectParam = {
+  nftObject: string,
+  receiver: string,
   amount: string
 }
 
@@ -223,6 +229,14 @@ export class AptosWallet extends BaseWallet {
           const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
             BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
           tx = generateBCSSimulateTransaction(account, rawTxn);
+          break
+        }
+        case "offerNftObject": {
+          const baseParam = ap.base
+          const data = ap.data as AptosOfferNFTObjectParam
+          const payload = offerNFTTokenPayloadObject(HexString.ensure(data.nftObject), HexString.ensure(data.receiver), BigInt(data.amount))
+          const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+          tx = generateBCSTransaction(account, rawTxn);
           break
         }
         case "offerNft": {

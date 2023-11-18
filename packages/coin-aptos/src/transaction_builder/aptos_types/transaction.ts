@@ -10,6 +10,7 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable max-classes-per-file */
+import { sha3_256 as sha3Hash } from "@noble/hashes/sha3";
 import { HexString } from "../../hex_string";
 import {
   Deserializer,
@@ -20,7 +21,7 @@ import {
   Uint8,
   Uint128,
   deserializeVector,
-  serializeVector,
+  serializeVector, Uint16, Uint256, bcsToBytes,
 } from "../bcs";
 import { AccountAddress } from "./account_address";
 import { TransactionAuthenticator } from "./authenticator";
@@ -36,7 +37,7 @@ export class RawTransaction {
    * @param sequence_number Sequence number of this transaction. This must match the sequence number stored in
    *   the sender's account at the time the transaction executes.
    * @param payload Instructions for the Aptos Blockchain, including publishing a module,
-   *   execute a script function or execute a script payload.
+   *   execute a entry function or execute a script payload.
    * @param max_gas_amount Maximum total gas to spend for this transaction. The account must have more
    *   than this gas or the transaction will be discarded during validation.
    * @param gas_unit_price Price to be paid per gas unit.
@@ -44,13 +45,13 @@ export class RawTransaction {
    * @param chain_id The chain ID of the blockchain that this transaction is intended to be run on.
    */
   constructor(
-    public readonly sender: AccountAddress,
-    public readonly sequence_number: Uint64,
-    public readonly payload: TransactionPayload,
-    public readonly max_gas_amount: Uint64,
-    public readonly gas_unit_price: Uint64,
-    public readonly expiration_timestamp_secs: Uint64,
-    public readonly chain_id: ChainId,
+      public readonly sender: AccountAddress,
+      public readonly sequence_number: Uint64,
+      public readonly payload: TransactionPayload,
+      public readonly max_gas_amount: Uint64,
+      public readonly gas_unit_price: Uint64,
+      public readonly expiration_timestamp_secs: Uint64,
+      public readonly chain_id: ChainId,
   ) {}
 
   serialize(serializer: Serializer): void {
@@ -72,13 +73,13 @@ export class RawTransaction {
     const expiration_timestamp_secs = deserializer.deserializeU64();
     const chain_id = ChainId.deserialize(deserializer);
     return new RawTransaction(
-      sender,
-      sequence_number,
-      payload,
-      max_gas_amount,
-      gas_unit_price,
-      expiration_timestamp_secs,
-      chain_id,
+        sender,
+        sequence_number,
+        payload,
+        max_gas_amount,
+        gas_unit_price,
+        expiration_timestamp_secs,
+        chain_id,
     );
   }
 }
@@ -103,9 +104,9 @@ export class Script {
    * ```
    */
   constructor(
-    public readonly code: Bytes,
-    public readonly ty_args: Seq<TypeTag>,
-    public readonly args: Seq<TransactionArgument>,
+      public readonly code: Bytes,
+      public readonly ty_args: Seq<TypeTag>,
+      public readonly args: Seq<TransactionArgument>,
   ) {}
 
   serialize(serializer: Serializer): void {
@@ -122,10 +123,10 @@ export class Script {
   }
 }
 
-export class ScriptFunction {
+export class EntryFunction {
   /**
    * Contains the payload to run a function within a module.
-   * @param module_name Fullly qualified module name. ModuleId consists of account address and module name.
+   * @param module_name Fully qualified module name. ModuleId consists of account address and module name.
    * @param function_name The function to run.
    * @param ty_args Type arguments that move function requires.
    *
@@ -143,15 +144,15 @@ export class ScriptFunction {
    * ```
    */
   constructor(
-    public readonly module_name: ModuleId,
-    public readonly function_name: Identifier,
-    public readonly ty_args: Seq<TypeTag>,
-    public readonly args: Seq<Bytes>,
+      public readonly module_name: ModuleId,
+      public readonly function_name: Identifier,
+      public readonly ty_args: Seq<TypeTag>,
+      public readonly args: Seq<Bytes>,
   ) {}
 
   /**
    *
-   * @param module Fully qualified module name in format "AccountAddress::ModuleName" e.g. "0x1::coin"
+   * @param module Fully qualified module name in format "AccountAddress::module_name" e.g. "0x1::coin"
    * @param func Function name
    * @param ty_args Type arguments that move function requires.
    *
@@ -169,8 +170,8 @@ export class ScriptFunction {
    * ```
    * @returns
    */
-  static natural(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): ScriptFunction {
-    return new ScriptFunction(ModuleId.fromStr(module), new Identifier(func), ty_args, args);
+  static natural(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): EntryFunction {
+    return new EntryFunction(ModuleId.fromStr(module), new Identifier(func), ty_args, args);
   }
 
   /**
@@ -178,8 +179,8 @@ export class ScriptFunction {
    *
    * @deprecated.
    */
-  static natual(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): ScriptFunction {
-    return ScriptFunction.natural(module, func, ty_args, args);
+  static natual(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): EntryFunction {
+    return EntryFunction.natural(module, func, ty_args, args);
   }
 
   serialize(serializer: Serializer): void {
@@ -193,7 +194,7 @@ export class ScriptFunction {
     });
   }
 
-  static deserialize(deserializer: Deserializer): ScriptFunction {
+  static deserialize(deserializer: Deserializer): EntryFunction {
     const module_name = ModuleId.deserialize(deserializer);
     const function_name = Identifier.deserialize(deserializer);
     const ty_args = deserializeVector(deserializer, TypeTag);
@@ -205,7 +206,66 @@ export class ScriptFunction {
     }
 
     const args = list;
-    return new ScriptFunction(module_name, function_name, ty_args, args);
+    return new EntryFunction(module_name, function_name, ty_args, args);
+  }
+}
+
+export class MultiSigTransactionPayload {
+  /**
+   * Contains the payload to run a multisig account transaction.
+   * @param transaction_payload The payload of the multisig transaction. This can only be EntryFunction for now but
+   * Script might be supported in the future.
+   */
+  constructor(public readonly transaction_payload: EntryFunction) {}
+
+  serialize(serializer: Serializer): void {
+    // We can support multiple types of inner transaction payload in the future.
+    // For now it's only EntryFunction but if we support more types, we need to serialize with the right enum values
+    // here
+    serializer.serializeU32AsUleb128(0);
+    this.transaction_payload.serialize(serializer);
+  }
+
+  static deserialize(deserializer: Deserializer): MultiSigTransactionPayload {
+    // TODO: Support other types of payload beside EntryFunction.
+    // This is the enum value indicating which type of payload the multisig tx contains.
+    deserializer.deserializeUleb128AsU32();
+    return new MultiSigTransactionPayload(EntryFunction.deserialize(deserializer));
+  }
+}
+
+export class MultiSig {
+  /**
+   * Contains the payload to run a multisig account transaction.
+   * @param multisig_address The multisig account address the transaction will be executed as.
+   * @param transaction_payload The payload of the multisig transaction. This is optional when executing a multisig
+   *  transaction whose payload is already stored on chain.
+   */
+  constructor(
+      public readonly multisig_address: AccountAddress,
+      public readonly transaction_payload?: MultiSigTransactionPayload,
+  ) {}
+
+  serialize(serializer: Serializer): void {
+    this.multisig_address.serialize(serializer);
+    // Options are encoded with an extra u8 field before the value - 0x0 is none and 0x1 is present.
+    // We use serializeBool below to create this prefix value.
+    if (this.transaction_payload === undefined) {
+      serializer.serializeBool(false);
+    } else {
+      serializer.serializeBool(true);
+      this.transaction_payload.serialize(serializer);
+    }
+  }
+
+  static deserialize(deserializer: Deserializer): MultiSig {
+    const multisig_address = AccountAddress.deserialize(deserializer);
+    const payloadPresent = deserializer.deserializeBool();
+    let transaction_payload;
+    if (payloadPresent) {
+      transaction_payload = MultiSigTransactionPayload.deserialize(deserializer);
+    }
+    return new MultiSig(multisig_address, transaction_payload);
   }
 }
 
@@ -226,23 +286,6 @@ export class Module {
   }
 }
 
-export class ModuleBundle {
-  /**
-   * Contains a list of Modules that can be published together.
-   * @param codes List of modules.
-   */
-  constructor(public readonly codes: Seq<Module>) {}
-
-  serialize(serializer: Serializer): void {
-    serializeVector<Module>(this.codes, serializer);
-  }
-
-  static deserialize(deserializer: Deserializer): ModuleBundle {
-    const codes = deserializeVector(deserializer, Module);
-    return new ModuleBundle(codes);
-  }
-}
-
 export class ModuleId {
   /**
    * Full name of a module.
@@ -253,8 +296,7 @@ export class ModuleId {
 
   /**
    * Converts a string literal to a ModuleId
-   * @param moduleId String literal in format "AcountAddress::ModuleName",
-   *   e.g. "0x01::Coin"
+   * @param moduleId String literal in format "AccountAddress::module_name", e.g. "0x1::coin"
    * @returns
    */
   static fromStr(moduleId: string): ModuleId {
@@ -331,6 +373,8 @@ export abstract class RawTransactionWithData {
     switch (index) {
       case 0:
         return MultiAgentRawTransaction.load(deserializer);
+      case 1:
+        return FeePayerRawTransaction.load(deserializer);
       default:
         throw new Error(`Unknown variant index for RawTransactionWithData: ${index}`);
     }
@@ -339,8 +383,8 @@ export abstract class RawTransactionWithData {
 
 export class MultiAgentRawTransaction extends RawTransactionWithData {
   constructor(
-    public readonly raw_txn: RawTransaction,
-    public readonly secondary_signer_addresses: Seq<AccountAddress>,
+      public readonly raw_txn: RawTransaction,
+      public readonly secondary_signer_addresses: Seq<AccountAddress>,
   ) {
     super();
   }
@@ -360,6 +404,32 @@ export class MultiAgentRawTransaction extends RawTransactionWithData {
   }
 }
 
+export class FeePayerRawTransaction extends RawTransactionWithData {
+  constructor(
+      public readonly raw_txn: RawTransaction,
+      public readonly secondary_signer_addresses: Seq<AccountAddress>,
+      public readonly fee_payer_address: AccountAddress,
+  ) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    // enum variant index
+    serializer.serializeU32AsUleb128(1);
+    this.raw_txn.serialize(serializer);
+    serializeVector<TransactionArgument>(this.secondary_signer_addresses, serializer);
+    this.fee_payer_address.serialize(serializer);
+  }
+
+  static load(deserializer: Deserializer): FeePayerRawTransaction {
+    const rawTxn = RawTransaction.deserialize(deserializer);
+    const secondarySignerAddresses = deserializeVector(deserializer, AccountAddress);
+    const feePayerAddress = AccountAddress.deserialize(deserializer);
+
+    return new FeePayerRawTransaction(rawTxn, secondarySignerAddresses, feePayerAddress);
+  }
+}
+
 export abstract class TransactionPayload {
   abstract serialize(serializer: Serializer): void;
 
@@ -368,9 +438,11 @@ export abstract class TransactionPayload {
     switch (index) {
       case 0:
         return TransactionPayloadScript.load(deserializer);
-      // TODO: change to 1 once ModuleBundle has been removed from rust
+        // TODO: change to 1 once ModuleBundle has been removed from rust
       case 2:
         return TransactionPayloadEntryFunction.load(deserializer);
+      case 3:
+        return TransactionPayloadMultisig.load(deserializer);
       default:
         throw new Error(`Unknown variant index for TransactionPayload: ${index}`);
     }
@@ -409,6 +481,22 @@ export class TransactionPayloadEntryFunction extends TransactionPayload {
   }
 }
 
+export class TransactionPayloadMultisig extends TransactionPayload {
+  constructor(public readonly value: MultiSig) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    serializer.serializeU32AsUleb128(3);
+    this.value.serialize(serializer);
+  }
+
+  static load(deserializer: Deserializer): TransactionPayloadMultisig {
+    const value = MultiSig.deserialize(deserializer);
+    return new TransactionPayloadMultisig(value);
+  }
+}
+
 export class ChainId {
   constructor(public readonly value: Uint8) {}
 
@@ -440,6 +528,12 @@ export abstract class TransactionArgument {
         return TransactionArgumentU8Vector.load(deserializer);
       case 5:
         return TransactionArgumentBool.load(deserializer);
+      case 6:
+        return TransactionArgumentU16.load(deserializer);
+      case 7:
+        return TransactionArgumentU32.load(deserializer);
+      case 8:
+        return TransactionArgumentU256.load(deserializer);
       default:
         throw new Error(`Unknown variant index for TransactionArgument: ${index}`);
     }
@@ -459,6 +553,38 @@ export class TransactionArgumentU8 extends TransactionArgument {
   static load(deserializer: Deserializer): TransactionArgumentU8 {
     const value = deserializer.deserializeU8();
     return new TransactionArgumentU8(value);
+  }
+}
+
+export class TransactionArgumentU16 extends TransactionArgument {
+  constructor(public readonly value: Uint16) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    serializer.serializeU32AsUleb128(6);
+    serializer.serializeU16(this.value);
+  }
+
+  static load(deserializer: Deserializer): TransactionArgumentU16 {
+    const value = deserializer.deserializeU16();
+    return new TransactionArgumentU16(value);
+  }
+}
+
+export class TransactionArgumentU32 extends TransactionArgument {
+  constructor(public readonly value: Uint16) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    serializer.serializeU32AsUleb128(7);
+    serializer.serializeU32(this.value);
+  }
+
+  static load(deserializer: Deserializer): TransactionArgumentU32 {
+    const value = deserializer.deserializeU32();
+    return new TransactionArgumentU32(value);
   }
 }
 
@@ -491,6 +617,22 @@ export class TransactionArgumentU128 extends TransactionArgument {
   static load(deserializer: Deserializer): TransactionArgumentU128 {
     const value = deserializer.deserializeU128();
     return new TransactionArgumentU128(value);
+  }
+}
+
+export class TransactionArgumentU256 extends TransactionArgument {
+  constructor(public readonly value: Uint256) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    serializer.serializeU32AsUleb128(8);
+    serializer.serializeU256(this.value);
+  }
+
+  static load(deserializer: Deserializer): TransactionArgumentU256 {
+    const value = deserializer.deserializeU256();
+    return new TransactionArgumentU256(value);
   }
 }
 
@@ -542,89 +684,46 @@ export class TransactionArgumentBool extends TransactionArgument {
   }
 }
 
-export class EntryFunction {
-  /**
-   * Contains the payload to run a function within a module.
-   * @param module_name Fully qualified module name. ModuleId consists of account address and module name.
-   * @param function_name The function to run.
-   * @param ty_args Type arguments that move function requires.
-   *
-   * @example
-   * A coin transfer function has one type argument "CoinType".
-   * ```
-   * public(script) fun transfer<CoinType>(from: &signer, to: address, amount: u64,)
-   * ```
-   * @param args Arugments to the move function.
-   *
-   * @example
-   * A coin transfer function has three arugments "from", "to" and "amount".
-   * ```
-   * public(script) fun transfer<CoinType>(from: &signer, to: address, amount: u64,)
-   * ```
-   */
-  constructor(
-    public readonly module_name: ModuleId,
-    public readonly function_name: Identifier,
-    public readonly ty_args: Seq<TypeTag>,
-    public readonly args: Seq<Bytes>,
-  ) {}
+export abstract class Transaction {
+  abstract serialize(serializer: Serializer): void;
 
-  /**
-   *
-   * @param module Fully qualified module name in format "AccountAddress::module_name" e.g. "0x1::coin"
-   * @param func Function name
-   * @param ty_args Type arguments that move function requires.
-   *
-   * @example
-   * A coin transfer function has one type argument "CoinType".
-   * ```
-   * public(script) fun transfer<CoinType>(from: &signer, to: address, amount: u64,)
-   * ```
-   * @param args Arugments to the move function.
-   *
-   * @example
-   * A coin transfer function has three arugments "from", "to" and "amount".
-   * ```
-   * public(script) fun transfer<CoinType>(from: &signer, to: address, amount: u64,)
-   * ```
-   * @returns
-   */
-  static natural(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): EntryFunction {
-    return new EntryFunction(ModuleId.fromStr(module), new Identifier(func), ty_args, args);
+  abstract hash(): Bytes;
+
+  getHashSalt(): Bytes {
+    const hash = sha3Hash.create();
+    hash.update("APTOS::Transaction");
+    return hash.digest();
   }
 
-  /**
-   * `natual` is deprecated, please use `natural`
-   *
-   * @deprecated.
-   */
-  static natual(module: string, func: string, ty_args: Seq<TypeTag>, args: Seq<Bytes>): EntryFunction {
-    return EntryFunction.natural(module, func, ty_args, args);
+  static deserialize(deserializer: Deserializer): Transaction {
+    const index = deserializer.deserializeUleb128AsU32();
+    switch (index) {
+      case 0:
+        return UserTransaction.load(deserializer);
+      default:
+        throw new Error(`Unknown variant index for Transaction: ${index}`);
+    }
+  }
+}
+
+export class UserTransaction extends Transaction {
+  constructor(public readonly value: SignedTransaction) {
+    super();
+  }
+
+  hash(): Bytes {
+    const hash = sha3Hash.create();
+    hash.update(this.getHashSalt());
+    hash.update(bcsToBytes(this));
+    return hash.digest();
   }
 
   serialize(serializer: Serializer): void {
-    this.module_name.serialize(serializer);
-    this.function_name.serialize(serializer);
-    serializeVector<TypeTag>(this.ty_args, serializer);
-
-    serializer.serializeU32AsUleb128(this.args.length);
-    this.args.forEach((item: Bytes) => {
-      serializer.serializeBytes(item);
-    });
+    serializer.serializeU32AsUleb128(0);
+    this.value.serialize(serializer);
   }
 
-  static deserialize(deserializer: Deserializer): EntryFunction {
-    const module_name = ModuleId.deserialize(deserializer);
-    const function_name = Identifier.deserialize(deserializer);
-    const ty_args = deserializeVector(deserializer, TypeTag);
-
-    const length = deserializer.deserializeUleb128AsU32();
-    const list: Seq<Bytes> = [];
-    for (let i = 0; i < length; i += 1) {
-      list.push(deserializer.deserializeBytes());
-    }
-
-    const args = list;
-    return new EntryFunction(module_name, function_name, ty_args, args);
+  static load(deserializer: Deserializer): UserTransaction {
+    return new UserTransaction(SignedTransaction.deserialize(deserializer));
   }
 }
