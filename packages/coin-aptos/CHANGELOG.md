@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **coin-aptos:** support for module 0x1::object::Object and 0x1::option::Option ([35bc9fe](https://github.com/okx/js-wallet-sdk/commit/35bc9fec0ed86e59f342dcfdbbeb3620475d3d4f))
+- **coin-aptos:** support for module 0x1::object::Object and 0x1::option::Option ([30](https://github.com/okx/js-wallet-sdk/pull/30))
