@@ -1,4 +1,3 @@
-
 # Change Log
 
 All notable changes to this project will be documented in this file.
@@ -7,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-base:** support ADA ([14dd4b](https://github.com/okx/js-wallet-sdk/commit/14dd4b171355dfba8a401db769425c200172e900))
+- **coin-base:** support
+  ADA ([14dd4b](https://github.com/okx/js-wallet-sdk/commit/14dd4b171355dfba8a401db769425c200172e900))
 
 # [1.0.2](https://github.com/okx/js-wallet-sdk) (2023-10-31)
 
@@ -26,3 +26,9 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-base:** support Kaspa validate address ([22](https://github.com/okx/js-wallet-sdk/pull/22))
+
+# [1.0.5](https://github.com/okx/js-wallet-sdk) (2023-11-21)
+
+### Feature
+
+- **coin-base:** support NoStrAssets  ([33](https://github.com/okx/js-wallet-sdk/pull/33))
