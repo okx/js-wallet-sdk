@@ -10,6 +10,13 @@ describe("nostr", () => {
         expect(r.publicKey).toEqual('npub1znxtu8222hlzxc59w6nlq33h7erl66ux6d30nql5a0tmjh2809hstw0d22');
         const address = addressFromPrvKey(prv);
         expect(address).toBe("nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y");
+
+        let v = await wallet.validAddress({address: address})
+        console.log(v)
+        expect(v.isValid).toBe(true)
+        let v2 = await wallet.validAddress({address: address+'2'})
+        console.log(v2)
+        expect(v2.isValid).toBe(false)
     });
 
     // event.id 385eb020a83cb7e547659922b6c092a55e88c5127d9448370d1e55221aaeb5dd
