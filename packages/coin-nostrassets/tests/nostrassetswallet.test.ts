@@ -1,7 +1,7 @@
-import {NoStrAssetsWallet, addressFromPrvKey, CryptTextParams, verifySignature, nipOpType} from "../src";
+import {NostrAssetsWallet, addressFromPrvKey, CryptTextParams, verifySignature, nipOpType} from "../src";
 import {SignTxParams} from "@okxweb3/coin-base";
 
-const wallet = new NoStrAssetsWallet();
+const wallet = new NostrAssetsWallet();
 const prv = 'bb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a'
 describe("nostr", () => {
     test("address", async () => {
