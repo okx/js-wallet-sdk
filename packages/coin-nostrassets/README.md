@@ -16,10 +16,10 @@ npm install @okxweb3/coin-nostrassets
 ### New address and public key
 
 ```typescript
-import { NoStrAssetsWallet } from "@okxweb3/coin-nostrassets";
+import { NostrAssetsWallet } from "@okxweb3/coin-nostrassets";
 
 const prv = 'bb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a'
-let wallet = new NoStrAssetsWallet();
+let wallet = new NostrAssetsWallet();
 let r =await wallet.getNewAddress({privateKey: prv})
 console.log(r)
 ```
@@ -27,10 +27,10 @@ console.log(r)
 ### Sign Event
 
 ```typescript
-import { NoStrAssetsWallet } from "@okxweb3/coin-nostrassets";
+import { NostrAssetsWallet } from "@okxweb3/coin-nostrassets";
 
 const prv = 'bb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a'
-let wallet = new NoStrAssetsWallet();
+let wallet = new NostrAssetsWallet();
 let event = {
     kind: 1,
     created_at: Math.floor(Date.now() / 1000),//unix
@@ -48,9 +48,9 @@ console.log(e)
 ### Encrypt and decrypt for nip04
 
 ```typescript
-import { NoStrAssetsWallet } from "@okxweb3/coin-nostrassets";
+import { NostrAssetsWallet } from "@okxweb3/coin-nostrassets";
 
-let wallet = new NoStrAssetsWallet();
+let wallet = new NostrAssetsWallet();
 let text = 'hello'
 let privkey = '425824242e3038e026f7cbeb6fe289cb6ffcfad1fa955c318c116aa1f2f32bfc'
 const encrypted = await wallet.signTransaction({
