@@ -15,7 +15,7 @@ describe("nostr", () => {
         console.log("generate derived private key:", derivePrivateKey, ",derived path: ", hdPath);
 
         let newAddress = await wallet.getNewAddress({privateKey: derivePrivateKey});
-        console.log("generate new address:", newAddress.address);
+        console.log("generate new address:", newAddress.address,"newAddress.publicKey",newAddress.publicKey);
     })
 
 
@@ -47,10 +47,13 @@ describe("nostr", () => {
             privateKey: prv,
             data: event
         })
-        expect(verifySignature(r)).toBe(true)
+        let rr =JSON.parse(JSON.stringify(r))
+        console.log("event.pubkey",rr['pubkey'])
+        expect(rr['pubkey']).toEqual('14ccbe1d4a55fe23628576a7f04637f647fd6b86d362f983f4ebd7b95d47796f')
+        expect(rr['id']).toEqual('385eb020a83cb7e547659922b6c092a55e88c5127d9448370d1e55221aaeb5dd')
+        expect(verifySignature(rr)).toBe(true)
     });
 
-    //Received: "{\"kind\":1,\"created_at\":1000,\"tags\":[],\"content\":\"hello\",\"pubkey\":\"14ccbe1d4a55fe23628576a7f04637f647fd6b86d362f983f4ebd7b95d47796f\",\"id\":\"385eb020a83cb7e547659922b6c092a55e88c5127d9448370d1e55221aaeb5dd\",\"sig\":\"148d8ad0496af9049443a35c8a3034ac386bd30c1252311ce87a5b942d8322ab9468ba5e7a56a8e6cf82718522d7b86a4aa905100ef5423bd46de93a16032024\"}"
 
     test("encrypt", async () => {
         let text = 'hello'

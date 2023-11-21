@@ -11,7 +11,6 @@ import {
 } from "@okxweb3/crypto-lib";
 import {addressFromPrvKey, encrypt, decrypt, npubEncode} from "./nostrassets";
 import * as crypto from "crypto";
-import * as Events from "events";
 import {Event, getEventHash, getSignature} from "./event";
 import {getPublicKey} from "./keys";
 
@@ -64,7 +63,7 @@ export class NostrAssetsWallet extends BaseWallet {
     async getNewAddress(param: NewAddressParams): Promise<any> {
         try {
             if (!this.checkPrivateKey(param.privateKey)) {
-                return Promise.reject(NewAddressError);
+                return Promise.reject('invalid privateKey');
             }
             const data: NewAddressData = {
                 address: addressFromPrvKey(param.privateKey),
@@ -72,7 +71,7 @@ export class NostrAssetsWallet extends BaseWallet {
             };
             return Promise.resolve(data)
         } catch (e) {
-            return Promise.reject(NewAddressError);
+            return Promise.reject(e);
         }
     }
 
@@ -105,12 +104,16 @@ export class NostrAssetsWallet extends BaseWallet {
         } else {
             try {
                 let event = param.data as Event
-                event.pubkey = getPublicKey(param.privateKey)
-                event.id = getEventHash(event)
-                event.sig = getSignature(event, param.privateKey)
+                if (!event.pubkey) {
+                    event.pubkey = getPublicKey(param.privateKey)
+                }
+                if (!event.id) {
+                    event.id = getEventHash(event)
+                }
+                event.sig = getSignature(event, base.stripHexPrefix(param.privateKey))
                 return Promise.resolve(event)
             } catch (ex) {
-                return Promise.reject(NotImplementedError)
+                return Promise.reject(ex)
             }
         }
     }

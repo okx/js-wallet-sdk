@@ -91,7 +91,7 @@ export function serializeEvent(evt: UnsignedEvent<number>): string {
 
 export function getEventHash(event: UnsignedEvent<number>): string {
     let eventHash = base.sha256(base.toUtf8(serializeEvent(event)))
-    return base.toHex(eventHash)
+    return base.toHex(eventHash,false)
 }
 
 const isRecord = (obj: unknown): obj is Record<string, unknown> => obj instanceof Object
@@ -142,5 +142,5 @@ export function signEvent(event: UnsignedEvent<number>, key: string): string {
 
 /** Calculate the signature for an event. */
 export function getSignature(event: UnsignedEvent<number>, key: string): string {
-    return base.toHex(schnorr.sign(getEventHash(event), base.stripHexPrefix(key)))
+    return base.toHex(schnorr.sign(getEventHash(event), base.stripHexPrefix(key)),false)
 }
