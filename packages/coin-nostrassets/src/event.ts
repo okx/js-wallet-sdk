@@ -137,10 +137,10 @@ export function signEvent(event: UnsignedEvent<number>, key: string): string {
     console.warn(
         'nostr-tools: `signEvent` is deprecated and will be removed or changed in the future. Please use `getSignature` instead.',
     )
-    return getSignature(event, key)
+    return getSignature(event, base.stripHexPrefix(key))
 }
 
 /** Calculate the signature for an event. */
 export function getSignature(event: UnsignedEvent<number>, key: string): string {
-    return base.toHex(schnorr.sign(getEventHash(event), key))
+    return base.toHex(schnorr.sign(getEventHash(event), base.stripHexPrefix(key)))
 }

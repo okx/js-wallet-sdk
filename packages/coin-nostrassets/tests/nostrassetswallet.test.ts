@@ -1,9 +1,24 @@
 import {NostrAssetsWallet, addressFromPrvKey, CryptTextParams, verifySignature, nipOpType} from "../src";
-import {SignTxParams} from "@okxweb3/coin-base";
+import {DerivePriKeyParams, SignTxParams} from "@okxweb3/coin-base";
+import {bip39} from "@okxweb3/crypto-lib";
 
 const wallet = new NostrAssetsWallet();
-const prv = 'bb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a'
+const prv = '0xbb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a'
+
 describe("nostr", () => {
+    test("generate", async () => {
+        let memo = await bip39.generateMnemonic();
+        console.log("generate mnemonic:", memo);
+
+        const hdPath = await wallet.getDerivedPath({index: 0});
+        let derivePrivateKey = await wallet.getDerivedPrivateKey({mnemonic: memo, hdPath: hdPath});
+        console.log("generate derived private key:", derivePrivateKey, ",derived path: ", hdPath);
+
+        let newAddress = await wallet.getNewAddress({privateKey: derivePrivateKey});
+        console.log("generate new address:", newAddress.address);
+    })
+
+
     test("address", async () => {
         let r = await wallet.getNewAddress({privateKey: prv})
         expect(r.address).toEqual('nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y');
@@ -14,7 +29,7 @@ describe("nostr", () => {
         let v = await wallet.validAddress({address: address})
         console.log(v)
         expect(v.isValid).toBe(true)
-        let v2 = await wallet.validAddress({address: address+'2'})
+        let v2 = await wallet.validAddress({address: address + '2'})
         console.log(v2)
         expect(v2.isValid).toBe(false)
     });
@@ -39,10 +54,10 @@ describe("nostr", () => {
 
     test("encrypt", async () => {
         let text = 'hello'
-        let privkey = '425824242e3038e026f7cbeb6fe289cb6ffcfad1fa955c318c116aa1f2f32bfc'
+        let privkey = '0x425824242e3038e026f7cbeb6fe289cb6ffcfad1fa955c318c116aa1f2f32bfc'
         const encrypted = await wallet.signTransaction({
             privateKey: privkey,
-            data: new CryptTextParams(nipOpType.NIP04_Encrypt, '8a0523d045d09c30765029af9307d570cb0d969e4b9400c08887c23250626eea', text)
+            data: new CryptTextParams(nipOpType.NIP04_Encrypt, '0x8a0523d045d09c30765029af9307d570cb0d969e4b9400c08887c23250626eea', text)
         });
         console.log('encrypted', encrypted)
         const decrypted = await wallet.signTransaction({

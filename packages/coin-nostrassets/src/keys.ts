@@ -10,5 +10,5 @@ export function generatePrivateKey(): string {
 }
 
 export function getPublicKey(privateKey: string): string {
-    return base.toHex(secp256k1.schnorr.getPublicKey(privateKey))
+    return base.toHex(secp256k1.schnorr.getPublicKey(base.stripHexPrefix(privateKey)))
 }
