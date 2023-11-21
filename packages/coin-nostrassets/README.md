@@ -1,5 +1,5 @@
 # @okxweb3/coin-nostrassets
-NoStrAssets SDK is used to interact with the protocol NoStrAssets , it contains various functions can be used to web3 wallet.
+NostrAssets SDK is used to interact with the protocol NoStrAssets , it contains various functions can be used to web3 wallet.
 
 ## Installation
 

@@ -50,7 +50,7 @@ export type NewAddressData = {
     publicKey?: string;
 };
 
-export class NoStrAssetsWallet extends BaseWallet {
+export class NostrAssetsWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
         return `m/86'/0'/0'/0/${param.index}`
     }
