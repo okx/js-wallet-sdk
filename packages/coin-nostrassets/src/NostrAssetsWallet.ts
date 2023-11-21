@@ -4,7 +4,7 @@ import {
     NewAddressParams,
     ValidAddressParams,
     SignTxParams,
-    NotImplementedError,
+    NotImplementedError, ValidAddressData,
 } from "@okxweb3/coin-base";
 import {
     base
@@ -49,6 +49,7 @@ export type NewAddressData = {
     address: string;
     publicKey?: string;
 };
+export const nostrHdp = 'nsec';
 
 export class NostrAssetsWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -76,7 +77,18 @@ export class NostrAssetsWallet extends BaseWallet {
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {
-        return Promise.resolve(NotImplementedError);
+        var valid = false
+        try {
+            const [c, d] = base.fromBech32(param.address);
+            valid = nostrHdp == c
+        } catch (e) {
+            console.log(e)
+        }
+        const data: ValidAddressData = {
+            isValid: valid,
+            address: param.address
+        };
+        return Promise.resolve(data);
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
