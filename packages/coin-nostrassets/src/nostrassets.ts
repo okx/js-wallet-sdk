@@ -28,7 +28,7 @@ function encodeBytes(prefix: string, hex: string): string {
 
 
 export async function encrypt(privkey: string, pubkey: string, text: string): Promise<string> {
-    const key = secp256k1.getSharedSecret(privkey, '02' + pubkey)
+    const key = secp256k1.getSharedSecret(base.stripHexPrefix(privkey), '02' + base.stripHexPrefix(pubkey))
     const normalizedKey = getNormalizedX(key)
 
     let iv = Uint8Array.from(base.randomBytes(16))
@@ -45,7 +45,7 @@ export async function encrypt(privkey: string, pubkey: string, text: string): Pr
 
 export async function decrypt(privkey: string, pubkey: string, data: string): Promise<string> {
     let [ctb64, ivb64] = data.split('?iv=')
-    let key = secp256k1.getSharedSecret(privkey, '02' + pubkey)
+    let key = secp256k1.getSharedSecret(base.stripHexPrefix(privkey), '02' + base.stripHexPrefix(pubkey))
     let normalizedKey = getNormalizedX(key)
     // @ts-ignore
     let cryptoKey = await crypto.subtle.importKey('raw', normalizedKey, {name: 'AES-CBC'}, false, ['decrypt'])
