@@ -5,7 +5,9 @@
 import {
     base, secp256k1
 } from "@okxweb3/crypto-lib";
-import * as crypto from "crypto";
+
+// warning!!! If you want to run these two test case `encrypt`, you need to enable the next line of code.
+// import * as crypto from "crypto";
 
 // @ts-ignore
 if (typeof crypto !== 'undefined' && !crypto.subtle && crypto.webcrypto) {
@@ -17,7 +19,7 @@ export function npubEncode(hex: string): string {
     return encodeBytes('npub', hex)
 }
 
-export function addressFromPrvKey(hex: string): string {
+export function nsecFromPrvKey(hex: string): string {
     return encodeBytes('nsec', hex)
 }
 
@@ -28,6 +30,10 @@ function encodeBytes(prefix: string, hex: string): string {
 
 
 export async function encrypt(privkey: string, pubkey: string, text: string): Promise<string> {
+    // @ts-ignore
+    if (crypto == undefined) {
+        throw new Error('crypto is null')
+    }
     const key = secp256k1.getSharedSecret(base.stripHexPrefix(privkey), '02' + base.stripHexPrefix(pubkey))
     const normalizedKey = getNormalizedX(key)
 
