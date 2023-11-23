@@ -67,7 +67,7 @@ export class NostrAssetsWallet extends BaseWallet {
             }
             const data: NewAddressData = {
                 address: addressFromPrvKey(param.privateKey),
-                publicKey: npubEncode(getPublicKey(param.privateKey))
+                publicKey: getPublicKey(param.privateKey)
             };
             return Promise.resolve(data)
         } catch (e) {
