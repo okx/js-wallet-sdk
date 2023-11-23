@@ -22,7 +22,7 @@ describe("nostr", () => {
     test("address", async () => {
         let r = await wallet.getNewAddress({privateKey: prv})
         expect(r.address).toEqual('nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y');
-        expect(r.publicKey).toEqual('npub1znxtu8222hlzxc59w6nlq33h7erl66ux6d30nql5a0tmjh2809hstw0d22');
+        expect(r.publicKey).toEqual('14ccbe1d4a55fe23628576a7f04637f647fd6b86d362f983f4ebd7b95d47796f');
         const address = addressFromPrvKey(prv);
         expect(address).toBe("nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y");
 
