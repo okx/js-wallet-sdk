@@ -9,7 +9,7 @@ import {
 import {
     base
 } from "@okxweb3/crypto-lib";
-import {addressFromPrvKey, encrypt, decrypt, npubEncode} from "./nostrassets";
+import {encrypt, decrypt, npubEncode} from "./nostrassets";
 import * as crypto from "crypto";
 import {Event, getEventHash, getSignature} from "./event";
 import {getPublicKey} from "./keys";
@@ -32,9 +32,6 @@ export class CryptTextParams {
         public readonly pubkey: string,
         public readonly text: string,
     ) {
-        // this.type = type;
-        // this.pubkey = pubkey;
-        // this.text = text;
     }
 };
 
@@ -48,11 +45,11 @@ export type NewAddressData = {
     address: string;
     publicKey?: string;
 };
-export const nostrHdp = 'nsec';
+export const nostrHdp = 'npub';
 
 export class NostrAssetsWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
-        return `m/86'/0'/0'/0/${param.index}`
+        return `m/44'/1237'/0'/0/${param.index}`
     }
 
     checkPrivateKey(privateKey: string) {
@@ -65,9 +62,10 @@ export class NostrAssetsWallet extends BaseWallet {
             if (!this.checkPrivateKey(param.privateKey)) {
                 return Promise.reject('invalid privateKey');
             }
+            let pub = getPublicKey(param.privateKey)
             const data: NewAddressData = {
-                address: addressFromPrvKey(param.privateKey),
-                publicKey: getPublicKey(param.privateKey)
+                address: npubEncode(pub),
+                publicKey: pub
             };
             return Promise.resolve(data)
         } catch (e) {
