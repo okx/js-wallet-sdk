@@ -30,6 +30,7 @@ describe("toncoin venom", () => {
                 to: "EQA3_JIJKDC0qauDUEQe2KjQj1iLwQRtrEREzmfDxbCKw9Kr",
                 amount: "10000000",
                 seqno: 2,
+                toIsInit: true,
                 memo: "",
             },
         };
@@ -55,6 +56,7 @@ describe("toncoin venom", () => {
                 to: "0:b547ad1de927f0dcf95372cd766302e2c9351331d7673454017cc52c149727c0",
                 amount: "100000000",
                 seqno: 4,
+                toIsInit: true,
                 memo: "",
                 globalId: 1000,
             },

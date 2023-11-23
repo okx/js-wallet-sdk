@@ -6,9 +6,10 @@ export type TxData = {
     to: string
     amount: string
     seqno: number
-    memo: string
+    toIsInit: boolean
+    memo?: string
     globalId?: number
-    sendMode?: SendMode
+    sendMode?: number
 };
 
 export function transfer(txData: TxData, seed: string) {
@@ -17,6 +18,7 @@ export function transfer(txData: TxData, seed: string) {
     const messages = [internal({
         to: txData.to,
         value: BigInt(txData.amount),
+        bounce: txData.toIsInit,
         body: txData.memo
     })];
     const signedMessage = wallet.createTransfer({
@@ -36,6 +38,7 @@ export function venomTransfer(txData: TxData, seed: string) {
     const messages = [internal({
         to: txData.to,
         value: BigInt(txData.amount),
+        bounce: txData.toIsInit,
         body: txData.memo
     })];
     const signedMessage = wallet.createTransfer({
