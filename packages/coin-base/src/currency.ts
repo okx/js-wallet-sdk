@@ -40,6 +40,7 @@ export enum Currency {
     Celestia = 2854,
     DYDX = 2897,
     Kaspa = 111111,
+    Venom = 1000000,
 }
 
 export enum segwitType {
