@@ -51,6 +51,7 @@ const param = {
     to: "EQA3_JIJKDC0qauDUEQe2KjQj1iLwQRtrEREzmfDxbCKw9Kr",
     amount: "10000000",
     seqno: 2,
+    toIsInit: true,
     memo: "",
   },
 };
@@ -83,7 +84,7 @@ const param = {
 const isValid = await wallet.validAddress(param);
 ```
 
-#### Transfer TON
+#### Transfer Venom
 
 ```typescript
 import { VenomWallet } from "@okxweb3/coin-ton";
@@ -95,6 +96,7 @@ const param = {
     to: "0:6bef7d76e46fd1f308f0bf0b59f1ca6318aa6d950ea00aecc7d162218acaaa36",
     amount: "10000000",
     seqno: 2,
+    toIsInit: true,
     memo: "",
     globalId: 1000,
   },
