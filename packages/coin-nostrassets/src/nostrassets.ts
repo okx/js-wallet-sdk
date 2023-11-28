@@ -15,6 +15,11 @@ if (typeof crypto !== 'undefined' && !crypto.subtle && crypto.webcrypto) {
     crypto.subtle = crypto.webcrypto.subtle
 }
 
+
+export const nostrHdp = 'npub';
+
+export const nsec = 'nsec';
+
 export function npubEncode(hex: string): string {
     return encodeBytes('npub', hex)
 }
@@ -28,13 +33,26 @@ function encodeBytes(prefix: string, hex: string): string {
     return base.toBech32(prefix, base.fromHex(hex))
 }
 
+export function decodeBytes(prefix: string, data: string): string {
+    try {
+        const [c, d] = base.fromBech32(data);
+        if (prefix !== c) {
+            throw 'invalid data'
+        }
+        return base.toHex(d, false)
+    } catch (e) {
+        console.log(e)
+        throw e
+    }
+}
+
 
 export async function encrypt(privkey: string, pubkey: string, text: string): Promise<string> {
     // @ts-ignore
     if (crypto == undefined) {
         throw new Error('crypto is null')
     }
-    const key = secp256k1.getSharedSecret(base.stripHexPrefix(privkey), '02' + base.stripHexPrefix(pubkey))
+    const key = secp256k1.getSharedSecret(decodeBytes('nsec', privkey), '02' + base.stripHexPrefix(pubkey))
     const normalizedKey = getNormalizedX(key)
 
     let iv = Uint8Array.from(base.randomBytes(16))
@@ -51,7 +69,7 @@ export async function encrypt(privkey: string, pubkey: string, text: string): Pr
 
 export async function decrypt(privkey: string, pubkey: string, data: string): Promise<string> {
     let [ctb64, ivb64] = data.split('?iv=')
-    let key = secp256k1.getSharedSecret(base.stripHexPrefix(privkey), '02' + base.stripHexPrefix(pubkey))
+    let key = secp256k1.getSharedSecret(decodeBytes('nsec', privkey), '02' + base.stripHexPrefix(pubkey))
     let normalizedKey = getNormalizedX(key)
     // @ts-ignore
     let cryptoKey = await crypto.subtle.importKey('raw', normalizedKey, {name: 'AES-CBC'}, false, ['decrypt'])
