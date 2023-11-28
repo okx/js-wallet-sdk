@@ -4,12 +4,12 @@ import {
     NewAddressParams,
     ValidAddressParams,
     SignTxParams,
-    NotImplementedError, ValidAddressData,
+    NotImplementedError, ValidAddressData, secp256k1SignTest, GenPrivateKeyError, DerivePriKeyParams,
 } from "@okxweb3/coin-base";
 import {
-    base
+    base, bip32, bip39
 } from "@okxweb3/crypto-lib";
-import {encrypt, decrypt, npubEncode} from "./nostrassets";
+import {encrypt, decrypt, npubEncode, nsecFromPrvKey, decodeBytes, nsec, nostrHdp} from "./nostrassets";
 import * as crypto from "crypto";
 import {Event, getEventHash, getSignature} from "./event";
 import {getPublicKey} from "./keys";
@@ -45,24 +45,47 @@ export type NewAddressData = {
     address: string;
     publicKey?: string;
 };
-export const nostrHdp = 'npub';
 
 export class NostrAssetsWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
-        return `m/44'/1237'/0'/0/${param.index}`
+        return `m/44'/1237'/${param.index}'/0/0`
     }
 
-    checkPrivateKey(privateKey: string) {
-        const keyBytes = base.fromHex(privateKey)
-        return keyBytes.length == 32;
+    getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
+        return bip39.mnemonicToSeed(param.mnemonic)
+            .then((masterSeed: Buffer) => {
+                let childKey = bip32.fromSeed(masterSeed).derivePath(param.hdPath)
+                if (childKey.privateKey) {
+                    return Promise.resolve(nsecFromPrvKey(base.toHex(childKey.privateKey, false)));
+                } else {
+                    return Promise.reject(GenPrivateKeyError);
+                }
+            }).catch((e) => {
+                return Promise.reject(GenPrivateKeyError);
+            });
+    }
+
+    getRandomPrivateKey(): Promise<any> {
+        try {
+            while (true) {
+                const privateKey = base.randomBytes(32)
+                if (secp256k1SignTest(privateKey)) {
+                    return Promise.resolve(nsecFromPrvKey(base.toHex(privateKey, false)));
+                }
+            }
+        } catch (e) {
+        }
+        return Promise.reject(GenPrivateKeyError);
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            if (!this.checkPrivateKey(param.privateKey)) {
+            const [c, d] = base.fromBech32(param.privateKey);
+            let valid = nsec == c
+            if (!valid) {
                 return Promise.reject('invalid privateKey');
             }
-            let pub = getPublicKey(param.privateKey)
+            let pub = getPublicKey(base.toHex(d, false))
             const data: NewAddressData = {
                 address: npubEncode(pub),
                 publicKey: pub
@@ -101,14 +124,15 @@ export class NostrAssetsWallet extends BaseWallet {
             }
         } else {
             try {
+                let prv = decodeBytes(nsec, param.privateKey)
                 let event = param.data as Event
                 if (!event.pubkey) {
-                    event.pubkey = getPublicKey(param.privateKey)
+                    event.pubkey = getPublicKey(prv)
                 }
                 if (!event.id) {
                     event.id = getEventHash(event)
                 }
-                event.sig = getSignature(event, base.stripHexPrefix(param.privateKey))
+                event.sig = getSignature(event, prv)
                 return Promise.resolve(event)
             } catch (ex) {
                 return Promise.reject(ex)
