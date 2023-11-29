@@ -1,6 +1,5 @@
 import {
     KeyType,
-    EosWallet,
     WaxWallet,
     getNewAddress,
     createAccount,
@@ -16,9 +15,9 @@ import {
 } from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 
-describe("eos", () => {
+describe("wax", () => {
     test('private key', async () => {
-        let wallet = new EosWallet()
+        let wallet = new WaxWallet()
         let key = await wallet.getRandomPrivateKey()
         console.log(key)
     })
@@ -37,12 +36,16 @@ describe("eos", () => {
         console.info(result2)
     });
 
-    test('getAmountString', async () => {
-        let wallet = new EosWallet()
+    test('getAmountString WAX', async () => {
+        let wallet = new WaxWallet()
         let amount = await wallet.getAmountString("12345678")
-        expect(amount).toBe("1234.5678 EOS")
-        amount = await wallet.getAmountString("12345678", 6, "EOSEOS")
-        expect(amount).toBe("12.345678 EOSEOS")
+        expect(amount).toBe("0.12345678 WAX")
+
+        amount = await wallet.getAmountString("12345678", undefined, undefined)
+        expect(amount).toBe("0.12345678 WAX")
+
+        amount = await wallet.getAmountString("12345678", 6, "WAXTOKEN")
+        expect(amount).toBe("12.345678 WAXTOKEN")
     })
 
     test("transferToken2", async () => {
