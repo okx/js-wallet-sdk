@@ -38,6 +38,7 @@ describe("wax", () => {
 
     test('getAmountString WAX', async () => {
         let wallet = new WaxWallet()
+
         let amount = await wallet.getAmountString("12345678")
         expect(amount).toBe("0.12345678 WAX")
 
