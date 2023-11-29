@@ -137,7 +137,6 @@ export class WaxWallet extends EosWallet {
         symbol = symbol == null || undefined ? 'WAX' : symbol
         return toAssetString(Number(amount), precision, symbol);
     }
-
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
         return `m/44'/14001'/0'/0/${param.index}`;
     }
