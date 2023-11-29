@@ -41,6 +41,7 @@ describe("eos", () => {
         let wallet = new EosWallet()
         let amount = await wallet.getAmountString("12345678")
         expect(amount).toBe("1234.5678 EOS")
+
         amount = await wallet.getAmountString("12345678", 6, "EOSEOS")
         expect(amount).toBe("12.345678 EOSEOS")
     })
