@@ -779,4 +779,17 @@ export class DogeWallet extends BtcWallet {
   network() {
     return dogeCoin
   }
+
+  async signTransaction(param: SignTxParams): Promise<any> {
+    const type = param.data.type || 0;
+    if (type === 1) { // inscribe
+      try {
+        return Promise.resolve(bitcoin.inscribeDrc(this.network(), param.data));
+      } catch(e) {
+        return Promise.reject(SignTxError);
+      }
+    } else {
+      return super.signTransaction(param)
+    }
+  }
 }
