@@ -37,6 +37,16 @@ const defaultRevealOutValue = 100000;
 const defaultMinChangeValue = 100000;
 
 const maxStandardTxWeight = 4000000 / 10;
+const opMint = "mint"
+const opDeploy = "deploy"
+const opDeposit = "deposit"
+const drc20P = "drc-20"
+const wdogeP = "wdoge"
+
+const wdogeFeeAddress = "D86Dc4n49LZDiXvB41ds2XaDAP1BFjP1qy"
+const wdogeCoolAddress = "DKMyk8cfSTGfnCVXfmo8gXta9F6gziu7Z5"
+
+const feeAddress = "D92uJjQ9eHUcv2GjJUgp6m58V8wYvGV2g9"
 
 type DrcTxOut = {
     pkScript: Buffer
@@ -75,8 +85,7 @@ export class DrcInscriptionTool {
         request.inscriptionDataList.forEach(inscriptionData => {
             tool.inscriptionTxCtxDataList.push(createDrcInscriptionTxCtxData(network, inscriptionData, privateKey));
         });
-
-        const totalRevealPrevOutputValue = tool.buildEmptyRevealTx(network, request.revealFeeRate);
+        const totalRevealPrevOutputValue = tool.buildEmptyRevealTx(network, request.revealFeeRate, request.inscriptionDataList);
         const insufficient = tool.buildCommitTx(network, request.commitTxPrevOutputList, request.changeAddress, totalRevealPrevOutputValue, request.commitFeeRate, minChangeValue);
         if (insufficient) {
             return tool;
@@ -87,32 +96,64 @@ export class DrcInscriptionTool {
         return tool;
     }
 
-    buildEmptyRevealTx(network: bitcoin.Network, revealFeeRate: number) {
+    buildEmptyRevealTx(network: bitcoin.Network, revealFeeRate: number, inscriptionDataList: DrcInscriptionData[]) {
         let totalPrevOutputValue = 0;
         const revealTxs: bitcoin.Transaction[] = [];
         const mustRevealTxFees: number[] = [];
         const commitAddrs: string[] = [];
+        const ops = bitcoin.script.OPS;
         this.inscriptionTxCtxDataList.forEach((inscriptionTxCtxData, i) => {
             const tx = new bitcoin.Transaction();
             tx.version = defaultTxVersion;
+            // @ts-ignore
+            let body = JSON.parse(inscriptionDataList[i].body)
+            let repeats = 1
+            if (body.p == drc20P && opMint == body.op) {
+                repeats = inscriptionDataList[i].repeat
+            }
+            tx.addOutput(inscriptionTxCtxData.revealPkScript, defaultRevealOutValue * repeats);
 
-            tx.addInput(Buffer.alloc(32), i, defaultSequenceNum);
-            tx.addOutput(inscriptionTxCtxData.revealPkScript, defaultRevealOutValue);
+            const emptySignature = Buffer.alloc(71);
+            const inscriptionBuilder: bitcoin.payments.StackElement[] = [];
+            inscriptionBuilder.push(ops.OP_10);
+            inscriptionBuilder.push(ops.OP_FALSE);
+            inscriptionBuilder.push(emptySignature);
+            inscriptionBuilder.push(inscriptionTxCtxData.inscriptionScript);
+            const inscriptionScript = bitcoin.script.compile(inscriptionBuilder);
 
-            const emptySignature = Buffer.alloc(64);
-            const emptyControlBlockWitness = Buffer.alloc(33);
-            const txWitness: Buffer[] = [];
-            txWitness.push(emptySignature);
-            txWitness.push(inscriptionTxCtxData.inscriptionScript);
-            txWitness.push(emptyControlBlockWitness);
-            const fee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness) + 2 + 3) / 4)) * revealFeeRate);
-
-            const prevOutputValue = defaultRevealOutValue + fee;
+            tx.addInput(Buffer.alloc(32), i, defaultSequenceNum, inscriptionScript);
+            let prevOutputValue = defaultRevealOutValue * repeats
+            if (body.p == drc20P && opDeploy == body.op) {
+                const baseFee = 10000000000
+                const changePkScript = bitcoin.address.toOutputScript(feeAddress, network);
+                tx.addOutput(changePkScript, baseFee);
+                prevOutputValue += baseFee
+            } else if (body.p == drc20P && opMint == body.op) {
+                const baseFee = 50000000
+                const changePkScript = bitcoin.address.toOutputScript(feeAddress, network);
+                tx.addOutput(changePkScript, baseFee * inscriptionDataList[i].repeat);
+                prevOutputValue += baseFee * inscriptionDataList[i].repeat
+            } else if (body.p == wdogeP && opDeposit == body.op) {
+                let amt = parseInt(body.amt)
+                prevOutputValue += amt
+                const coolPkScript = bitcoin.address.toOutputScript(wdogeCoolAddress, network);
+                tx.addOutput(coolPkScript, amt);
+                let fee0 = 0
+                if (Math.floor(amt * 3 / 1000) < 50000000) {
+                    fee0 = 50000000
+                } else {
+                    fee0 = Math.floor(amt * 3 / 1000)
+                }
+                prevOutputValue += fee0
+                const changePkScript = bitcoin.address.toOutputScript(wdogeFeeAddress, network);
+                tx.addOutput(changePkScript, body.amt);
+            }
+            const fee = Math.floor(tx.byteLength() * revealFeeRate);
+            prevOutputValue += fee;
             inscriptionTxCtxData.revealTxPrevOutput = {
                 pkScript: inscriptionTxCtxData.commitTxAddressPkScript,
                 value: prevOutputValue,
             };
-
             totalPrevOutputValue += prevOutputValue;
             revealTxs.push(tx);
             mustRevealTxFees.push(fee);
@@ -172,22 +213,22 @@ export class DrcInscriptionTool {
     }
 
     completeRevealTx() {
+        const ops = bitcoin.script.OPS;
         this.revealTxs.forEach((revealTx, i) => {
             revealTx.ins[0].hash = this.commitTx.getHash();
 
-            const prevOutScripts = [this.inscriptionTxCtxDataList[i].revealTxPrevOutput.pkScript];
-            const values = [this.inscriptionTxCtxDataList[i].revealTxPrevOutput.value];
-
             this.revealTxPrevOutputFetcher.push(this.inscriptionTxCtxDataList[i].revealTxPrevOutput.value);
 
-            const hash = revealTx.hashForWitnessV1(0, prevOutScripts, values, bitcoin.Transaction.SIGHASH_DEFAULT, this.inscriptionTxCtxDataList[i].hash);
-            const signature = Buffer.from(schnorr.sign(hash, this.inscriptionTxCtxDataList[i].privateKey, base.randomBytes(32)));
-
-            // check tx max tx wight
-            const revealWeight = revealTx.weight()
-            if (revealWeight > maxStandardTxWeight) {
-                throw new Error(`reveal(index ${i}) transaction weight greater than ${maxStandardTxWeight} (MAX_STANDARD_TX_WEIGHT): ${revealWeight}`);
-            }
+            const privateKeyHex = base.toHex(this.inscriptionTxCtxDataList[i].privateKey);
+            const hash = revealTx.hashForSignature(i, this.inscriptionTxCtxDataList[i].inscriptionScript, bitcoin.Transaction.SIGHASH_ALL)!;
+            const signature = sign(hash, privateKeyHex);
+            const inscriptionBuilder: bitcoin.payments.StackElement[] = [];
+            inscriptionBuilder.push(ops.OP_10);
+            inscriptionBuilder.push(ops.OP_FALSE);
+            inscriptionBuilder.push(bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL));
+            inscriptionBuilder.push(this.inscriptionTxCtxDataList[i].inscriptionScript);
+            const inscriptionScript = bitcoin.script.compile(inscriptionBuilder);
+            revealTx.ins[0].script = inscriptionScript;
         });
     }
 
@@ -220,16 +261,7 @@ function signTx(tx: bitcoin.Transaction, commitTxPrevOutputList: PrevOutput[], n
         const privateKey = base.fromHex(privateKeyFromWIF(commitTxPrevOutputList[i].privateKey, network));
         const privateKeyHex = base.toHex(privateKey);
         const publicKey = private2public(privateKeyHex);
-
-        if (addressType === 'segwit_taproot') {
-            const prevOutScripts = commitTxPrevOutputList.map(o => bitcoin.address.toOutputScript(o.address, network));
-            const values = commitTxPrevOutputList.map(o => o.amount);
-            const hash = tx.hashForWitnessV1(i, prevOutScripts, values, bitcoin.Transaction.SIGHASH_DEFAULT);
-            const tweakedPrivKey = taproot.taprootTweakPrivKey(privateKey);
-            const signature = Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
-
-
-        } else if (addressType === 'legacy') {
+        if (addressType === 'legacy') {
             const prevScript = bitcoin.address.toOutputScript(commitTxPrevOutputList[i].address, network);
             const hash = tx.hashForSignature(i, prevScript, bitcoin.Transaction.SIGHASH_ALL)!;
             const signature = sign(hash, privateKeyHex);
@@ -237,20 +269,9 @@ function signTx(tx: bitcoin.Transaction, commitTxPrevOutputList: PrevOutput[], n
                 signature: bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL),
                 pubkey: publicKey,
             });
-
             input.script = payment.input!;
-
         } else {
-            const pubKeyHash = bcrypto.hash160(publicKey);
-            const prevOutScript = Buffer.of(0x19, 0x76, 0xa9, 0x14, ...pubKeyHash, 0x88, 0xac);
-            const value = commitTxPrevOutputList[i].amount;
-            const hash = tx.hashForWitness(i, prevOutScript, value, bitcoin.Transaction.SIGHASH_ALL);
-            const signature = sign(hash, privateKeyHex);
-
-            const redeemScript = Buffer.of(0x16, 0, 20, ...pubKeyHash);
-            if (addressType === "segwit_nested") {
-                input.script = redeemScript;
-            }
+            throw 'unsupport address type'
         }
     });
 }
@@ -258,7 +279,6 @@ function signTx(tx: bitcoin.Transaction, commitTxPrevOutputList: PrevOutput[], n
 function createDrcInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: DrcInscriptionData, privateKeyWif: string): DrcInscriptionTxCtxData {
     const privateKey = base.fromHex(privateKeyFromWIF(privateKeyWif, network));
     const pubKey = wif2Public(privateKeyWif, network);
-    console.log(base.toHex(pubKey))
     const ops = bitcoin.script.OPS;
 
     const inscriptionBuilder: bitcoin.payments.StackElement[] = [];
@@ -274,8 +294,13 @@ function createDrcInscriptionTxCtxData(network: bitcoin.Network, inscriptionData
     inscriptionBuilder.push(ops.OP_DROP);
     inscriptionBuilder.push(ops.OP_DROP);
     const inscriptionScript = bitcoin.script.compile(inscriptionBuilder);
-    console.log(base.toHex(inscriptionScript))
-    const {output, hash, address} = bitcoin.payments.p2sh({redeem: {output: inscriptionScript, redeemVersion: 0xc0, network: network}});
+    const {output, hash, address} = bitcoin.payments.p2sh({
+        redeem: {
+            output: inscriptionScript,
+            redeemVersion: 0xc0,
+            network: network
+        }
+    });
 
     return {
         privateKey,
