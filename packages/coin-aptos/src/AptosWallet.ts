@@ -1,3 +1,4 @@
+// @ts-ignore
 import {
     CalcTxHashParams,
     DerivePriKeyParams,
@@ -18,7 +19,7 @@ import {
     ed25519_getDerivedPrivateKey,
     ed25519_getRandomPrivateKey,
     jsonStringifyUniform, SignMsgError
-} from '@okxweb3/coin-base';
+} from "@okxweb3/coin-base/src";
 import {base} from '@okxweb3/crypto-lib';
 import {
     AptosAccount,
@@ -331,16 +332,6 @@ export class AptosWallet extends BaseWallet {
             return Promise.reject(SignTxError);
         }
     }
-
-    /*
-      export interface SignMessagePayload {
-      address?: boolean; // Should we include the address of the account in the message
-      application?: boolean; // Should we include the domain of the dApp
-      chainId?: boolean; // Should we include the current chain id the wallet is connected to
-      message: string; // The message to be signed and displayed to the user
-      nonce: string; // A nonce the dApp should generate
-    }
-     */
     async signMessageByPayload(param: SignMessageByPayloadParams): Promise<any> {
         try {
             const messagePayload = param.data as SignMessagePayload
