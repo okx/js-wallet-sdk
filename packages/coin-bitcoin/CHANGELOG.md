@@ -14,3 +14,9 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** support btc nft/brc20 listing/buying ([34](https://github.com/okx/js-wallet-sdk/pull/34))
+
+# [1.0.3](https://github.com/okx/js-wallet-sdk) (2023-12-05)
+
+### Feature
+
+- **coin-bitcoin:** support dogecoin drc20 deploy/mint/wdoge/swap ([36](https://github.com/okx/js-wallet-sdk/pull/36))

@@ -170,5 +170,39 @@ let signParams: SignTxParams = {
 };
 let tx = await wallet.signTransaction(signParams);
 ```
+sign drc 20
+```typescript
+import { DogeWallet } from "@okxweb3/coin-bitcoin";
+let wallet = new DogeWallet()
+        let privateKey = "QRJx7uvj55L3oVRADWJfFjJ31H9Beg75xZ2GcmR8rKFNHA4ZacKJ"
+
+        const commitTxPrevOutputList: PrevOutput[] = [];
+        commitTxPrevOutputList.push({
+            txId: "3cb1d8da082b2146b8f4c09b06e38eb37f0263ecefb8a52600accc75ccef4c90",
+            vOut: 1,
+            amount: 793850000,
+            address: "DJu5mMUKprfnyBhot2fqCsW9sZCsfdfcrZ",
+            privateKey: privateKey,
+        });
+        const inscriptionDataList: DrcInscriptionData[] = [];
+        inscriptionDataList.push({
+            contentType: "text/plain;charset=utf-8",
+            body: `{"p":"drc-20","op":"mint","tick":"MARS","amt":"210000000000"}`,
+            revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+            repeat: 2,
+        });
+
+        const request = {
+            commitTxPrevOutputList,
+            commitFeeRate: 50000,
+            revealFeeRate: 50000,
+            inscriptionDataList,
+            changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        };
+        let res= await wallet.signTransaction({privateKey:privateKey,data:{type:1,data:request}})
+        console.log(JSON.stringify(res))
+```
+
+
 
 ## License: MIT
