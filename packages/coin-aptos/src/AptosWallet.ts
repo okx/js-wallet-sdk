@@ -19,7 +19,7 @@ import {
     ed25519_getDerivedPrivateKey,
     ed25519_getRandomPrivateKey,
     jsonStringifyUniform, SignMsgError
-} from "@okxweb3/coin-base/src";
+} from "@okxweb3/coin-base";
 import {base} from '@okxweb3/crypto-lib';
 import {
     AptosAccount,

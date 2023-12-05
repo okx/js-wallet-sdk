@@ -10,7 +10,7 @@ import {
     transferPayload,
     HexString, SignMessagePayload, AptosWallet
 } from '../src';
-import {SignMessageByPayloadParams} from "@okxweb3/coin-base/src";
+import {SignMessageByPayloadParams} from "@okxweb3/coin-base";
 
 describe("aptos", () => {
     test("address", async () => {
