@@ -32,6 +32,11 @@ export type SignTxParams = {
   data: any;
 };
 
+export type SignMessageByPayloadParams = {
+  privateKey: string;
+  data: any;
+};
+
 export type VerifyMessageParams = {
   signature: string;
   data: any;
