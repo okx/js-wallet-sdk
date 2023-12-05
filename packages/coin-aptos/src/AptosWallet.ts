@@ -6,7 +6,6 @@ import {
     NewAddressData,
     NewAddressParams,
     SignTxParams,
-    SignMessageByPayloadParams,
     ValidAddressData,
     ValidAddressParams,
     ValidSignedTransactionParams,
@@ -125,6 +124,11 @@ export type SignMessageByPayloadResponse = {
     signature: string; // The signed full message
     bitmap?: Uint8Array; // a 4-byte (32 bits) bit-vector of length N
 }
+
+export type SignMessageByPayloadParams = {
+    privateKey: string;
+    data: any;
+};
 
 export class AptosWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
