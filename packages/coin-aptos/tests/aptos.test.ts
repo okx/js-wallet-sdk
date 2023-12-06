@@ -182,7 +182,9 @@ describe("aptos", () => {
         const messagePayload: SignMessagePayload = {
             address: true,
             application: true,
+            dAppDomain: "dapp",
             chainId: true,
+            chain_id: 1,
             message: "Welcome to dApp!",
             nonce: "9999"
         }
