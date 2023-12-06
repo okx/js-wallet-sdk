@@ -108,7 +108,9 @@ export type AptosBasePram = {
 export type SignMessagePayload = {
     address?: boolean; // Should we include the address of the account in the message
     application?: boolean; // Should we include the domain of the dApp
+    dAppDomain?: string
     chainId?: boolean; // Should we include the current chain id the wallet is connected to
+    chain_id?: number
     message: string; // The message to be signed and displayed to the user
     nonce: string; // A nonce the dApp should generate
 }
@@ -336,6 +338,7 @@ export class AptosWallet extends BaseWallet {
             return Promise.reject(SignTxError);
         }
     }
+
     async signMessageByPayload(param: SignMessageByPayloadParams): Promise<any> {
         try {
             const messagePayload = param.data as SignMessagePayload
@@ -350,11 +353,11 @@ export class AptosWallet extends BaseWallet {
                 fullMessage = fullMessage.concat("\naddress: ", addr)
             }
             if (messagePayload?.application) {
-                application = 'dapp'
+                application = messagePayload.dAppDomain == undefined ? "" : messagePayload.dAppDomain
                 fullMessage = fullMessage.concat("\napplication: ", application)
             }
             if (messagePayload.chainId) {
-                chainId = 1;
+                chainId = messagePayload.chain_id == undefined ? 0 : messagePayload.chain_id;
                 fullMessage = fullMessage.concat("\nchainId: ", chainId.toString())
             }
             fullMessage = fullMessage.concat("\nmessage: ", messagePayload.message)
