@@ -44,7 +44,7 @@ import {
     getMPCSignedMessage,
     signWithStdSignDocForINJ,
     SignWithSignDocForINJ,
-    getMPCSignedMessageForINJ,
+    getMPCSignedMessageForINJ, getMPCTransactionForINJ,
 } from './';
 
 export interface CosmosTransferParam {
@@ -702,6 +702,16 @@ export class InjectiveWallet extends CosmosWallet {
         try {
             const ethSign = this.supportEthSign()
             return Promise.resolve(getMPCSignedMessageForINJ(param.hash, param.sigs as string, param.publicKey!, ethSign));
+        } catch (e) {
+            return Promise.reject(GetMpcTransactionError);
+        }
+    }
+
+    async getMPCTransaction(param: MpcTransactionParam): Promise<string> {
+        try {
+            const ethSign = this.supportEthSign();
+            const signedTx = getMPCTransactionForINJ(param.raw, param.sigs as string, param.publicKey!, ethSign);
+            return Promise.resolve(signedTx);
         } catch (e) {
             return Promise.reject(GetMpcTransactionError);
         }

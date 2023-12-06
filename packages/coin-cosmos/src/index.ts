@@ -303,6 +303,25 @@ export function getMPCTransaction(raw: string, sig: string, publicKey: string, u
     return base.toBase64(TxRaw.encode(txRaw).finish());
 }
 
+export function getMPCTransactionForINJ(raw: string, sig: string, publicKey: string, useEthSecp256k1?: boolean) {
+    const signDoc = SignDoc.decode(base.fromHex(raw));
+    if (useEthSecp256k1) {
+        const messageHash = base.keccak256(makeSignBytes(signDoc));
+        const signature = base.fromHex(sig);
+        const r = signature.slice(0, 32);
+        const s = signature.slice(32, 64);
+        //const v = signUtil.secp256k1.getV(messageHash, base.toHex(r), base.toHex(s), base.fromHex(publicKey));
+        sig = base.toHex(Buffer.concat([Uint8Array.from(signature)/*, Uint8Array.of(v)*/]));
+    }
+    const signature = encodeSecp256k1Signature(base.fromHex(publicKey), base.fromHex(sig), useEthSecp256k1!);
+    const txRaw = TxRaw.fromPartial({
+        bodyBytes: signDoc.bodyBytes,
+        authInfoBytes: signDoc.authInfoBytes,
+        signatures: [base.fromBase64(signature)],
+    });
+    return base.toBase64(TxRaw.encode(txRaw).finish());
+}
+
 export function getMPCSignedMessage(hash: string, sig: string, publicKey: string, useEthSecp256k1?: boolean) {
     if (useEthSecp256k1) {
         const signature = base.fromHex(sig);
