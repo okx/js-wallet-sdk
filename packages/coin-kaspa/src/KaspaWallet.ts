@@ -3,14 +3,17 @@ import {
     GetDerivedPathParam,
     NewAddressParams,
     ValidAddressParams,
-    SignTxParams, SignTxError
+    SignTxParams,
+    SignTxError,
+    CalcTxHashParams,
+    CalcTxHashError
 } from "@okxweb3/coin-base";
 import {
     addressFromPrvKey,
     pubKeyFromPrvKey,
     validateAddress
 } from "./address";
-import { transfer, signMessage } from "./transaction";
+import { transfer, signMessage, calcTxHash } from "./transaction";
 
 export class KaspaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -36,6 +39,17 @@ export class KaspaWallet extends BaseWallet {
             return Promise.resolve(transfer(param.data, param.privateKey));
         } catch (e) {
             return Promise.reject(SignTxError);
+        }
+    }
+
+    async calcTxHash(param: CalcTxHashParams): Promise<any> {
+        try {
+            if (typeof param.data === "string") {
+                return Promise.resolve(calcTxHash(JSON.parse(param.data).transaction));
+            }
+            return Promise.resolve(calcTxHash(param.data.transaction));
+        } catch (e) {
+            return Promise.reject(CalcTxHashError);
         }
     }
 
