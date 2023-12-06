@@ -49,10 +49,31 @@ const PersonalMessageSigningHashKey = Buffer.from("PersonalMessageSigningHash");
 
 export function transfer(txData: TxData, privateKey: string) {
     const transaction = Transaction.fromTxData(txData).sign(privateKey)
-    return {
-        tx: transaction.getMessage(),
-        txId: transaction.getTxId(),
-    };
+    return transaction.getMessage();
+}
+
+export function calcTxHash(tx: Transaction) {
+    const hashWriter = new HashWriter();
+    hashWriter.writeUInt16LE(tx.version);
+    hashWriter.writeUInt64LE(tx.inputs.length);
+    tx.inputs.forEach(input => {
+        hashWriter.writeHash(base.fromHex(input.previousOutpoint.transactionId));
+        hashWriter.writeUInt32LE(input.previousOutpoint.index);
+        hashWriter.writeVarBytes(Buffer.alloc(0));
+        hashWriter.writeUInt64LE(input.sequence);
+    });
+    hashWriter.writeUInt64LE(tx.outputs.length);
+    tx.outputs.forEach(output => {
+        hashWriter.writeUInt64LE(output.amount);
+        hashWriter.writeUInt16LE(output.scriptPublicKey.version);
+        hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
+    });
+    hashWriter.writeUInt64LE(tx.lockTime);
+    hashWriter.writeHash(base.fromHex(tx.subnetworkId));
+    hashWriter.writeUInt64LE(0);
+    hashWriter.writeVarBytes(Buffer.alloc(0));
+
+    return base.toHex(base.blake2(hashWriter.toBuffer(),256, TransactionIDKey));
 }
 
 export function signMessage(message: string, privateKey: string) {
@@ -140,30 +161,6 @@ export class Transaction {
             },
             allowOrphan: false,
         });
-    }
-
-    getTxId() {
-        const hashWriter = new HashWriter();
-        hashWriter.writeUInt16LE(this.version);
-        hashWriter.writeUInt64LE(this.inputs.length);
-        this.inputs.forEach(input => {
-           hashWriter.writeHash(base.fromHex(input.previousOutpoint.transactionId));
-           hashWriter.writeUInt32LE(input.previousOutpoint.index);
-           hashWriter.writeVarBytes(Buffer.alloc(0));
-           hashWriter.writeUInt64LE(input.sequence);
-        });
-        hashWriter.writeUInt64LE(this.outputs.length);
-        this.outputs.forEach(output => {
-            hashWriter.writeUInt64LE(output.amount);
-            hashWriter.writeUInt16LE(output.scriptPublicKey.version);
-            hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
-        });
-        hashWriter.writeUInt64LE(this.lockTime);
-        hashWriter.writeHash(base.fromHex(this.subnetworkId));
-        hashWriter.writeUInt64LE(0);
-        hashWriter.writeVarBytes(Buffer.alloc(0));
-
-        return base.toHex(base.blake2(hashWriter.toBuffer(),256, TransactionIDKey));
     }
 }
 

@@ -53,6 +53,14 @@ describe("kaspa", () => {
         console.log(tx);
     });
 
+    test("calculate txId", async () => {
+        const txId = await wallet.calcTxHash({
+            data: {"transaction":{"version":0,"inputs":[{"previousOutpoint":{"transactionId":"ec62c785badb0ee693435841d35bd05da9c8a40aa2d568dddb0dd47410e7e78a","index":1},"signatureScript":"411687d956de8e3cc53b9dbf20ede3922b422595abbad31ecf38ff90c0cf8ef7c3b5ae71628e041a3a0f1b9ad6e14bb6d49dd7c35f06c46316b67c10d477c29ac001","sequence":0,"sigOpCount":1}],"outputs":[{"scriptPublicKey":{"version":0,"scriptPublicKey":"200395c7c9703e0ff81596043f0a5e00684f860a1ab0f24c5a94931d1e0d94c4beac"},"amount":587700}],"lockTime":0,"subnetworkId":"0000000000000000000000000000000000000000"},"allowOrphan":false},
+        });
+
+        expect(txId).toBe("a1e32db317f2d843ad564d58e4348d24995a74ab3b6d205bf759747edeb127cf");
+    });
+
     test("sign message", async () => {
         const signature = await wallet.signMessage({
             data: {
