@@ -335,15 +335,15 @@ export function getMPCSignedMessage(hash: string, sig: string, publicKey: string
 }
 
 export function getMPCSignedMessageForINJ(hash: string, sig: string, publicKey: string, useEthSecp256k1?: boolean) {
-    if (useEthSecp256k1) {
-        const signature = base.fromHex(sig);
-        const r = signature.slice(0, 32);
-        const s = signature.slice(32, 64);
-        // const v = signUtil.secp256k1.getV(base.fromHex(hash), base.toHex(r), base.toHex(s), base.fromHex(publicKey));
-        sig = base.toHex(Buffer.concat([Uint8Array.from(signature)]));
-    }
+    // if (useEthSecp256k1) {
+    //     const signature = base.fromHex(sig);
+    //     const r = signature.slice(0, 32);
+    //     const s = signature.slice(32, 64);
+    //     // const v = signUtil.secp256k1.getV(base.fromHex(hash), base.toHex(r), base.toHex(s), base.fromHex(publicKey));
+    //     sig = base.toHex(Buffer.concat([Uint8Array.from(signature)]));
+    // }
 
-    return encodeSecp256k1Signature(base.fromHex(publicKey), base.fromHex(sig), useEthSecp256k1!);
+    return encodeSecp256k1Signature(base.fromHex(publicKey), base.fromHex(sig), false);
 }
 
 export function validSignedTransaction(tx: string, chainId: string, accountNumber: number, useEthSecp256k1: boolean, skipCheckSig: boolean) {

@@ -707,15 +707,15 @@ export class InjectiveWallet extends CosmosWallet {
         }
     }
 
-    async getMPCTransaction(param: MpcTransactionParam): Promise<string> {
-        try {
-            const ethSign = this.supportEthSign();
-            const signedTx = getMPCTransactionForINJ(param.raw, param.sigs as string, param.publicKey!, ethSign);
-            return Promise.resolve(signedTx);
-        } catch (e) {
-            return Promise.reject(GetMpcTransactionError);
-        }
-    }
+    // async getMPCTransaction(param: MpcTransactionParam): Promise<string> {
+    //     try {
+    //         const ethSign = this.supportEthSign();
+    //         const signedTx = getMPCTransactionForINJ(param.raw, param.sigs as string, param.publicKey!, ethSign);
+    //         return Promise.resolve(signedTx);
+    //     } catch (e) {
+    //         return Promise.reject(GetMpcTransactionError);
+    //     }
+    // }
 }
 
 export class CelestiaWallet extends CosmosWallet {

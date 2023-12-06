@@ -5,7 +5,7 @@ import {
     amount2StdFee,
     CommonCosmosWallet,
     GammAminoConverters,
-    GammRegistry,
+    GammRegistry, getMPCSignedMessageForINJ,
     getNewAddress,
     InjectiveWallet,
     SeiWallet,
@@ -16,6 +16,7 @@ import {
     SignMessageData,
     validateAddress
 } from '../src';
+import {disconnect} from "cluster";
 
 describe("luna", () => {
     test("address", async () => {
@@ -34,15 +35,15 @@ describe("luna", () => {
         const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
         const pk = base.fromHex(privateKey)
         const v = await sendToken(pk,
-          "bombay-12",
-          4,
-          588053,
-          "terra1xmkczk59xgjhzgwhfg8l5tgs2uftpuj9cgazr4",
-          "terra1vm9pfph4syf9g3hfz29636cfw5wp9n6xwut8xu",
-          amount2Coins(demon, 10000),
-          amount2StdFee(demon, 2000, 100000),
-          0,
-          "test",
+            "bombay-12",
+            4,
+            588053,
+            "terra1xmkczk59xgjhzgwhfg8l5tgs2uftpuj9cgazr4",
+            "terra1vm9pfph4syf9g3hfz29636cfw5wp9n6xwut8xu",
+            amount2Coins(demon, 10000),
+            amount2StdFee(demon, 2000, 100000),
+            0,
+            "test",
         )
         console.info(v)
         expect(v).toStrictEqual("CpUBCowBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmwKLHRlcnJhMXhta2N6azU5eGdqaHpnd2hmZzhsNXRnczJ1ZnRwdWo5Y2dhenI0Eix0ZXJyYTF2bTlwZnBoNHN5ZjlnM2hmejI5NjM2Y2Z3NXdwOW42eHd1dDh4dRoOCgV1bHVuYRIFMTAwMDASBHRlc3QSZwpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohA/ed1wKaWQXlV5BhQrDFfsIfR0XxKbjAV67M9C4nULpuEgQKAggBGAQSEwoNCgV1bHVuYRIEMjAwMBCgjQYaQJHtpCP8lR0lyC+S97GrMJSnjmHCfomESW//iLEr8HVXKsekP5TM4rG2lPPjckZeZ+wAFgUgSDxj1ZzdVTzwtsA=")
@@ -53,19 +54,19 @@ describe("luna", () => {
         const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
         const pk = base.fromHex(privateKey)
         const v = await sendIBCToken(
-          pk,
-          "osmosis-1",
-          2,
-          584406,
-          "osmo1lyjxk4t835yj6u8l2mg6a6t2v9x3nj7ulaljz2",
-          "cosmos1rvs5xph4l3px2efynqsthus8p6r4exyr7ckyxv",
-          amount2Coin(demon, 100000),
-          "transfer",
-          "channel-0",
-          amount2StdFee(demon, 0, 100000),
-          0,
-          undefined,
-          Math.ceil(Date.now() / 1000) + 300,
+            pk,
+            "osmosis-1",
+            2,
+            584406,
+            "osmo1lyjxk4t835yj6u8l2mg6a6t2v9x3nj7ulaljz2",
+            "cosmos1rvs5xph4l3px2efynqsthus8p6r4exyr7ckyxv",
+            amount2Coin(demon, 100000),
+            "transfer",
+            "channel-0",
+            amount2StdFee(demon, 0, 100000),
+            0,
+            undefined,
+            Math.ceil(Date.now() / 1000) + 300,
         )
         console.info(v)
     });
@@ -75,12 +76,12 @@ describe("luna", () => {
         const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
         const pk = base.fromHex(privateKey)
         const v = await sendMessages(
-          pk,
-          "osmosis-1",
-          2,
-          584406,
-          [],
-          amount2StdFee(demon, 0, 100000),
+            pk,
+            "osmosis-1",
+            2,
+            584406,
+            [],
+            amount2StdFee(demon, 0, 100000),
         )
         console.info(v)
     });
@@ -89,7 +90,7 @@ describe("luna", () => {
         const data = "{\n  \"chain_id\": \"osmosis-1\",\n  \"account_number\": \"584406\",\n  \"sequence\": \"1\",\n  \"fee\": {\n    \"gas\": \"250000\",\n    \"amount\": [\n      {\n        \"denom\": \"uosmo\",\n        \"amount\": \"0\"\n      }\n    ]\n  },\n  \"msgs\": [\n    {\n      \"type\": \"osmosis/gamm/swap-exact-amount-in\",\n      \"value\": {\n        \"sender\": \"osmo1lyjxk4t835yj6u8l2mg6a6t2v9x3nj7ulaljz2\",\n        \"routes\": [\n          {\n            \"poolId\": \"722\",\n            \"tokenOutDenom\": \"ibc/6AE98883D4D5D5FF9E50D7130F1305DA2FFA0C652D1DD9C123657C6B4EB2DF8A\"\n          }\n        ],\n        \"tokenIn\": {\n          \"denom\": \"uosmo\",\n          \"amount\": \"10000\"\n        },\n        \"tokenOutMinAmount\": \"3854154180813018\"\n      }\n    }\n  ],\n  \"memo\": \"\"\n}"
         const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
         const prefix = "osmo"
-        const  tt = await sendAminoMessage(privateKey, prefix, data, GammAminoConverters, GammRegistry)
+        const tt = await sendAminoMessage(privateKey, prefix, data, GammAminoConverters, GammRegistry)
         console.info(tt)
     });
 });
@@ -274,6 +275,16 @@ describe("injective", () => {
         const data: SignMessageData = {type: "signDoc", data: message}
         const v = await wallet.signMessage({privateKey, data})
         console.info(v)
+    });
+
+    test("injective-getMPCSignedMessageForINJ", async () => {
+        const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
+        const hash: string = "3dc18724d2fc843b61e01224b9789057347"
+        const sig: string = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const publicKey: string = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const useEthSecp256k1: boolean = true
+        let res = getMPCSignedMessageForINJ(hash, sig, publicKey, useEthSecp256k1)
+        expect(res).toBe("68QtrhJF+tQDvRj1n3KD3BhyTS/IQ7YeASJLl4kFc0frxC2uEkX61AO9GPWfcoPcGHJNL8hDth4BIkuXiQVzRw==")
     });
 
     test("injective-signmessage-2", async () => {
