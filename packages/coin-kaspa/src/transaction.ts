@@ -43,8 +43,22 @@ export type TxData = {
     dustSize?: number // min output amount
 };
 
+const TransactionSigningHashKey = Buffer.from("TransactionSigningHash");
+const TransactionIDKey = Buffer.from("TransactionID");
+const PersonalMessageSigningHashKey = Buffer.from("PersonalMessageSigningHash");
+
 export function transfer(txData: TxData, privateKey: string) {
-    return Transaction.fromTxData(txData).sign(privateKey).getMessage();
+    const transaction = Transaction.fromTxData(txData).sign(privateKey)
+    return {
+        tx: transaction.getMessage(),
+        txId: transaction.getTxId(),
+    };
+}
+
+export function signMessage(message: string, privateKey: string) {
+    const hash = base.blake2(Buffer.from(message),256, PersonalMessageSigningHashKey);
+    const signature = signUtil.schnorr.secp256k1.schnorr.sign(hash, base.toHex(base.fromHex(privateKey)));
+    return base.toHex(signature);
 }
 
 export class Transaction {
@@ -126,6 +140,30 @@ export class Transaction {
             },
             allowOrphan: false,
         });
+    }
+
+    getTxId() {
+        const hashWriter = new HashWriter();
+        hashWriter.writeUInt16LE(this.version);
+        hashWriter.writeUInt64LE(this.inputs.length);
+        this.inputs.forEach(input => {
+           hashWriter.writeHash(base.fromHex(input.previousOutpoint.transactionId));
+           hashWriter.writeUInt32LE(input.previousOutpoint.index);
+           hashWriter.writeVarBytes(Buffer.alloc(0));
+           hashWriter.writeUInt64LE(input.sequence);
+        });
+        hashWriter.writeUInt64LE(this.outputs.length);
+        this.outputs.forEach(output => {
+            hashWriter.writeUInt64LE(output.amount);
+            hashWriter.writeUInt16LE(output.scriptPublicKey.version);
+            hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
+        });
+        hashWriter.writeUInt64LE(this.lockTime);
+        hashWriter.writeHash(base.fromHex(this.subnetworkId));
+        hashWriter.writeUInt64LE(0);
+        hashWriter.writeVarBytes(Buffer.alloc(0));
+
+        return base.toHex(base.blake2(hashWriter.toBuffer(),256, TransactionIDKey));
     }
 }
 
@@ -262,8 +300,6 @@ function hashTxOut(hashWriter: HashWriter, output: TransactionOutput) {
     hashWriter.writeUInt16LE(0); // TODO: USE REAL SCRIPT VERSION
     hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
 }
-
-const TransactionSigningHashKey = Buffer.from("TransactionSigningHash");
 
 class HashWriter {
     bufLen = 0;

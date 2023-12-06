@@ -52,4 +52,15 @@ describe("kaspa", () => {
         const tx = await wallet.signTransaction(param);
         console.log(tx);
     });
+
+    test("sign message", async () => {
+        const signature = await wallet.signMessage({
+            data: {
+                message: "Hello Kaspa!",
+            },
+            privateKey: "d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff",
+        });
+
+        console.log(signature);
+    });
 });

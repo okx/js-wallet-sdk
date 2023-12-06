@@ -10,7 +10,7 @@ import {
     pubKeyFromPrvKey,
     validateAddress
 } from "./address";
-import { transfer } from "./transaction";
+import { transfer, signMessage } from "./transaction";
 
 export class KaspaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -34,6 +34,14 @@ export class KaspaWallet extends BaseWallet {
     async signTransaction(param: SignTxParams): Promise<any> {
         try {
             return Promise.resolve(transfer(param.data, param.privateKey));
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async signMessage(param: SignTxParams): Promise<any> {
+        try {
+            return Promise.resolve(signMessage(param.data.message, param.privateKey));
         } catch (e) {
             return Promise.reject(SignTxError);
         }

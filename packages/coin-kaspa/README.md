@@ -80,5 +80,20 @@ let p: SignTxParams = {
 let tx = await wallet.signTransaction(p);
 ```
 
+### Sign message
+
+```typescript
+import { KaspaWallet } from "@okxweb3/coin-kaspa";
+
+let wallet = new KaspaWallet();
+let p: SignTxParams = {
+    data: {
+        message: "Hello Kaspa!",
+    },
+    privateKey: "d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff",
+};
+let sig = await wallet.signMessage(p);
+```
+
 ## License
 Most packages or folder are [MIT](<https://github.com/okx/js-wallet-sdk/blob/main/LICENSE>) licensed, see package or folder for the respective license.
