@@ -4,7 +4,7 @@ import { decodeAddress } from "./lib/address";
 type TransactionInput = {
     previousOutpoint: Outpoint
     signatureScript: string
-    sequence: number
+    sequence: string | number
     sigOpCount: number
 };
 
@@ -14,7 +14,7 @@ type Outpoint = {
 };
 
 type TransactionOutput = {
-    amount: number
+    amount: string | number
     scriptPublicKey: ScriptPublicKey
 };
 
@@ -27,20 +27,20 @@ export type Input = {
     txId: string
     vOut: number
     address: string
-    amount: number
+    amount: string | number
 };
 
 export type Output = {
     address: string
-    amount: number
+    amount: string
 };
 
 export type TxData = {
     inputs: Input[]
     outputs: Output[]
     address: string // change address
-    fee: number // input count * 10000
-    dustSize?: number // min output amount
+    fee: string // input count * 10000
+    dustSize?: string // min output amount
 };
 
 const TransactionSigningHashKey = Buffer.from("TransactionSigningHash");
@@ -55,22 +55,22 @@ export function transfer(txData: TxData, privateKey: string) {
 export function calcTxHash(tx: Transaction) {
     const hashWriter = new HashWriter();
     hashWriter.writeUInt16LE(tx.version);
-    hashWriter.writeUInt64LE(tx.inputs.length);
+    hashWriter.writeUInt64LE(BigInt(tx.inputs.length));
     tx.inputs.forEach(input => {
         hashWriter.writeHash(base.fromHex(input.previousOutpoint.transactionId));
         hashWriter.writeUInt32LE(input.previousOutpoint.index);
         hashWriter.writeVarBytes(Buffer.alloc(0));
-        hashWriter.writeUInt64LE(input.sequence);
+        hashWriter.writeUInt64LE(BigInt(input.sequence));
     });
-    hashWriter.writeUInt64LE(tx.outputs.length);
+    hashWriter.writeUInt64LE(BigInt(tx.outputs.length));
     tx.outputs.forEach(output => {
-        hashWriter.writeUInt64LE(output.amount);
+        hashWriter.writeUInt64LE(BigInt(output.amount));
         hashWriter.writeUInt16LE(output.scriptPublicKey.version);
         hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
     });
-    hashWriter.writeUInt64LE(tx.lockTime);
+    hashWriter.writeUInt64LE(BigInt(tx.lockTime));
     hashWriter.writeHash(base.fromHex(tx.subnetworkId));
-    hashWriter.writeUInt64LE(0);
+    hashWriter.writeUInt64LE(0n);
     hashWriter.writeVarBytes(Buffer.alloc(0));
 
     return base.toHex(base.blake2(hashWriter.toBuffer(),256, TransactionIDKey));
@@ -86,17 +86,17 @@ export class Transaction {
     version: number = 0;
     inputs: TransactionInput[] = [];
     outputs: TransactionOutput[] = [];
-    lockTime: number = 0;
+    lockTime: string = "0";
     subnetworkId: string = "0000000000000000000000000000000000000000";
 
-    utxos: { pkScript: Buffer, amount: number }[] = [];
+    utxos: { pkScript: Buffer, amount: string | number }[] = [];
 
     static fromTxData(txData: TxData) {
         return new Transaction(txData);
     }
 
     constructor(txData: TxData) {
-        let totalInput = 0;
+        let totalInput = 0n;
         txData.inputs.forEach(input => {
             this.inputs.push({
                 previousOutpoint: {
@@ -104,7 +104,7 @@ export class Transaction {
                     index: input.vOut,
                 },
                 signatureScript: "",
-                sequence: 0,
+                sequence: "0",
                 sigOpCount: 1,
             });
 
@@ -113,10 +113,10 @@ export class Transaction {
                 amount: input.amount,
             });
 
-            totalInput += input.amount;
+            totalInput += BigInt(input.amount);
         });
 
-        let totalOutput = 0;
+        let totalOutput = 0n;
         txData.outputs.forEach(output => {
             this.outputs.push({
                 scriptPublicKey: {
@@ -126,17 +126,17 @@ export class Transaction {
                 amount: output.amount,
             });
 
-            totalOutput += output.amount;
+            totalOutput += BigInt(output.amount);
         });
 
-        const changeAmount = totalInput - totalOutput - txData.fee;
-        if (changeAmount >= (txData.dustSize || 546)) {
+        const changeAmount = totalInput - totalOutput - BigInt(txData.fee);
+        if (changeAmount >= BigInt(txData.dustSize || 546)) {
             this.outputs.push({
                 scriptPublicKey: {
                     version: 0,
                     scriptPublicKey: base.toHex(payToAddrScript(txData.address)),
                 },
-                amount: changeAmount,
+                amount: changeAmount.toString(),
             });
         }
     }
@@ -200,13 +200,13 @@ function calculateSigHash(transaction: Transaction, hashType: number, inputIndex
     hashOutpoint(hashWriter, input);
     hashWriter.writeUInt16LE(0); // TODO: USE REAL SCRIPT VERSION
     hashWriter.writeVarBytes(utxo.pkScript);
-    hashWriter.writeUInt64LE(utxo.amount);
-    hashWriter.writeUInt64LE(input.sequence);
+    hashWriter.writeUInt64LE(BigInt(utxo.amount));
+    hashWriter.writeUInt64LE(BigInt(input.sequence));
     hashWriter.writeUInt8(1); // sigOpCount
     hashWriter.writeHash(getOutputsHash(transaction, inputIndex, hashType, reusedValues));
-    hashWriter.writeUInt64LE(transaction.lockTime);
+    hashWriter.writeUInt64LE(BigInt(transaction.lockTime));
     hashWriter.writeHash(zeroSubnetworkID()); // TODO: USE REAL SUBNETWORK ID
-    hashWriter.writeUInt64LE(0); // TODO: USE REAL GAS
+    hashWriter.writeUInt64LE(0n); // TODO: USE REAL GAS
     hashWriter.writeHash(zeroHash()); // TODO: USE REAL PAYLOAD HASH
     hashWriter.writeUInt8(hashType);
 
@@ -242,7 +242,7 @@ function getSequencesHash(transaction: Transaction, hashType: number, reusedValu
 
     if (!reusedValues.sequencesHash) {
         const hashWriter = new HashWriter();
-        transaction.inputs.forEach(input => hashWriter.writeUInt64LE(input.sequence));
+        transaction.inputs.forEach(input => hashWriter.writeUInt64LE(BigInt(input.sequence)));
         reusedValues.sequencesHash = hashWriter.finalize();
     }
 
@@ -293,7 +293,7 @@ function hashOutpoint(hashWriter: HashWriter, input: TransactionInput) {
 }
 
 function hashTxOut(hashWriter: HashWriter, output: TransactionOutput) {
-    hashWriter.writeUInt64LE(output.amount);
+    hashWriter.writeUInt64LE(BigInt(output.amount));
     hashWriter.writeUInt16LE(0); // TODO: USE REAL SCRIPT VERSION
     hashWriter.writeVarBytes(base.fromHex(output.scriptPublicKey.scriptPublicKey));
 }
@@ -328,7 +328,7 @@ class HashWriter {
     }
 
     writeVarBytes(buf: Buffer) {
-        this.writeUInt64LE(buf.length);
+        this.writeUInt64LE(BigInt(buf.length));
         this.write(buf);
         return this;
     }
@@ -354,9 +354,9 @@ class HashWriter {
         return this;
     }
 
-    writeUInt64LE(n: number) {
+    writeUInt64LE(bn: bigint) {
         const buf = Buffer.alloc(8);
-        buf.writeBigUInt64LE(BigInt(n));
+        buf.writeBigUInt64LE(bn);
         this.write(buf);
         return this;
     };
