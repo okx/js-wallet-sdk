@@ -32,3 +32,7 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-base:** support NoStrAssets  ([33](https://github.com/okx/js-wallet-sdk/pull/33))
+
+# [1.0.6](https://github.com/okx/js-wallet-sdk) (2023-12-08)
+
+- **coin-base:** remove inj from CoinCurveMap ([36](https://github.com/okx/js-wallet-sdk/pull/36))
