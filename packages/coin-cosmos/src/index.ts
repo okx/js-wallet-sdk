@@ -38,7 +38,7 @@ export function addressFromPublic(publicKeyHex: string, prefix: string = "cosmos
     if (useEthSecp256k1) {
         if (publicKey.length !== 64) {
             const pk = signUtil.secp256k1.publicKeyConvert(publicKey, false);
-            publicKey = Buffer.from(pk!.slice(1));
+            publicKey = Buffer.from(pk!);
         }
         address = public2Address(publicKey, true);
     } else {
