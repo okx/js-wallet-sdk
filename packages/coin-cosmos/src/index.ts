@@ -36,11 +36,15 @@ export function addressFromPublic(publicKeyHex: string, prefix: string = "cosmos
     let address;
     let publicKey = base.fromHex(publicKeyHex);
     if (useEthSecp256k1) {
-        const pk = signUtil.secp256k1.publicKeyConvert(publicKey, false);
-        publicKey = Buffer.from(pk!);
+        if (publicKey.length !== 65) {
+            const pk = signUtil.secp256k1.publicKeyConvert(publicKey, false);
+            publicKey = Buffer.from(pk!);
+        }
         address = public2Address(publicKey, true);
     } else {
+        if (publicKey.length !== 33) {
         publicKey = signUtil.secp256k1.publicKeyConvert(publicKey, true)!;
+        }
         address = public2Address(publicKey, false);
     }
     return base.toBech32(prefix, address);
