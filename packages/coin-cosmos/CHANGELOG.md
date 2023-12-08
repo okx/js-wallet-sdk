@@ -24,6 +24,6 @@ All notable changes to this project will be documented in this file.
 
 # [1.0.5](https://github.com/okx/js-wallet-sdk) (2023-12-08)
 
-- **coin-cosmos:** fix injective wallet get address by public key bug ([36](https://github.com/okx/js-wallet-sdk/pull/36))
+- **coin-cosmos:** fix injective wallet get address by public key bug ([37](https://github.com/okx/js-wallet-sdk/pull/37))
 
 
