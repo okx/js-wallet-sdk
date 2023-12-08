@@ -262,6 +262,16 @@ describe("injective", () => {
         console.info(v)
     });
 
+    test("injective-getAddressByPublicKey", async () => {
+        const wallet = new InjectiveWallet()
+        let c = await wallet.getAddressByPublicKey({
+            publicKey: "038bffbf6a298c27e338b4c9ab670ac4b35678250b9bf4eebea9f56a327f56af7c",
+            hrp: "inj"
+        })
+        console.log(c)
+        expect(c).toEqual('inj1u5m8vf5yw49gut3lrk3trje0zdvlnpduj2zudf')
+    })
+
     test("injective-signmessage", async () => {
         const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
         const wallet = new InjectiveWallet()
