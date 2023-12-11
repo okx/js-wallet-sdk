@@ -11,7 +11,6 @@ import { Serializer, Deserializer, Seq, deserializeVector, serializeVector } fro
 import { AccountAddress } from "./account_address";
 import { Ed25519PublicKey, Ed25519Signature } from "./ed25519";
 import { MultiEd25519PublicKey, MultiEd25519Signature } from "./multi_ed25519";
-
 export abstract class TransactionAuthenticator {
   abstract serialize(serializer: Serializer): void;
 
@@ -24,6 +23,8 @@ export abstract class TransactionAuthenticator {
         return TransactionAuthenticatorMultiEd25519.load(deserializer);
       case 2:
         return TransactionAuthenticatorMultiAgent.load(deserializer);
+      case 3:
+        return TransactionAuthenticatorFeePayer.load(deserializer);
       default:
         throw new Error(`Unknown variant index for TransactionAuthenticator: ${index}`);
     }
@@ -83,9 +84,9 @@ export class TransactionAuthenticatorMultiEd25519 extends TransactionAuthenticat
 
 export class TransactionAuthenticatorMultiAgent extends TransactionAuthenticator {
   constructor(
-    public readonly sender: AccountAuthenticator,
-    public readonly secondary_signer_addresses: Seq<AccountAddress>,
-    public readonly secondary_signers: Seq<AccountAuthenticator>,
+      public readonly sender: AccountAuthenticator,
+      public readonly secondary_signer_addresses: Seq<AccountAddress>,
+      public readonly secondary_signers: Seq<AccountAuthenticator>,
   ) {
     super();
   }
@@ -102,6 +103,36 @@ export class TransactionAuthenticatorMultiAgent extends TransactionAuthenticator
     const secondary_signer_addresses = deserializeVector(deserializer, AccountAddress);
     const secondary_signers = deserializeVector(deserializer, AccountAuthenticator);
     return new TransactionAuthenticatorMultiAgent(sender, secondary_signer_addresses, secondary_signers);
+  }
+}
+
+export class TransactionAuthenticatorFeePayer extends TransactionAuthenticator {
+  constructor(
+      public readonly sender: AccountAuthenticator,
+      public readonly secondary_signer_addresses: Seq<AccountAddress>,
+      public readonly secondary_signers: Seq<AccountAuthenticator>,
+      public readonly fee_payer: { address: AccountAddress; authenticator: AccountAuthenticator },
+  ) {
+    super();
+  }
+
+  serialize(serializer: Serializer): void {
+    serializer.serializeU32AsUleb128(3);
+    this.sender.serialize(serializer);
+    serializeVector<AccountAddress>(this.secondary_signer_addresses, serializer);
+    serializeVector<AccountAuthenticator>(this.secondary_signers, serializer);
+    this.fee_payer.address.serialize(serializer);
+    this.fee_payer.authenticator.serialize(serializer);
+  }
+
+  static load(deserializer: Deserializer): TransactionAuthenticatorMultiAgent {
+    const sender = AccountAuthenticator.deserialize(deserializer);
+    const secondary_signer_addresses = deserializeVector(deserializer, AccountAddress);
+    const secondary_signers = deserializeVector(deserializer, AccountAuthenticator);
+    const address = AccountAddress.deserialize(deserializer);
+    const authenticator = AccountAuthenticator.deserialize(deserializer);
+    const fee_payer = { address, authenticator };
+    return new TransactionAuthenticatorFeePayer(sender, secondary_signer_addresses, secondary_signers, fee_payer);
   }
 }
 

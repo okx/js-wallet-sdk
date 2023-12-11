@@ -8,7 +8,7 @@
 
 /* eslint-disable no-bitwise */
 import { MAX_U32_NUMBER } from "./consts";
-import { Bytes, Uint128, Uint16, Uint32, Uint64, Uint8 } from "./types";
+import {Bytes, Uint128, Uint16, Uint256, Uint32, Uint64, Uint8} from "./types";
 declare const TextDecoder: any;
 
 export class Deserializer {
@@ -154,12 +154,25 @@ export class Deserializer {
   }
 
   /**
+   * Deserializes a uint256 number.
+   *
+   * BCS layout for "uint256": Thirty-two bytes. Binary format in little-endian representation.
+   */
+  deserializeU256(): Uint256 {
+    const low = this.deserializeU128();
+    const high = this.deserializeU128();
+
+    // combine the two 128-bit values and return (little endian)
+    return BigInt((high << BigInt(128)) | low);
+  }
+
+  /**
    * Deserializes a uleb128 encoded uint32 number.
    *
    * BCS use uleb128 encoding in two cases: (1) lengths of variable-length sequences and (2) tags of enum values
    */
   deserializeUleb128AsU32(): Uint32 {
-    let value: bigint = 0n;
+    let value: bigint = BigInt(0);
     let shift = 0;
 
     while (value < MAX_U32_NUMBER) {
@@ -175,7 +188,6 @@ export class Deserializer {
     if (value > MAX_U32_NUMBER) {
       throw new Error("Overflow while parsing uleb128-encoded uint32 value");
     }
-
     return Number(value);
   }
 }

@@ -15,4 +15,5 @@ export * from "./ed25519";
 export * from "./multi_ed25519";
 export * from "./authentication_key";
 
-export type SigningMessage = Buffer;
+// export type SigningMessage = Buffer;
+export type SigningMessage = Uint8Array;
