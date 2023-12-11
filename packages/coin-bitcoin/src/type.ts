@@ -9,7 +9,8 @@ type utxoInput = {
   sequence?: number,
   nonWitnessUtxo?: string,
   bip32Derivation?: Bip32Derivation[],
-  derivationPath?: string
+  derivationPath?: string,
+  sighashType?: number,
 }
 
 type Bip32Derivation = {
@@ -46,6 +47,37 @@ type utxoTx = {
   derivationPath?: string
 }
 
+type ListingData = {
+  nftAddress: string
+  nftUtxo: {
+    txHash: string
+    vout: number
+    coinAmount: number
+    rawTransation: string
+  }
+  receiveBtcAddress: string
+  price: number
+};
+
+type BuyingData = {
+  dummyUtxos: {
+    txHash: string
+    vout: number
+    coinAmount: number
+    rawTransation: string
+  }[]
+  paymentUtxos: {
+    txHash: string
+    vout: number
+    coinAmount: number
+    rawTransation: string
+  }[]
+  receiveNftAddress: string
+  paymentAndChangeAddress: string
+  feeRate: number
+  sellerPsbts: string[]
+}
+
 export {
-  utxoInput, utxoOutput, omniOutput, utxoTx
+  utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData
 };

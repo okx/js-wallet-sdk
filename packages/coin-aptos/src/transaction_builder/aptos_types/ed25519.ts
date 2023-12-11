@@ -20,6 +20,10 @@ export class Ed25519PublicKey {
     this.value = value;
   }
 
+  toBytes(): Bytes {
+    return this.value;
+  }
+
   serialize(serializer: Serializer): void {
     serializer.serializeBytes(this.value);
   }
