@@ -19,4 +19,4 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-kaspa:** add transfer, sign message ([38](https://github.com/okx/js-wallet-sdk/pull/38))
+- **coin-kaspa:** add transfer, sign message ([40](https://github.com/okx/js-wallet-sdk/pull/40))
