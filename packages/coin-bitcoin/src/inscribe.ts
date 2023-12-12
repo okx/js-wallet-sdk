@@ -1,5 +1,5 @@
 import * as bitcoin from "./bitcoinjs-lib";
-import {base,signUtil} from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import * as taproot from "./taproot";
 import * as bcrypto from "./bitcoinjs-lib/crypto";
 import {vectorSize} from "./bitcoinjs-lib/transaction";
@@ -11,8 +11,9 @@ import {
     sign,
     wif2Public
 } from "./txBuild";
-import { secp256k1SignTest } from "@okxweb3/coin-base";
-import { isP2PKH, isP2SHScript, isP2TR } from "./bitcoinjs-lib/psbt/psbtutils";
+import {secp256k1SignTest} from "@okxweb3/coin-base";
+import {isP2PKH, isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
+
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
 export type InscriptionData = {
@@ -125,7 +126,7 @@ export class InscriptionTool {
             txWitness.push(emptySignature);
             txWitness.push(inscriptionTxCtxData.inscriptionScript);
             txWitness.push(emptyControlBlockWitness);
-            const fee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness)+2+3)/4)) * revealFeeRate);
+            const fee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness) + 2 + 3) / 4)) * revealFeeRate);
 
             const prevOutputValue = revealOutValue + fee;
             inscriptionTxCtxData.revealTxPrevOutput = {
@@ -172,10 +173,10 @@ export class InscriptionTool {
         const fee = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
         const changeAmount = totalSenderAmount - totalRevealPrevOutputValue - fee;
         if (changeAmount >= minChangeValue) {
-            tx.outs[tx.outs.length-1].value = changeAmount;
+            tx.outs[tx.outs.length - 1].value = changeAmount;
         } else {
-            tx.outs = tx.outs.slice(0, tx.outs.length-1);
-            txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length-1);
+            tx.outs = tx.outs.slice(0, tx.outs.length - 1);
+            txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
             const feeWithoutChange = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
             if (totalSenderAmount - totalRevealPrevOutputValue - feeWithoutChange < 0) {
                 this.mustCommitTxFee = fee;
@@ -205,7 +206,7 @@ export class InscriptionTool {
             revealTx.ins[0].witness = [Buffer.from(signature), ...this.inscriptionTxCtxDataList[i].witness];
 
             // check tx max tx wight
-            const revealWeight =  revealTx.weight()
+            const revealWeight = revealTx.weight()
             if (revealWeight > maxStandardTxWeight) {
                 throw new Error(`reveal(index ${i}) transaction weight greater than ${maxStandardTxWeight} (MAX_STANDARD_TX_WEIGHT): ${revealWeight}`);
             }
@@ -275,7 +276,7 @@ function signTx(tx: bitcoin.Transaction, commitTxPrevOutputList: PrevOutput[], n
             ];
 
             const redeemScript = Buffer.of(0x16, 0, 20, ...pubKeyHash);
-            if(addressType === "segwit_nested") {
+            if (addressType === "segwit_nested") {
                 input.script = redeemScript;
             }
         }
@@ -320,7 +321,7 @@ function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: I
         redeemVersion: 0xc0,
     };
 
-    const { output, witness, hash, address } = bitcoin.payments.p2tr({
+    const {output, witness, hash, address} = bitcoin.payments.p2tr({
         internalPubkey: internalPubKey,
         scriptTree,
         redeem,
@@ -387,7 +388,7 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
         txWitness.push(emptySignature);
         txWitness.push(ctx.inscriptionScript);
         txWitness.push(emptyControlBlockWitness);
-        const revealFee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness)+2+3)/4)) * request.revealFeeRate);
+        const revealFee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness) + 2 + 3) / 4)) * request.revealFeeRate);
         const revealInValue = revealOutValue + revealFee;
         ctx.revealTxPrevOutput = {
             pkScript: ctx.commitTxAddressPkScript,
@@ -405,9 +406,11 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
 
         totalCommitInValue += uxto.amount;
     });
-
+    const commitAddrs: string[] = []
     scriptCtxList.forEach(ctx => {
         commitTx.addOutput(ctx.revealTxPrevOutput.pkScript, ctx.revealTxPrevOutput.value);
+        commitAddrs.push(ctx.commitTxAddress)
+
     });
     const changePkScript = bitcoin.address.toOutputScript(request.changeAddress, network);
     commitTx.addOutput(changePkScript, 0);
@@ -418,10 +421,10 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
     const fee = Math.floor(estimateTx.virtualSize() * request.commitFeeRate);
     const changeValue = totalCommitInValue - totalRevealInValue - fee;
     if (changeValue >= (request.minChangeValue || defaultMinChangeValue)) {
-        commitTx.outs[commitTx.outs.length-1].value = changeValue;
+        commitTx.outs[commitTx.outs.length - 1].value = changeValue;
     } else {
-        commitTx.outs = commitTx.outs.slice(0, commitTx.outs.length-1);
-        estimateTx.outs = estimateTx.outs.slice(0, estimateTx.outs.length-1);
+        commitTx.outs = commitTx.outs.slice(0, commitTx.outs.length - 1);
+        estimateTx.outs = estimateTx.outs.slice(0, estimateTx.outs.length - 1);
         const feeWithoutChange = Math.floor(estimateTx.virtualSize() * request.commitFeeRate);
         if (totalCommitInValue - totalRevealInValue - feeWithoutChange < 0) {
             throw new Error("insufficient balance");
@@ -444,8 +447,28 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
         const signature = Buffer.from(schnorr.sign(sigHash, scriptCtxList[i].privateKey, base.randomBytes(32)));
         revealTx.ins[0].witness = [signature, ...scriptCtxList[i].witness];
     });
-
-    return false;
+    let commitTxFee = 0;
+    commitTx.ins.forEach((_, i) => {
+        commitTxFee += request.commitTxPrevOutputList[i].amount;
+    });
+    commitTx.outs.forEach(out => {
+        commitTxFee -= out.value;
+    });
+    let revealTxFees: number[] = [];
+    revealTxList.forEach((revealTx, i) => {
+        let revealTxFee = 0;
+        revealTxFee += scriptCtxList[i].revealTxPrevOutput.value;
+        revealTxFee -= revealTx.outs[0].value;
+        revealTxFees.push(revealTxFee);
+    });
+    return {
+        signHashList: sigHashList,
+        commitTx: commitTx.toHex(),
+        revealTxs: revealTxList.map(e => e.toHex()),
+        commitTxFee: commitTxFee,
+        revealTxFees: revealTxFees,
+        commitAddrs: commitAddrs,
+    };
 }
 
 export function inscribeForMPCSigned(txHex: string, signatures: string[]) {
@@ -455,7 +478,7 @@ export function inscribeForMPCSigned(txHex: string, signatures: string[]) {
         const signature = base.fromHex(signatures[i]);
         if (!input.witness) {
             input.script = bitcoin.payments.p2pkh({
-                pubkey: bitcoin.payments.p2pkh({ input: input.script }).pubkey,
+                pubkey: bitcoin.payments.p2pkh({input: input.script}).pubkey,
                 signature: bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL),
             }).input!;
         } else {
@@ -485,7 +508,8 @@ function calculateSigHash(tx: bitcoin.Transaction, prevOutFetcher: PrevOutput[],
             sigHash = tx.hashForSignature(i, prevScript, bitcoin.Transaction.SIGHASH_ALL)!;
             input.script = bitcoin.payments.p2pkh({
                 pubkey: publicKey,
-                signature: placeholderSignature,
+                //signature: placeholderSignature,
+                signature: bitcoin.script.signature.encode(placeholderSignature, bitcoin.Transaction.SIGHASH_ALL),
             }).input!;
         } else {
             const pubKeyHash = bcrypto.hash160(publicKey);
@@ -493,7 +517,7 @@ function calculateSigHash(tx: bitcoin.Transaction, prevOutFetcher: PrevOutput[],
             sigHash = tx.hashForWitness(i, prevOutScript, prevOutFetcher[i].amount, bitcoin.Transaction.SIGHASH_ALL);
             input.witness = bitcoin.payments.p2wpkh({
                 pubkey: publicKey,
-                signature: placeholderSignature,
+                signature: bitcoin.script.signature.encode(placeholderSignature, bitcoin.Transaction.SIGHASH_ALL),
             }).witness!;
 
             const redeemScript = Buffer.of(0x16, 0, 20, ...pubKeyHash);
@@ -509,7 +533,7 @@ function calculateSigHash(tx: bitcoin.Transaction, prevOutFetcher: PrevOutput[],
 }
 
 function randPrvKey(network: bitcoin.Network) {
-    while (true)  {
+    while (true) {
         const privateKey = base.randomBytes(32);
         if (secp256k1SignTest(privateKey)) {
             return private2Wif(privateKey, network);
