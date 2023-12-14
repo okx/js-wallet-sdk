@@ -40,6 +40,10 @@ export type InscriptionRequest = {
     revealOutValue: number
     changeAddress: string
     minChangeValue?: number
+    masterPublicKey?: string
+    chainCode?: string
+    commitTx?: string
+    signatureList?: string[]
 }
 
 export type InscribeTxs = {
@@ -474,9 +478,8 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
     };
 }
 
-export function inscribeForMPCSigned(request: InscriptionRequest, network: bitcoin.Network, txHex: string, signatures: string[]) {
-    const tx = bitcoin.Transaction.fromHex(txHex);
-
+export function inscribeForMPCSigned(request: InscriptionRequest, network: bitcoin.Network, unsignedCommitTxHex: string, signatures: string[]) {
+    const tx = bitcoin.Transaction.fromHex(unsignedCommitTxHex);
     const unsignedCommitTxHash = tx.getHash()
     tx.ins.forEach((input, i) => {
         const signature = base.fromHex(signatures[i]);
