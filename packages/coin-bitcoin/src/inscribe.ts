@@ -13,6 +13,7 @@ import {
 } from "./txBuild";
 import {secp256k1SignTest} from "@okxweb3/coin-base";
 import {isP2PKH, isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
+import * as buffer from "buffer";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -363,9 +364,9 @@ export function inscribe(network: bitcoin.Network, request: InscriptionRequest) 
     };
 }
 
-export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bitcoin.Network) {
-    const privateKey = randPrvKey(network);
-
+export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bitcoin.Network, unsignedCommitTxHash?: Buffer, signedCommitTxHash?: Buffer) {
+    //const privateKey = randPrvKey(network);
+    const privateKey = request.commitTxPrevOutputList[0].privateKey;
     const scriptCtxList: InscriptionTxCtxData[] = [];
     request.inscriptionDataList.forEach(inscriptionData => {
         scriptCtxList.push(createInscriptionTxCtxData(network, inscriptionData, privateKey));
@@ -436,7 +437,10 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
 
     // sign reveal tx
     // TODO commitTx计算txid，在legacy地址的情况下需要签名数据
-    const commitTxHash = commitTx.getHash();
+    let commitTxHash = commitTx.getHash();
+    if (signedCommitTxHash) {
+        commitTxHash = signedCommitTxHash
+    }
     revealTxList.forEach((revealTx, i) => {
         revealTx.ins[0].hash = commitTxHash;
 
@@ -444,7 +448,8 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
         const values = [scriptCtxList[i].revealTxPrevOutput.value];
 
         const sigHash = revealTx.hashForWitnessV1(0, prevOutScripts, values, bitcoin.Transaction.SIGHASH_DEFAULT, scriptCtxList[i].hash);
-        const signature = Buffer.from(schnorr.sign(sigHash, scriptCtxList[i].privateKey, base.randomBytes(32)));
+        // const signature = Buffer.from(schnorr.sign(sigHash, scriptCtxList[i].privateKey, base.randomBytes(32)));
+        const signature = Buffer.from(schnorr.sign(sigHash, privateKey, base.randomBytes(32)));
         revealTx.ins[0].witness = [signature, ...scriptCtxList[i].witness];
     });
     let commitTxFee = 0;
@@ -471,9 +476,10 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
     };
 }
 
-export function inscribeForMPCSigned(txHex: string, signatures: string[]) {
+export function inscribeForMPCSigned(request: InscriptionRequest, network: bitcoin.Network, txHex: string, signatures: string[]) {
     const tx = bitcoin.Transaction.fromHex(txHex);
 
+    const unsignedCommitTxHash = tx.getHash()
     tx.ins.forEach((input, i) => {
         const signature = base.fromHex(signatures[i]);
         if (!input.witness) {
@@ -486,8 +492,17 @@ export function inscribeForMPCSigned(txHex: string, signatures: string[]) {
             input.witness[0] = bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL);
         }
     });
+    const signedCommitTxHash = tx.getHash()
 
-    return tx.toHex();
+    const res = inscribeForMPCUnsigned(request, network, unsignedCommitTxHash, signedCommitTxHash)
+    return {
+        signHashList: null,
+        commitTx: tx.toHex(),
+        revealTxs: res.revealTxs,
+        commitTxFee: res.commitTxFee,
+        revealTxFees: res.revealTxFees,
+        commitAddrs: res.commitAddrs,
+    };
 }
 
 function calculateSigHash(tx: bitcoin.Transaction, prevOutFetcher: PrevOutput[], network: bitcoin.Network) {
