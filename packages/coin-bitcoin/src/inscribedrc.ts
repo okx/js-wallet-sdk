@@ -285,11 +285,10 @@ function createDrcInscriptionTxCtxData(network: bitcoin.Network, inscriptionData
     inscriptionBuilder.push(ops.OP_1);
     inscriptionBuilder.push(pubKey);
     inscriptionBuilder.push(ops.OP_1);
-    inscriptionBuilder.push(ops.OP_CHECKMULTISIG);
+    inscriptionBuilder.push(ops.OP_CHECKMULTISIGVERIFY);
     inscriptionBuilder.push(Buffer.from("ord"));
     inscriptionBuilder.push(Buffer.from(inscriptionData.contentType));
     inscriptionBuilder.push(Buffer.from(inscriptionData.body));
-    inscriptionBuilder.push(ops.OP_DROP);
     inscriptionBuilder.push(ops.OP_DROP);
     inscriptionBuilder.push(ops.OP_DROP);
     inscriptionBuilder.push(ops.OP_DROP);
