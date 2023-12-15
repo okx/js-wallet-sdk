@@ -478,7 +478,9 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
     };
 }
 
-export function inscribeForMPCSigned(request: InscriptionRequest, network: bitcoin.Network, unsignedCommitTxHex: string, signatures: string[]) {
+export function inscribeForMPCSigned(request: InscriptionRequest, network: bitcoin.Network) {
+    const unsignedCommitTxHex: string = request.commitTx!;
+    const signatures: string[] = request.signatureList!;
     const tx = bitcoin.Transaction.fromHex(unsignedCommitTxHex);
     const unsignedCommitTxHash = tx.getHash()
     tx.ins.forEach((input, i) => {
