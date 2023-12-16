@@ -4,7 +4,7 @@ import { getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public } from './
 import { Network, networks, payments, Transaction, address } from './bitcoinjs-lib';
 import * as taproot from "./taproot";
 import { isTaprootInput, toXOnly } from "./bitcoinjs-lib/psbt/bip371";
-import { utxoInput, utxoOutput, utxoTx, BuyingData, ListingData } from './type';
+import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInputs} from './type';
 import { toOutputScript } from './bitcoinjs-lib/address';
 import { PsbtInputExtended, PsbtOutputExtended } from './bitcoinjs-lib/psbt';
 import { reverseBuffer } from "./bitcoinjs-lib/bufferutils";
@@ -95,6 +95,46 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     psbtSignImpl(psbt, privateKey, network)
     return psbt.toBase64();
 }
+
+export function signPsbt(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInputs[]) {
+    const psbt = Psbt.fromHex(psbtHex, {network});
+    psbtSignImplForUniSat(psbt, privateKey, network, autoFinalized, signInputs)
+    return psbt.toHex();
+}
+
+export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInputs[]) {
+    network = network || networks.bitcoin
+    const privKeyHex = privateKeyFromWIF(privateKey, network);
+    const signer = {
+        publicKey: Buffer.alloc(0),
+        sign(hash: Buffer): Buffer {
+            return sign(hash, privKeyHex);
+        },
+        signSchnorr(hash: Buffer): Buffer {
+            const tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
+            return Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
+        },
+    };
+
+    const allowedSighashTypes = [
+        Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_ALL,
+        Transaction.SIGHASH_DEFAULT
+    ];
+
+    for (let i = 0; i < psbt.inputCount; i++) {
+        if (isTaprootInput(psbt.data.inputs[i])) {
+            signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
+        } else {
+            signer.publicKey = wif2Public(privateKey, network);
+        }
+        try {
+            psbt.signInput(i, signer, allowedSighashTypes);
+        } catch (e) {
+        }
+    }
+}
+
 
 export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) {
     network = network || networks.bitcoin
