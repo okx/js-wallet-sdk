@@ -19,9 +19,10 @@ import {
     utxoTx, wif2Public, payments, BtcWallet,
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
-    generateSignedBuyingTx,
+    generateSignedBuyingTx, signPsbt,
 } from "../src";
-import { base } from '@okxweb3/crypto-lib';
+import {base} from '@okxweb3/crypto-lib';
+import {Psbt} from "../src/bitcoinjs-lib/psbt";
 
 describe("bitcoin", () => {
     test("private key", async () => {
@@ -33,7 +34,7 @@ describe("bitcoin", () => {
         let network = networks.bitcoin;
         let privateKey = "L22jGDH5pKE4WHb2m9r2MdiWTtGarDhTYRqMrntsjD5uCq5z9ahY";
         const pk = wif2Public(privateKey, network);
-        const { address } = payments.p2pkh({ pubkey: pk, network });
+        const {address} = payments.p2pkh({pubkey: pk, network});
         console.info(address)
     });
 
@@ -119,11 +120,14 @@ describe("bitcoin", () => {
         console.log(s);
 
         const publicKey = bitcoin.wif2Public(wif, networks.testnet);
-        const address = bitcoin.payments.p2wpkh({ pubkey: publicKey, network: networks.testnet }).address;
+        const address = bitcoin.payments.p2wpkh({pubkey: publicKey, network: networks.testnet}).address;
         const s2 = await bitcoin.bip0322.signSimple("hello world", address!, wif, networks.testnet)
         console.log(s2);
 
-        const taprootAddress = bitcoin.payments.p2tr({ internalPubkey: publicKey.slice(1), network: networks.testnet }).address;
+        const taprootAddress = bitcoin.payments.p2tr({
+            internalPubkey: publicKey.slice(1),
+            network: networks.testnet
+        }).address;
         const s3 = await bitcoin.bip0322.signSimple("hello world", taprootAddress!, wif, networks.testnet)
         console.log(s3);
     });
@@ -402,3 +406,14 @@ test("buying nft", async () => {
     console.log(tx);
 });
 
+test("sign psbt unisat", async () => {
+    const network = networks.testnet;
+    const psbtBase64 = "cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEgwAAAAEXIFe7stSpy4ojV2M/IBucUYwnld7WgreRPGvu8/4jvW0vAAA=";
+    const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
+    const signedPsbt = psbtSign(psbtBase64, privateKey, network);
+    console.log(signedPsbt);
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const psbtHex = psbt.toHex();
+    const signedPsbtHex = signPsbt(psbtHex, privateKey, network)
+    console.log(signedPsbtHex);
+});
