@@ -408,12 +408,34 @@ test("buying nft", async () => {
 
 test("sign psbt unisat", async () => {
     const network = networks.testnet;
-    const psbtBase64 = "cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEgwAAAAEXIFe7stSpy4ojV2M/IBucUYwnld7WgreRPGvu8/4jvW0vAAA=";
+    const psbtHex = "70736274ff0100550200000001e25371ab43fff6ca207d27ceda33a316092b40745015148b952b35fb726c44840000000000ffffffff019c150d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac00000000000100bf020000000194eb1836711b4dda1ba82d1a1929ce970cab950a5ce8c34e1582d8d43fdebd22000000006a473044022074ca5817ab7a6f75e94019c79c450c9466a1a51e21f6730ed8783b74c2660e9502200904c0e89ab056913d9acfae154dd400bc9c62ea1e3dc50e04f930d2f6f92a7e0121034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745ffffffff0190170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac0000000001012290170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac0000";
     const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
-    const signedPsbt = psbtSign(psbtBase64, privateKey, network);
-    console.log(signedPsbt);
-    const psbt = Psbt.fromBase64(psbtBase64, {network});
-    const psbtHex = psbt.toHex();
     const signedPsbtHex = signPsbt(psbtHex, privateKey, network)
     console.log(signedPsbtHex);
+    const tx = extractPsbtTransaction(signedPsbtHex)
+    console.log(tx)
+});
+
+test("build psbt raw tx", async () => {
+    const txInputs: utxoInput[] = [];
+    txInputs.push({
+        txId: "84446c72fb352b958b14155074402b0916a333dace277d20caf6ff43ab7153e2",
+        vOut: 0,
+        amount: 858000,
+        address: "n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9",
+        privateKey: "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22",
+        nonWitnessUtxo: "020000000194eb1836711b4dda1ba82d1a1929ce970cab950a5ce8c34e1582d8d43fdebd22000000006a473044022074ca5817ab7a6f75e94019c79c450c9466a1a51e21f6730ed8783b74c2660e9502200904c0e89ab056913d9acfae154dd400bc9c62ea1e3dc50e04f930d2f6f92a7e0121034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745ffffffff0190170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac00000000",
+    });
+    const txOutputs: utxoOutput[] = [];
+    txOutputs.push({
+        address: "n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9",
+        amount: 857500,
+    });
+    const uxtoTx: utxoTx = {
+        inputs: txInputs as any,
+        outputs: txOutputs as any,
+        address: 'n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9',
+    }
+    const raw = buildPsbt(uxtoTx, networks.testnet);
+    console.log(raw);
 });

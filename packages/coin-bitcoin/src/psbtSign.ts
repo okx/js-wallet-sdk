@@ -97,6 +97,7 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     return psbt.toBase64();
 }
 
+// compatible with unisat
 export function signPsbt(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     const psbt = Psbt.fromHex(psbtHex, {network});
     psbtSignImplForUniSat(psbt, privateKey, network, autoFinalized, signInputs)
@@ -157,7 +158,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         //         continue;
         //     }
         // }
-        if (!signInputMap?.has(i)) {
+        if (signInputMap?.size > 0 && !signInputMap?.has(i)) {
             continue;
         }
         signer.psbtIndex = i;
@@ -191,7 +192,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                 }
             }
             psbt.signInput(i, signer, allowedSighashTypes);
-            if (!autoFinalized) {
+            if (autoFinalized != undefined && !autoFinalized) {
                 continue;
             }
             psbt.finalizeInput(i)
