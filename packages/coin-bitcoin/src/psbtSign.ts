@@ -4,12 +4,13 @@ import {getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public} from './tx
 import {Network, networks, payments, Transaction, address} from './bitcoinjs-lib';
 import * as taproot from "./taproot";
 import {isTaprootInput, toXOnly} from "./bitcoinjs-lib/psbt/bip371";
-import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInputs} from './type';
+import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInput} from './type';
 import {toOutputScript} from './bitcoinjs-lib/address';
 import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
 import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
 import {Output} from "./bitcoinjs-lib/transaction";
 import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
+import {number} from "./bitcoinjs-lib/script";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -96,40 +97,104 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     return psbt.toBase64();
 }
 
-export function signPsbt(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInputs[]) {
+export function signPsbt(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     const psbt = Psbt.fromHex(psbtHex, {network});
     psbtSignImplForUniSat(psbt, privateKey, network, autoFinalized, signInputs)
     return psbt.toHex();
 }
 
-export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInputs[]) {
+export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     network = network || networks.bitcoin
     const privKeyHex = privateKeyFromWIF(privateKey, network);
+    const signInputMap = new Map<number, toSignInput>();
+    if (signInputs != undefined) {
+        signInputs.map(e => {
+            signInputMap.set(e.index, e);
+        });
+    }
     const signer = {
+        psbtIndex: 0,
+        toSignInputsMap: signInputMap,
         publicKey: Buffer.alloc(0),
         sign(hash: Buffer): Buffer {
             return sign(hash, privKeyHex);
         },
         signSchnorr(hash: Buffer): Buffer {
-            const tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
+            let tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
+            // if (signInputs) {
+            //     signInputs.map(e => {
+            //         if (e.index == this.psbtIndex) {
+            //             if (e.disableTweakSigner) {
+            //                 tweakedPrivKey = base.fromHex(privKeyHex);
+            //             }
+            //         }
+            //     });
+            // }
+            if (this.toSignInputsMap?.has(this.psbtIndex)) {
+                if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
+                    tweakedPrivKey = base.fromHex(privKeyHex);
+                }
+            }
             return Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
         },
     };
 
-    const allowedSighashTypes = [
+    let allowedSighashTypes = [
         Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
         Transaction.SIGHASH_ALL,
         Transaction.SIGHASH_DEFAULT
     ];
 
     for (let i = 0; i < psbt.inputCount; i++) {
+        // if (signInputs != undefined) {
+        //     let contain = false;
+        //     signInputs.map(e => {
+        //         if (e.index == i) {
+        //             contain = true;
+        //         }
+        //     });
+        //     if (!contain) {
+        //         continue;
+        //     }
+        // }
+        if (!signInputMap?.has(i)) {
+            continue;
+        }
+        signer.psbtIndex = i;
         if (isTaprootInput(psbt.data.inputs[i])) {
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
+            // if (signInputs != undefined) {
+            //     let flag = false;
+            //     signInputs.map(e => {
+            //         if (e.disableTweakSigner == true) {
+            //             flag = true;
+            //         }
+            //     });
+            //     if (flag) {
+            //         signer.publicKey = wif2Public(privateKey, network);
+            //     }
+            // }
+            if (signInputMap?.has(i)) {
+                if (signInputMap?.get(i)?.disableTweakSigner) {
+                    signer.publicKey = wif2Public(privateKey, network);
+                }
+            }
         } else {
             signer.publicKey = wif2Public(privateKey, network);
         }
         try {
+
+            if (signInputMap?.has(i)) {
+                const sighashTypes = signInputMap?.get(i)?.sighashTypes;
+                if (sighashTypes != undefined) {
+                    allowedSighashTypes = sighashTypes;
+                }
+            }
             psbt.signInput(i, signer, allowedSighashTypes);
+            if (!autoFinalized) {
+                continue;
+            }
+            psbt.finalizeInput(i)
         } catch (e) {
         }
     }

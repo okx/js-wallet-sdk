@@ -79,14 +79,14 @@ type BuyingData = {
 }
 
 // signPsbt for unisat
-type toSignInputs = {
+type toSignInput = {
     index: number,
     address: string,
-    publicKey: string,
-    sighashTypes: number[],
-    disableTweakSigner: boolean
+    publicKey?: string,
+    sighashTypes?: number[],
+    disableTweakSigner?: boolean
 }
 
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInputs
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput
 };
