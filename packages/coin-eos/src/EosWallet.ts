@@ -107,6 +107,7 @@ export class EosWallet extends BaseWallet {
                     to: param.data.to,
                     amount: this.getAmountString(param.data.amount, param.data.precision, param.data.symbol),
                     memo: param.data.memo,
+                    contract: param.data.contract,
                     common: {
                         ...param.data.common,
                         privateKey: [param.privateKey],
@@ -137,6 +138,7 @@ export class WaxWallet extends EosWallet {
         symbol = symbol == null || undefined ? 'WAX' : symbol
         return toAssetString(Number(amount), precision, symbol);
     }
+
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
         return `m/44'/14001'/0'/0/${param.index}`;
     }
