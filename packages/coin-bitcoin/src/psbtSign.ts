@@ -122,20 +122,12 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         },
         signSchnorr(hash: Buffer): Buffer {
             let tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
-            // if (signInputs) {
-            //     signInputs.map(e => {
-            //         if (e.index == this.psbtIndex) {
-            //             if (e.disableTweakSigner) {
-            //                 tweakedPrivKey = base.fromHex(privKeyHex);
-            //             }
-            //         }
-            //     });
+            // todo disableTweakSigner
+            // if (this.toSignInputsMap?.has(this.psbtIndex)) {
+            //     if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
+            //         tweakedPrivKey = base.fromHex(privKeyHex);
+            //     }
             // }
-            if (this.toSignInputsMap?.has(this.psbtIndex)) {
-                if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
-                    tweakedPrivKey = base.fromHex(privKeyHex);
-                }
-            }
             return Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
         },
     };
@@ -147,44 +139,23 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
     ];
 
     for (let i = 0; i < psbt.inputCount; i++) {
-        // if (signInputs != undefined) {
-        //     let contain = false;
-        //     signInputs.map(e => {
-        //         if (e.index == i) {
-        //             contain = true;
-        //         }
-        //     });
-        //     if (!contain) {
-        //         continue;
-        //     }
-        // }
         if (signInputMap?.size > 0 && !signInputMap?.has(i)) {
             continue;
         }
         signer.psbtIndex = i;
         if (isTaprootInput(psbt.data.inputs[i])) {
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
-            // if (signInputs != undefined) {
-            //     let flag = false;
-            //     signInputs.map(e => {
-            //         if (e.disableTweakSigner == true) {
-            //             flag = true;
-            //         }
-            //     });
-            //     if (flag) {
-            //         signer.publicKey = wif2Public(privateKey, network);
+            // todo disableTweakSigner
+            // if (signInputMap?.has(i)) {
+            //     if (signInputMap?.get(i)?.disableTweakSigner) {
+            //         signer.publicKey = toXOnly(wif2Public(privateKey, network));
+            //         // signer.publicKey = wif2Public(privateKey, network);
             //     }
             // }
-            if (signInputMap?.has(i)) {
-                if (signInputMap?.get(i)?.disableTweakSigner) {
-                    signer.publicKey = wif2Public(privateKey, network);
-                }
-            }
         } else {
             signer.publicKey = wif2Public(privateKey, network);
         }
         try {
-
             if (signInputMap?.has(i)) {
                 const sighashTypes = signInputMap?.get(i)?.sighashTypes;
                 if (sighashTypes != undefined) {
@@ -197,6 +168,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
             }
             psbt.finalizeInput(i)
         } catch (e) {
+            console.info(e)
         }
     }
 }

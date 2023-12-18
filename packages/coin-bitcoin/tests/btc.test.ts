@@ -19,7 +19,7 @@ import {
     utxoTx, wif2Public, payments, BtcWallet,
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
-    generateSignedBuyingTx, signPsbt,
+    generateSignedBuyingTx, signPsbt, toSignInput,
 } from "../src";
 import {base} from '@okxweb3/crypto-lib';
 import {Psbt} from "../src/bitcoinjs-lib/psbt";
@@ -408,9 +408,16 @@ test("buying nft", async () => {
 
 test("sign psbt unisat", async () => {
     const network = networks.testnet;
-    const psbtHex = "70736274ff0100550200000001e25371ab43fff6ca207d27ceda33a316092b40745015148b952b35fb726c44840000000000ffffffff019c150d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac00000000000100bf020000000194eb1836711b4dda1ba82d1a1929ce970cab950a5ce8c34e1582d8d43fdebd22000000006a473044022074ca5817ab7a6f75e94019c79c450c9466a1a51e21f6730ed8783b74c2660e9502200904c0e89ab056913d9acfae154dd400bc9c62ea1e3dc50e04f930d2f6f92a7e0121034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745ffffffff0190170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac0000000001012290170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac0000";
+    const psbtHex = "70736274ff010052020000000154fa02e47b846717e57c128cc8295f09bd4a61e4def4e1aee88665e338ae92b80500000000ffffffff015c0d1e0000000000160014da70b3c3cadf9e42839e3db5e02a049ef11685a6000000000001012b500f1e000000000022512020f9206aebc7b03db63ccc9b6ffef67db0bedec9303d46a7f307d07aeac8fc6a0117204687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d7450000";
     const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
-    const signedPsbtHex = signPsbt(psbtHex, privateKey, network)
+    const toSignInputs: toSignInput[] = [];
+    toSignInputs.push({
+        index: 0,
+        address: "tb1pyrujq6htc7crmd3uejdkllhk0kctahkfxq75dflnqlg846kgl34qpawucx",
+        sighashTypes: [0],
+        disableTweakSigner: true,
+    });
+    const signedPsbtHex = signPsbt(psbtHex, privateKey, network, false, toSignInputs)
     console.log(signedPsbtHex);
     const tx = extractPsbtTransaction(signedPsbtHex)
     console.log(tx)
@@ -418,23 +425,31 @@ test("sign psbt unisat", async () => {
 
 test("build psbt raw tx", async () => {
     const txInputs: utxoInput[] = [];
+    // txInputs.push({
+    //     txId: "338d4779d9e3a9d772542e5247be0e6e4618408c4635f8c7e4deef49e086655b",
+    //     vOut: 0,
+    //     amount: 857500,
+    //     address: "n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9",
+    //     privateKey: "cRLXsjWxoPxXbknm2xqeUA8YpXbHRPTiwXAFJ4prawYHGawQtTHL",
+    //     nonWitnessUtxo: "0200000001e25371ab43fff6ca207d27ceda33a316092b40745015148b952b35fb726c4484000000006a4730440220028436c7e87e0cd9d303b0ca04bf6512ff70a5629e38747cfbe0289d7fd238a502205902cc8c930c6b3115f05b14e05abbb8e7790df8def782ee78abc583477a95a90121034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745ffffffff019c150d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac00000000",
+    // });
     txInputs.push({
-        txId: "84446c72fb352b958b14155074402b0916a333dace277d20caf6ff43ab7153e2",
-        vOut: 0,
-        amount: 858000,
-        address: "n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9",
+        txId: "b892ae38e36586e8aee1f4dee4614abd095f29c88c127ce51767847be402fa54",
+        vOut: 5,
+        amount: 1970000,
+        address: "tb1pyrujq6htc7crmd3uejdkllhk0kctahkfxq75dflnqlg846kgl34qpawucx",
         privateKey: "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22",
-        nonWitnessUtxo: "020000000194eb1836711b4dda1ba82d1a1929ce970cab950a5ce8c34e1582d8d43fdebd22000000006a473044022074ca5817ab7a6f75e94019c79c450c9466a1a51e21f6730ed8783b74c2660e9502200904c0e89ab056913d9acfae154dd400bc9c62ea1e3dc50e04f930d2f6f92a7e0121034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745ffffffff0190170d00000000001976a914da70b3c3cadf9e42839e3db5e02a049ef11685a688ac00000000",
+        publicKey: "034687b85f378c8c2cee301220301677ab96c4da816fd93e1c7f85fe8df605d745",
     });
     const txOutputs: utxoOutput[] = [];
     txOutputs.push({
-        address: "n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9",
-        amount: 857500,
+        address: "tb1qmfct8s72m70y9qu78k67q2synmc3dpdx04jvcs",
+        amount: 1969500,
     });
     const uxtoTx: utxoTx = {
         inputs: txInputs as any,
         outputs: txOutputs as any,
-        address: 'n1RxcZQqmAteKjDvkcMkfWNuprjmJMGzU9',
+        address: 'tb1qmfct8s72m70y9qu78k67q2synmc3dpdx04jvcs',
     }
     const raw = buildPsbt(uxtoTx, networks.testnet);
     console.log(raw);
