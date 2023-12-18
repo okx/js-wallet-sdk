@@ -22,3 +22,10 @@ All notable changes to this project will be documented in this file.
 
 - **coin-bitcoin:** support sighash type  'SIGHASH_ALL|SIGHASH_ANYONECANPAY' in psbt ([43](https://github.com/okx/js-wallet-sdk/pull/43))
 
+
+# [1.0.4](https://github.com/okx/js-wallet-sdk) (2023-12-18)
+
+### Feature
+
+- **coin-bitcoin:** support two  memo types (string or hex ) by op_return  ([45](https://github.com/okx/js-wallet-sdk/pull/45))
+
