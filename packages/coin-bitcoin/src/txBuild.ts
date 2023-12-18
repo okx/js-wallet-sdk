@@ -301,7 +301,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
         txBuild.addOutput(changeAddress, changeAmount);
     }
     if (utxoTx.memo) {
-        const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(Buffer.from(base.toUtf8(utxoTx.memo))));
+        const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(utxoTx.memo) ? base.fromHex(utxoTx.memo) : Buffer.from(base.toUtf8(utxoTx.memo))));
         txBuild.addOutput('', 0, base.toHex(script))
     }
     return txBuild.build(hashArray);
@@ -398,7 +398,7 @@ function calculateTxSize(inputs: [], outputs: [], changeAddress: string, private
         preTxBuild.addOutput(changeAddress, inputAmount - outputAmount);
     }
     if (memo) {
-        const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(Buffer.from(base.toUtf8(memo))));
+        const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(memo) ? base.fromHex(memo) : Buffer.from(base.toUtf8(memo))));
         preTxBuild.addOutput("", 0, base.toHex(script))
     }
     let txHex = preTxBuild.build();
