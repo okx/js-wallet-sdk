@@ -40,6 +40,7 @@ export type InscriptionRequest = {
     revealOutValue: number
     changeAddress: string
     minChangeValue?: number
+    shareData?: string
     masterPublicKey?: string
     chainCode?: string
     commitTx?: string
