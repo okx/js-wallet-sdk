@@ -14,3 +14,18 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** support btc nft/brc20 listing/buying ([34](https://github.com/okx/js-wallet-sdk/pull/34))
+
+
+# [1.0.3](https://github.com/okx/js-wallet-sdk) (2023-12-14)
+
+### Feature
+
+- **coin-bitcoin:** support sighash type  'SIGHASH_ALL|SIGHASH_ANYONECANPAY' in psbt ([43](https://github.com/okx/js-wallet-sdk/pull/43))
+
+
+# [1.0.4](https://github.com/okx/js-wallet-sdk) (2023-12-18)
+
+### Feature
+
+- **coin-bitcoin:** support two  memo types (string or hex ) by op_return  ([45](https://github.com/okx/js-wallet-sdk/pull/45))
+

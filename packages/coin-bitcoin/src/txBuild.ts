@@ -8,6 +8,9 @@ import * as bcrypto from './bitcoinjs-lib/crypto';
 import * as taproot from "./taproot";
 import { Network, Transaction } from './bitcoinjs-lib';
 import * as bscript from './bitcoinjs-lib/script';
+import { OPS } from "./bitcoinjs-lib/script";
+import { Stack } from "./bitcoinjs-lib/payments";
+
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
 export const Array = typeforce.Array;
@@ -260,11 +263,19 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
   }
 
   if(changeOnly) {
-    let { inputAmount, outputAmount, virtualSize } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize);
+        let {
+            inputAmount,
+            outputAmount,
+            virtualSize
+        } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo);
     return (inputAmount - outputAmount - virtualSize * feePerB).toString();
   }
 
-  let { inputAmount, outputAmount, virtualSize } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize);
+    let {
+        inputAmount,
+        outputAmount,
+        virtualSize
+    } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo);
   let changeAmount = inputAmount - outputAmount - virtualSize * feePerB;
 
   // sign process
@@ -282,6 +293,14 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
   if (changeAmount > dustSize) {
     txBuild.addOutput(changeAddress, changeAmount);
   }
+  if (utxoTx.memo) {
+    let buf =base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))
+    if(buf.length>80){
+      throw  new Error('data after op_return is  too long');
+    }
+    const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(buf));
+    txBuild.addOutput('', 0, base.toHex(script))
+    }
   return txBuild.build(hashArray);
 }
 
@@ -349,7 +368,8 @@ export function signBch(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
 }
 
 
-function calculateTxSize(inputs: [], outputs: [], changeAddress: string, privateKey: string, network: bitcoin.Network, dustSize: Number, hardware?: boolean) {
+function calculateTxSize(inputs: [], outputs: [], changeAddress: string, privateKey: string, network: bitcoin.Network, dustSize: Number, hardware?: boolean, memo?: string) {
+
   let preTxBuild = new TxBuild(2, network, false, hardware);
   let inputAmount = 0;
   for (let i = 0; i < inputs.length; i++) {
@@ -368,6 +388,14 @@ function calculateTxSize(inputs: [], outputs: [], changeAddress: string, private
   // change
   if (inputAmount - outputAmount > dustSize) {
     preTxBuild.addOutput(changeAddress, inputAmount - outputAmount);
+  }
+  if (memo) {
+    let buf =base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))
+    if(buf.length>80){
+      throw  new Error('data after op_return is  too long');
+    }
+    const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(buf));
+    preTxBuild.addOutput('', 0, base.toHex(script))
   }
   let txHex = preTxBuild.build();
   const virtualSize = preTxBuild.tx.virtualSize();
@@ -531,7 +559,7 @@ export function estimateBtcFee(utxoTx: utxoTx, network?: bitcoin.Network) {
 
   // calc tx size
   const fakePrivateKey = private2Wif(base.fromHex("853fd8960ff34838208d662ecd3b9f8cf413e13e0f74f95e554f8089f5058db0"), network);
-  let { virtualSize } = calculateTxSize(inputs, outputs, utxoTx.address, fakePrivateKey, network, dustSize);
+    let {virtualSize} = calculateTxSize(inputs, outputs, utxoTx.address, fakePrivateKey, network, dustSize, false, utxoTx.memo);
   return virtualSize * feePerB;
 }
 

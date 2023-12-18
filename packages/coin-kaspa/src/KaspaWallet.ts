@@ -4,9 +4,16 @@ import {
     NewAddressParams,
     ValidAddressParams,
     SignTxParams,
-    NotImplementedError,
+    SignTxError,
+    CalcTxHashParams,
+    CalcTxHashError
 } from "@okxweb3/coin-base";
-import { validateAddress } from "./address";
+import {
+    addressFromPrvKey,
+    pubKeyFromPrvKey,
+    validateAddress
+} from "./address";
+import { transfer, signMessage, calcTxHash } from "./transaction";
 
 export class KaspaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -14,14 +21,43 @@ export class KaspaWallet extends BaseWallet {
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
-        return Promise.reject(NotImplementedError)
+        return Promise.resolve({
+            address: addressFromPrvKey(param.privateKey),
+            publicKey: pubKeyFromPrvKey(param.privateKey),
+        });
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {
-        return Promise.resolve(validateAddress(param.address));
+        return Promise.resolve({
+            isValid: validateAddress(param.address),
+            address: param.address,
+        });
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
-        return Promise.reject(NotImplementedError)
+        try {
+            return Promise.resolve(transfer(param.data, param.privateKey));
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async calcTxHash(param: CalcTxHashParams): Promise<any> {
+        try {
+            if (typeof param.data === "string") {
+                return Promise.resolve(calcTxHash(JSON.parse(param.data).transaction));
+            }
+            return Promise.resolve(calcTxHash(param.data.transaction));
+        } catch (e) {
+            return Promise.reject(CalcTxHashError);
+        }
+    }
+
+    async signMessage(param: SignTxParams): Promise<any> {
+        try {
+            return Promise.resolve(signMessage(param.data.message, param.privateKey));
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
     }
 }
