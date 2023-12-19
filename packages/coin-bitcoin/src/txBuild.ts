@@ -255,7 +255,12 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
   const feePerB = utxoTx.feePerB || 10;
   const dustSize = utxoTx.dustSize || 546
   network = network || bitcoin.networks.bitcoin;
-
+  if (utxoTx.memo) {
+    let buf =base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))
+    if(buf.length>80){
+      throw  new Error('data after op_return is  too long');
+    }
+  }
   // calculate transaction size
   let fakePrivateKey = privateKey;
   if(!fakePrivateKey) {
@@ -267,7 +272,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
             inputAmount,
             outputAmount,
             virtualSize
-        } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo);
+        } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
     return (inputAmount - outputAmount - virtualSize * feePerB).toString();
   }
 
@@ -275,7 +280,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
         inputAmount,
         outputAmount,
         virtualSize
-    } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo);
+    } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
   let changeAmount = inputAmount - outputAmount - virtualSize * feePerB;
 
   // sign process
@@ -286,21 +291,25 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
     const inputAddress = input.address || changeAddress;
     txBuild.addInput(input.txId, input.vOut, inputPrivKey, inputAddress, input.reedScript, input.amount, input.publicKey, input.sequence);
   }
+  if (utxoTx.memo&&utxoTx.memoPos==0) {
+    txBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))))))
+  }
   for (let i = 0; i < outputs.length; i++) {
     let output = outputs[i] as utxoOutput;
     txBuild.addOutput(output.address, output.amount, output.omniScript);
+    if (utxoTx.memo&&utxoTx.memoPos&&txBuild.outputs.length==utxoTx.memoPos) {
+      txBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))))))
+    }
   }
   if (changeAmount > dustSize) {
     txBuild.addOutput(changeAddress, changeAmount);
+    if (utxoTx.memo&&utxoTx.memoPos&&txBuild.outputs.length==utxoTx.memoPos) {
+      txBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))))))
+    }
   }
-  if (utxoTx.memo) {
-    let buf =base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))
-    if(buf.length>80){
-      throw  new Error('data after op_return is  too long');
-    }
-    const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(buf));
-    txBuild.addOutput('', 0, base.toHex(script))
-    }
+  if (utxoTx.memo&&(utxoTx.memoPos==undefined||utxoTx.memoPos<0||utxoTx.memoPos>txBuild.outputs.length)) {
+    txBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(utxoTx.memo)?base.fromHex(utxoTx.memo):Buffer.from(base.toUtf8(utxoTx.memo))))))
+  }
   return txBuild.build(hashArray);
 }
 
@@ -368,7 +377,7 @@ export function signBch(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
 }
 
 
-function calculateTxSize(inputs: [], outputs: [], changeAddress: string, privateKey: string, network: bitcoin.Network, dustSize: Number, hardware?: boolean, memo?: string) {
+function calculateTxSize(inputs: [], outputs: [], changeAddress: string, privateKey: string, network: bitcoin.Network, dustSize: Number, hardware?: boolean, memo?: string, pos?: number) {
 
   let preTxBuild = new TxBuild(2, network, false, hardware);
   let inputAmount = 0;
@@ -379,23 +388,27 @@ function calculateTxSize(inputs: [], outputs: [], changeAddress: string, private
     preTxBuild.addInput(input.txId, input.vOut, inputPrivKey, inputAddress, input.reedScript, input.amount, input.publicKey, input.sequence);
     inputAmount = inputAmount + (input.amount || 0);
   }
+  if (memo&&pos==0) {
+    preTxBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))))))
+  }
   let outputAmount = 0;
   for (let i = 0; i < outputs.length; i++) {
     let output = outputs[i] as utxoOutput;
     preTxBuild.addOutput(output.address, output.amount, output.omniScript);
     outputAmount = outputAmount + output.amount;
+    if (memo&&pos&&preTxBuild.outputs.length==pos) {
+      preTxBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))))))
+    }
   }
   // change
   if (inputAmount - outputAmount > dustSize) {
     preTxBuild.addOutput(changeAddress, inputAmount - outputAmount);
-  }
-  if (memo) {
-    let buf =base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))
-    if(buf.length>80){
-      throw  new Error('data after op_return is  too long');
+    if (memo&&pos&&preTxBuild.outputs.length==pos) {
+      preTxBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))))))
     }
-    const script = bscript.compile(([OPS.OP_RETURN] as Stack).concat(buf));
-    preTxBuild.addOutput('', 0, base.toHex(script))
+  }
+  if (memo&&(pos==undefined||pos<0||pos>preTxBuild.outputs.length)) {
+    preTxBuild.addOutput('', 0, base.toHex(bscript.compile(([OPS.OP_RETURN] as Stack).concat(base.isHexString(memo)?base.fromHex(memo):Buffer.from(base.toUtf8(memo))))))
   }
   let txHex = preTxBuild.build();
   const virtualSize = preTxBuild.tx.virtualSize();
