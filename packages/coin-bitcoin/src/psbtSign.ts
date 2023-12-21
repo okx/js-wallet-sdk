@@ -115,6 +115,8 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
     }
     const signer = {
         psbtIndex: 0,
+        needTweak: true,
+        tweakHash: Buffer.alloc(0),
         toSignInputsMap: signInputMap,
         publicKey: Buffer.alloc(0),
         sign(hash: Buffer): Buffer {
@@ -123,11 +125,18 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         signSchnorr(hash: Buffer): Buffer {
             let tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
             // todo disableTweakSigner
-            // if (this.toSignInputsMap?.has(this.psbtIndex)) {
-            //     if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
-            //         tweakedPrivKey = base.fromHex(privKeyHex);
-            //     }
-            // }
+            if (this.toSignInputsMap?.has(this.psbtIndex)) {
+                if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
+                    // tweakedPrivKey = base.fromHex(privKeyHex);
+                    return Buffer.from(schnorr.sign(hash, privKeyHex, base.randomBytes(32)));
+                }
+            }
+            if (!this.needTweak) {
+                return Buffer.from(schnorr.sign(hash, privKeyHex, base.randomBytes(32)));
+            }
+            if (this.needTweak && this.tweakHash.length > 0) {
+                tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex), this.tweakHash);
+            }
             return Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
         },
     };
@@ -143,15 +152,33 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
             continue;
         }
         signer.psbtIndex = i;
-        if (isTaprootInput(psbt.data.inputs[i])) {
+        const input = psbt.data.inputs[i];
+        if (isTaprootInput(input)) {
+            signer.needTweak = true;
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
             // todo disableTweakSigner
-            // if (signInputMap?.has(i)) {
-            //     if (signInputMap?.get(i)?.disableTweakSigner) {
-            //         signer.publicKey = toXOnly(wif2Public(privateKey, network));
-            //         // signer.publicKey = wif2Public(privateKey, network);
-            //     }
-            // }
+            if (signInputMap?.has(i)) {
+                if (signInputMap?.get(i)?.disableTweakSigner) {
+                    // signer.publicKey = toXOnly(wif2Public(privateKey, network));
+                    signer.publicKey = wif2Public(privateKey, network);
+                    signer.needTweak = false;
+                }
+            }
+            if (input.tapLeafScript != undefined) {
+                if (input.tapLeafScript?.length > 0) {
+                    input.tapLeafScript.map(e => {
+                        if (e.controlBlock && e.script) {
+                            signer.publicKey = wif2Public(privateKey, network);
+                            signer.needTweak = false;
+                        }
+                    });
+                }
+            }
+            if (input.tapMerkleRoot) {
+                signer.needTweak = true;
+                signer.tweakHash = input.tapMerkleRoot;
+                signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)), input.tapMerkleRoot)[0]);
+            }
         } else {
             signer.publicKey = wif2Public(privateKey, network);
         }
