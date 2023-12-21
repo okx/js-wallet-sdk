@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-eos:** update for wax or eos token ([45](https://github.com/okx/js-wallet-sdk/pull/45))
+- **coin-eos:** update for wax or eos token ([48](https://github.com/okx/js-wallet-sdk/pull/48))
