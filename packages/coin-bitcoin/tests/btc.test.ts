@@ -48,6 +48,7 @@ describe("bitcoin", () => {
                     amount: 150000
                 }
             ],
+            memoPos: -1,
             address: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
             feePerB: 2
         };
