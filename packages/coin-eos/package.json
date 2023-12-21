@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-eos",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@okxweb3/coin-base": "^1.0.0",
-    "@okxweb3/coin-eos": "^1.0.0",
     "@okxweb3/crypto-lib": "^1.0.0",
     "@polkadot/x-textdecoder": "^9.6.2",
     "@polkadot/x-textencoder": "^9.6.2",
