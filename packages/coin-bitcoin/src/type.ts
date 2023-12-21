@@ -45,6 +45,8 @@ type utxoTx = {
     dustSize?: number
     bip32Derivation?: Bip32Derivation[] // derivation info
     derivationPath?: string
+    memo?: string
+    memoPos?: number
 }
 
 type ListingData = {
