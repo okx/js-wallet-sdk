@@ -164,7 +164,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                     signer.needTweak = false;
                 }
             }
-            if (input.tapLeafScript != undefined) {
+            if (input.tapLeafScript) {
                 if (input.tapLeafScript?.length > 0) {
                     input.tapLeafScript.map(e => {
                         if (e.controlBlock && e.script) {
@@ -180,6 +180,8 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                 signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)), input.tapMerkleRoot)[0]);
             }
         } else {
+            signer.needTweak = false;
+            signer.tweakHash = Buffer.alloc(0);
             signer.publicKey = wif2Public(privateKey, network);
         }
         try {
