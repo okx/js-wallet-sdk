@@ -20,6 +20,7 @@ import {
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
     generateSignedBuyingTx,
+    dogeCoin
 } from "../src";
 
 import {base} from "@okxweb3/crypto-lib";
@@ -173,7 +174,7 @@ describe("bitcoin", () => {
             inscriptionData,
             changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
         };
-        const txs: InscribeTxs = dogInscribe(request);
+        const txs: InscribeTxs = dogInscribe(dogeCoin,request);
         console.log(txs);
     });
 
