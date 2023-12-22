@@ -16,14 +16,15 @@ import {
     networks,
     utxoInput,
     utxoOutput,
-  utxoTx, wif2Public, payments, BtcWallet, TBtcWallet,
+    utxoTx, wif2Public, payments, BtcWallet, TBtcWallet,
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
     generateSignedBuyingTx,
 } from "../src";
 
-import { base } from "@okxweb3/crypto-lib";
-import { SignTxParams } from "@okxweb3/coin-base";
+import {base} from "@okxweb3/crypto-lib";
+import {SignTxParams} from "@okxweb3/coin-base";
+import {dogInscribe, DogInscriptionRequest} from "../src/doginals";
 
 describe("bitcoin", () => {
     test("private key", async () => {
@@ -66,7 +67,7 @@ describe("bitcoin", () => {
         let network = networks.bitcoin;
         let privateKey = "L22jGDH5pKE4WHb2m9r2MdiWTtGarDhTYRqMrntsjD5uCq5z9ahY";
         const pk = wif2Public(privateKey, network);
-        const { address } = payments.p2pkh({ pubkey: pk, network });
+        const {address} = payments.p2pkh({pubkey: pk, network});
         console.info(address)
     });
 
@@ -139,6 +140,36 @@ describe("bitcoin", () => {
         console.log(txs);
     });
 
+    test("doginals inscribe", async () => {
+        let privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs"
+        const commitTxPrevOutputList: PrevOutput[] = [];
+        commitTxPrevOutputList.push({
+            txId: "b8df8a9e16a1043d489b241f5b4b1ae0d12244eb811aa4d1d1b2c4f60e2b1d94",
+            vOut: 1,
+            amount: 460850000,
+            address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+            privateKey: privateKey,
+        });
+
+        const inscriptionData: InscriptionData = {
+            contentType: "text/plain;charset=utf8",
+            // body: '{"p":"drc-20","op":"mint","tick":"lppl","amt":"1000"}',
+            body:base.fromHex('7b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d'),
+            revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        };
+
+        const request: DogInscriptionRequest = {
+            commitTxPrevOutputList,
+            commitFeeRate: 100000,
+            revealFeeRate: 100000,
+            revealOutValue: 100000,
+            inscriptionData,
+            changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        };
+        const txs: InscribeTxs = dogInscribe(request);
+        console.log(txs);
+    });
+
     test("psbt sign", async () => {
         const psbtBase64 = "cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEgwAAAAEXIFe7stSpy4ojV2M/IBucUYwnld7WgreRPGvu8/4jvW0vAAA=";
         const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
@@ -152,11 +183,14 @@ describe("bitcoin", () => {
         console.log(s);
 
         const publicKey = bitcoin.wif2Public(wif, networks.testnet);
-        const address = bitcoin.payments.p2wpkh({ pubkey: publicKey, network: networks.testnet }).address;
+        const address = bitcoin.payments.p2wpkh({pubkey: publicKey, network: networks.testnet}).address;
         const s2 = await bitcoin.bip0322.signSimple("hello world", address!, wif, networks.testnet)
         console.log(s2);
 
-        const taprootAddress = bitcoin.payments.p2tr({ internalPubkey: publicKey.slice(1), network: networks.testnet }).address;
+        const taprootAddress = bitcoin.payments.p2tr({
+            internalPubkey: publicKey.slice(1),
+            network: networks.testnet
+        }).address;
         const s3 = await bitcoin.bip0322.signSimple("hello world", taprootAddress!, wif, networks.testnet)
         console.log(s3);
     });
