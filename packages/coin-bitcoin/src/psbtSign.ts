@@ -91,6 +91,7 @@ export function buildPsbt(tx: utxoTx, network?: Network) {
     return psbt.toHex();
 }
 
+// todo key path
 export function psbtSign(psbtBase64: string, privateKey: string, network?: Network) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     psbtSignImpl(psbt, privateKey, network)
@@ -104,6 +105,7 @@ export function signPsbt(psbtHex: string, privateKey: string, network?: Network,
     return psbt.toHex();
 }
 
+// todo key path and script path
 export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     network = network || networks.bitcoin
     const privKeyHex = privateKeyFromWIF(privateKey, network);
@@ -124,7 +126,6 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         },
         signSchnorr(hash: Buffer): Buffer {
             let tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
-            // todo disableTweakSigner
             if (this.toSignInputsMap?.has(this.psbtIndex)) {
                 if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
                     // tweakedPrivKey = base.fromHex(privKeyHex);
@@ -154,9 +155,10 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         signer.psbtIndex = i;
         const input = psbt.data.inputs[i];
         if (isTaprootInput(input)) {
+            // todo readable
+            // default key path spend
             signer.needTweak = true;
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
-            // todo disableTweakSigner
             if (signInputMap?.has(i)) {
                 if (signInputMap?.get(i)?.disableTweakSigner) {
                     // signer.publicKey = toXOnly(wif2Public(privateKey, network));
@@ -164,6 +166,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                     signer.needTweak = false;
                 }
             }
+            // script path spend
             if (input.tapLeafScript) {
                 if (input.tapLeafScript?.length > 0) {
                     input.tapLeafScript.map(e => {
@@ -174,6 +177,7 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                     });
                 }
             }
+            // script path utxo but key path spend
             if (input.tapMerkleRoot) {
                 signer.needTweak = true;
                 signer.tweakHash = input.tapMerkleRoot;
