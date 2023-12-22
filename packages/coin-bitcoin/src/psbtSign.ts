@@ -91,22 +91,20 @@ export function buildPsbt(tx: utxoTx, network?: Network) {
     return psbt.toHex();
 }
 
-// todo key path
+// note that psbtSign only support key path spend till now
 export function psbtSign(psbtBase64: string, privateKey: string, network?: Network) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     psbtSignImpl(psbt, privateKey, network)
     return psbt.toBase64();
 }
 
-// compatible with unisat
-export function signPsbt(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
+export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     const psbt = Psbt.fromHex(psbtHex, {network});
-    psbtSignImplForUniSat(psbt, privateKey, network, autoFinalized, signInputs)
+    signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, autoFinalized, signInputs)
     return psbt.toHex();
 }
 
-// todo key path and script path
-export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
+export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
     network = network || networks.bitcoin
     const privKeyHex = privateKeyFromWIF(privateKey, network);
     const signInputMap = new Map<number, toSignInput>();
@@ -155,10 +153,10 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
         signer.psbtIndex = i;
         const input = psbt.data.inputs[i];
         if (isTaprootInput(input)) {
-            // todo readable
             // default key path spend
             signer.needTweak = true;
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
+            // if user set disableTweakSigner, we should use it.
             if (signInputMap?.has(i)) {
                 if (signInputMap?.get(i)?.disableTweakSigner) {
                     // signer.publicKey = toXOnly(wif2Public(privateKey, network));
@@ -167,18 +165,14 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
                 }
             }
             // script path spend
-            if (input.tapLeafScript) {
-                if (input.tapLeafScript?.length > 0) {
-                    input.tapLeafScript.map(e => {
-                        if (e.controlBlock && e.script) {
-                            signer.publicKey = wif2Public(privateKey, network);
-                            signer.needTweak = false;
-                        }
-                    });
-                }
-            }
-            // script path utxo but key path spend
-            if (input.tapMerkleRoot) {
+            if (input.tapLeafScript && input.tapLeafScript?.length > 0 && !input.tapMerkleRoot) {
+                input.tapLeafScript.map(e => {
+                    if (e.controlBlock && e.script) {
+                        signer.publicKey = wif2Public(privateKey, network);
+                        signer.needTweak = false;
+                    }
+                });
+            } else if (input.tapMerkleRoot) {// script path utxo but key path spend
                 signer.needTweak = true;
                 signer.tweakHash = input.tapMerkleRoot;
                 signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)), input.tapMerkleRoot)[0]);
@@ -201,7 +195,8 @@ export function psbtSignImplForUniSat(psbt: Psbt, privateKey: string, network?: 
             }
             psbt.finalizeInput(i)
         } catch (e) {
-            console.info(e)
+            // todo handle err
+            // console.info(e)
         }
     }
 }
