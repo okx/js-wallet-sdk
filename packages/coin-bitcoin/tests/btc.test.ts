@@ -19,7 +19,7 @@ import {
     utxoTx, wif2Public, payments, BtcWallet,
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
-    generateSignedBuyingTx, signPsbt, toSignInput,
+    generateSignedBuyingTx, signPsbtWithKeyPathAndScriptPath, toSignInput,
 } from "../src";
 import {base} from '@okxweb3/crypto-lib';
 import {Psbt} from "../src/bitcoinjs-lib/psbt";
@@ -115,8 +115,9 @@ describe("bitcoin", () => {
     });
 
     test("message sign", async () => {
-        const wif = private2Wif(base.fromHex("adce25dc25ef89f06a722abdc4b601d706c9efc6bc84075355e6b96ca3871621"), networks.testnet)
-        const s = bitcoin.message.sign(wif, "hello world", networks.testnet)
+        //const wif = private2Wif(base.fromHex("adce25dc25ef89f06a722abdc4b601d706c9efc6bc84075355e6b96ca3871621"), networks.testnet)
+        const wif="KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36";
+        const s = bitcoin.message.sign(wif, "hello world", networks.bitcoin)
         console.log(s);
 
         const publicKey = bitcoin.wif2Public(wif, networks.testnet);
@@ -417,7 +418,7 @@ test("sign psbt unisat", async () => {
         sighashTypes: [0],
         disableTweakSigner: true,
     });
-    const signedPsbtHex = signPsbt(psbtHex, privateKey, network, false, toSignInputs)
+    const signedPsbtHex = signPsbtWithKeyPathAndScriptPath(psbtHex, privateKey, network, false, toSignInputs)
     console.log(signedPsbtHex);
     const tx = extractPsbtTransaction(signedPsbtHex)
     console.log(tx)
