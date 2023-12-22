@@ -19,7 +19,7 @@ import {
     utxoTx, wif2Public, payments, BtcWallet, TBtcWallet,
     oneKeyBuildBtcTx,
     generateSignedListingPsbt,
-    generateSignedBuyingTx, signPsbtWithKeyPathAndScriptPath, toSignInput,
+    generateSignedBuyingTx, toSignInput,
 } from "../src";
 import {SignTxParams} from "@okxweb3/coin-base";
 import {base} from "@okxweb3/crypto-lib";

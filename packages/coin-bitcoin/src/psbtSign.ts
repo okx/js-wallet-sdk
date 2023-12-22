@@ -98,6 +98,27 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     return psbt.toBase64();
 }
 
+export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privateKey: string, network?: Network, opts?: signPsbtOptions []) {
+    if (psbtHexs == undefined || psbtHexs.length == 0) {
+        return {};
+    }
+    let res: string[] = [];
+    const optsSize = opts == undefined ? 0 : opts.length;
+    let i: number = 0;
+    for (i = 0; i < psbtHexs.length; i++) {
+        let opt: signPsbtOptions = {};
+        if (i < optsSize && opts) {
+            opt = opts[i]
+        }
+        const signedPsbt = signPsbtWithKeyPathAndScriptPath(psbtHexs[i], privateKey, network, {
+            autoFinalized: opt.autoFinalized,
+            toSignInputs: opt.toSignInputs
+        });
+        res.push(signedPsbt);
+    }
+    return res
+}
+
 export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
     const psbt = Psbt.fromHex(psbtHex, {network});
     signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, opts.autoFinalized, opts.toSignInputs)
