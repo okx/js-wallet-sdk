@@ -4,7 +4,7 @@ import {getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public} from './tx
 import {Network, networks, payments, Transaction, address} from './bitcoinjs-lib';
 import * as taproot from "./taproot";
 import {isTaprootInput, toXOnly} from "./bitcoinjs-lib/psbt/bip371";
-import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInput} from './type';
+import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInput, signPsbtOptions} from './type';
 import {toOutputScript} from './bitcoinjs-lib/address';
 import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
 import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
@@ -98,9 +98,9 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     return psbt.toBase64();
 }
 
-export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
+export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
     const psbt = Psbt.fromHex(psbtHex, {network});
-    signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, autoFinalized, signInputs)
+    signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, opts.autoFinalized, opts.toSignInputs)
     return psbt.toHex();
 }
 
