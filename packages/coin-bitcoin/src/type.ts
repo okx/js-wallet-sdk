@@ -90,7 +90,6 @@ type BuyingData = {
     sellerPsbts: string[]
 }
 
-// signPsbt for unisat
 type toSignInput = {
     index: number,
     address: string,
@@ -99,6 +98,11 @@ type toSignInput = {
     disableTweakSigner?: boolean
 }
 
+type signPsbtOptions = {
+    autoFinalized?: boolean,
+    toSignInputs?: toSignInput[]
+}
+
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput,signPsbtOptions
 };
