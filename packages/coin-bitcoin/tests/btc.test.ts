@@ -25,6 +25,7 @@ import {
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams} from "@okxweb3/coin-base";
 import {dogInscribe, DogInscriptionRequest} from "../src/doginals";
+import * as bscript from "../src/bitcoinjs-lib/script";
 
 describe("bitcoin", () => {
     test("private key", async () => {
@@ -70,6 +71,13 @@ describe("bitcoin", () => {
         const {address} = payments.p2pkh({pubkey: pk, network});
         console.info(address)
     });
+
+    test("inscribe", async () => {
+        let a = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d473044022013fdb8124286cc8feed33c2ccc32d8ddf5a419a191690ffa37c115aae2c4b51b0220785dc302382b10b040edb628a92daa6f92e4968805b66ce0510be8f36628ad520129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
+        console.log(a)
+        let a2 = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d473044022079fab4fdae667244313971c933254e5102160ced7a7f70b879a969e5e7750ec802202a8b4394fd901a93ffaae3af26dc07028d7846a9d3dcde3f2e0deeed9d34ab5f0129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
+        console.log(a2)
+    })
 
     test("inscribe", async () => {
         let network = bitcoin.networks.testnet;
@@ -154,7 +162,7 @@ describe("bitcoin", () => {
         const inscriptionData: InscriptionData = {
             contentType: "text/plain;charset=utf8",
             // body: '{"p":"drc-20","op":"mint","tick":"lppl","amt":"1000"}',
-            body:base.fromHex('7b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d'),
+            body: base.fromHex('7b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d'),
             revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
         };
 

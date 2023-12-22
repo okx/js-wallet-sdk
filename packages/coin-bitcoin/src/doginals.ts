@@ -58,7 +58,7 @@ type DogInscriptionTxCtxData = {
     revealPkScript?: Buffer
 }
 
-
+export const CHANGE_OUTPUT_MAX_SIZE = 20 + 4 + 34 + 4;
 export const dogeCoin: bitcoin.Network = {
     messagePrefix: '\x18Dogecoin Signed Message:\n',
     // doge not support native segwit
@@ -102,7 +102,7 @@ export class DogInscriptionTool {
         const publicKey = private2public(privateKeyHex);
         tool.fromAddr = bitcoin.payments.p2pkh({pubkey: publicKey, network: dogeCoin}).address!
         const totalRevealPrevOutputValue = tool.buildEmptyRevealTxs(revealOutValue, request.revealFeeRate);
-        const insufficient = tool.buildCommitTx(request.commitTxPrevOutputList, request.changeAddress, totalRevealPrevOutputValue,revealOutValue, request.commitFeeRate, minChangeValue);
+        const insufficient = tool.buildCommitTx(request.commitTxPrevOutputList, request.changeAddress, totalRevealPrevOutputValue, revealOutValue, request.commitFeeRate, minChangeValue);
         if (insufficient) {
             return tool;
         }
@@ -136,7 +136,7 @@ export class DogInscriptionTool {
             if (i != this.inscriptionTxCtxDataList.length - 1) {
                 tx.addOutput(bitcoin.address.toOutputScript(this.fromAddr, dogeCoin), left)
             }
-            const fee = Math.floor((tx.byteLength() + Math.floor((tx.virtualSize() + 2 + 3) / 4)) * revealFeeRate);
+            const fee = Math.floor((tx.virtualSize() + CHANGE_OUTPUT_MAX_SIZE) * revealFeeRate);
             left += fee
             const prevOutputValue = fee;
             // @ts-ignore
@@ -157,11 +157,11 @@ export class DogInscriptionTool {
         this.revealTxs = revealTxs;
         this.mustRevealTxFees = mustRevealTxFees;
         this.commitAddrs = commitAddrs;
-        totalPrevOutputValue+=revealOutValue
+        totalPrevOutputValue += revealOutValue
         return totalPrevOutputValue;
     }
 
-    buildCommitTx(commitTxPrevOutputList: PrevOutput[], changeAddress: string, totalRevealPrevOutputValue: number,revealOutValue:number, commitFeeRate: number, minChangeValue: number): boolean {
+    buildCommitTx(commitTxPrevOutputList: PrevOutput[], changeAddress: string, totalRevealPrevOutputValue: number, revealOutValue: number, commitFeeRate: number, minChangeValue: number): boolean {
         let totalSenderAmount = 0;
 
         const tx = new bitcoin.Transaction();
@@ -182,7 +182,7 @@ export class DogInscriptionTool {
         const txForEstimate = tx.clone();
         signTx(txForEstimate, commitTxPrevOutputList);
 
-        const fee = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
+        const fee = Math.floor((txForEstimate.virtualSize() + CHANGE_OUTPUT_MAX_SIZE) * commitFeeRate);
         const changeAmount = totalSenderAmount - totalRevealPrevOutputValue - fee;
         if (changeAmount >= minChangeValue) {
             tx.outs[tx.outs.length - 1].value = changeAmount;
@@ -210,6 +210,7 @@ export class DogInscriptionTool {
             revealTx.ins[0].hash = i == 0 ? this.commitTx.getHash() : this.revealTxs[i - 1].getHash();
             revealTx.ins[1].hash = i == 0 ? this.commitTx.getHash() : this.revealTxs[i - 1].getHash();
 
+            this.revealTxPrevOutputFetcher.push(this.inscriptionTxCtxDataList[i].revealTxPrevOutput!.value);
             const prevOutScripts = this.inscriptionTxCtxDataList[i].redeemScript!;//相同
             const hash = revealTx.hashForSignature(0, prevOutScripts, bitcoin.Transaction.SIGHASH_ALL);
             const privateKeyHex = base.toHex(this.inscriptionTxCtxDataList[i].privateKey);
@@ -239,8 +240,7 @@ export class DogInscriptionTool {
         let revealTxFees: number[] = [];
         this.revealTxs.forEach((revealTx, i) => {
             let revealTxFee = 0;
-            revealTxFee += this.revealTxPrevOutputFetcher[i];
-            revealTxFee -= revealTx.outs[0].value;
+            revealTxFee = this.revealTxPrevOutputFetcher[i];
             revealTxFees.push(revealTxFee);
         });
 
