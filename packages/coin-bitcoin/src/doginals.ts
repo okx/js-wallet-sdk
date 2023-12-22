@@ -216,10 +216,11 @@ export class DogInscriptionTool {
             const privateKeyHex = base.toHex(this.inscriptionTxCtxDataList[i].privateKey);
             const signature = sign(hash, privateKeyHex);
             let txsignature = bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL)
+
             revealTx.ins[0].script = Buffer.concat([this.inscriptionTxCtxDataList[i].inscriptionScript!, bufferToBuffer(txsignature), bufferToBuffer(this.inscriptionTxCtxDataList[i].redeemScript!)])
 
             const prevScript = bitcoin.address.toOutputScript(this.fromAddr, dogeCoin);
-            const hash2 = revealTx.hashForSignature(i, prevScript, bitcoin.Transaction.SIGHASH_ALL)!;
+            const hash2 = revealTx.hashForSignature(1, prevScript, bitcoin.Transaction.SIGHASH_ALL)!;
             const signature2 = sign(hash2, privateKeyHex);
             const payment = bitcoin.payments.p2pkh({
                 signature: bitcoin.script.signature.encode(signature2, bitcoin.Transaction.SIGHASH_ALL),

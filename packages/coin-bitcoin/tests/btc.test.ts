@@ -73,13 +73,6 @@ describe("bitcoin", () => {
     });
 
     test("inscribe", async () => {
-        let a = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d473044022013fdb8124286cc8feed33c2ccc32d8ddf5a419a191690ffa37c115aae2c4b51b0220785dc302382b10b040edb628a92daa6f92e4968805b66ce0510be8f36628ad520129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
-        console.log(a)
-        let a2 = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d473044022079fab4fdae667244313971c933254e5102160ced7a7f70b879a969e5e7750ec802202a8b4394fd901a93ffaae3af26dc07028d7846a9d3dcde3f2e0deeed9d34ab5f0129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
-        console.log(a2)
-    })
-
-    test("inscribe", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
 
@@ -148,21 +141,27 @@ describe("bitcoin", () => {
         console.log(txs);
     });
 
+    test("inscribe", async () => {
+        let a = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d47304402202dfe3062c0ed5ce2fb02534e4fecf3f554bea7185eaf4bd1761507201d02873c0220013a53e99b3bc973b25322db4b1a214a51d914ee8ef8b67a33cfa2f2a92357640129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
+        console.log(a)
+        let a2 = bscript.decompile(base.fromHex('036f72645117746578742f706c61696e3b636861727365743d7574663800357b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d473044022079fab4fdae667244313971c933254e5102160ced7a7f70b879a969e5e7750ec802202a8b4394fd901a93ffaae3af26dc07028d7846a9d3dcde3f2e0deeed9d34ab5f0129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551'));
+        console.log(a2)
+    })
+
     test("doginals inscribe", async () => {
         let privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs"
         const commitTxPrevOutputList: PrevOutput[] = [];
         commitTxPrevOutputList.push({
-            txId: "b8df8a9e16a1043d489b241f5b4b1ae0d12244eb811aa4d1d1b2c4f60e2b1d94",
-            vOut: 1,
-            amount: 460850000,
+            txId: "adc5edd2a536c92fed35b3d75cbdbc9f11212fe3aa6b55c0ac88c289ba7c4fae",
+            vOut: 2,
+            amount: 317250000,
             address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
             privateKey: privateKey,
         });
-
         const inscriptionData: InscriptionData = {
             contentType: "text/plain;charset=utf8",
-            // body: '{"p":"drc-20","op":"mint","tick":"lppl","amt":"1000"}',
-            body: base.fromHex('7b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a226c70706c222c22616d74223a2231303030227d'),
+            // body: base.fromHex(base.toHex(Buffer.from('{"p":"drc-20","op":"deploy","tick":"isme","max":"210000000","lim":"10000"}'))),
+            body: base.fromHex(base.toHex(Buffer.from('{"p":"drc-20","op":"mint","tick":"tril","amt":"100"}'))),
             revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
         };
 
