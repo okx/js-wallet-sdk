@@ -15,6 +15,7 @@ import {
     ValidSignedTransaction,
     networks,
     utxoInput,
+    DogeWallet,
     utxoOutput,
     utxoTx, wif2Public, payments, BtcWallet, TBtcWallet,
     oneKeyBuildBtcTx,
@@ -207,6 +208,37 @@ describe("bitcoin", () => {
         const txs: InscribeTxs = dogInscribe(dogeCoin, request);
         console.log(txs);
         expect(JSON.stringify(txs)).toEqual("{\"commitTx\":\"0200000001ae4f7cba89c288acc0556baae32f21119fbcbd5cd7b335ed2fc936a5d2edc5ad020000006b483045022100c8fe8bc7b134c6d50f1007772f10c6b76927bfb99dc17411027419de66bc397c02207a4a8c6304c2ed26b050c037e87564b2e58ed26dd32b7742bd534a59e67493ba01210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088fdffffff03a08601000000000017a914acc066d108257a26b8f43ff202efac8f9db0d69e8720897603000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588acd0363c0d000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac00000000\",\"revealTxs\":[\"0200000002f8794002b628a2235a7d448d85aef6366fc9eb23a11bb5ddc37b7d811c5b7c3000000000c6036f72645117746578742f706c61696e3b636861727365743d7574663800347b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a227472696c222c22616d74223a22313030227d483045022100f25b0eeef35b7690ae6c7d765855cb849318a24d33aaa1e9af2ae09e07d6b76202204930701502fa535416ecf9c9ba43a07499ef0ded19dcc74996455e360ded6db30129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551fdfffffff8794002b628a2235a7d448d85aef6366fc9eb23a11bb5ddc37b7d811c5b7c30010000006a47304402203248dec6e7ed6258665903647ec8b1ed3380841548db76182f2762c1451bccb00220144bdd3556fe5ac698ffd0eb9def42266ec49e9d80b0695a383cff344c290df701210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088fdffffff01a0860100000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac00000000\"],\"commitTxFee\":37000000,\"revealTxFees\":[58000000],\"commitAddrs\":[\"DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2\"]}")
+    });
+
+    test("dowallet doginals mint inscribe", async () => {
+        let wallet = new DogeWallet()
+        let privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs"
+        const commitTxPrevOutputList: PrevOutput[] = [];
+        commitTxPrevOutputList.push({
+            txId: "adc5edd2a536c92fed35b3d75cbdbc9f11212fe3aa6b55c0ac88c289ba7c4fae",
+            vOut: 2,
+            amount: 317250000,
+            address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+            privateKey: privateKey,
+        });
+        const inscriptionData: InscriptionData = {
+            contentType: "text/plain;charset=utf8",
+            body: base.fromHex(base.toHex(Buffer.from('{"p":"drc-20","op":"mint","tick":"tril","amt":"100"}'))),
+            revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        };
+
+        const request = {
+            type: 1,
+            commitTxPrevOutputList,
+            commitFeeRate: 100000,
+            revealFeeRate: 100000,
+            revealOutValue: 100000,
+            inscriptionData,
+            changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        };
+        let result = await wallet.signTransaction({privateKey: privateKey, data: request})
+        console.log(result);
+        expect(JSON.stringify(result)).toEqual("{\"commitTx\":\"0200000001ae4f7cba89c288acc0556baae32f21119fbcbd5cd7b335ed2fc936a5d2edc5ad020000006b483045022100c8fe8bc7b134c6d50f1007772f10c6b76927bfb99dc17411027419de66bc397c02207a4a8c6304c2ed26b050c037e87564b2e58ed26dd32b7742bd534a59e67493ba01210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088fdffffff03a08601000000000017a914acc066d108257a26b8f43ff202efac8f9db0d69e8720897603000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588acd0363c0d000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac00000000\",\"revealTxs\":[\"0200000002f8794002b628a2235a7d448d85aef6366fc9eb23a11bb5ddc37b7d811c5b7c3000000000c6036f72645117746578742f706c61696e3b636861727365743d7574663800347b2270223a226472632d3230222c226f70223a226d696e74222c227469636b223a227472696c222c22616d74223a22313030227d483045022100f25b0eeef35b7690ae6c7d765855cb849318a24d33aaa1e9af2ae09e07d6b76202204930701502fa535416ecf9c9ba43a07499ef0ded19dcc74996455e360ded6db30129210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ad757575757551fdfffffff8794002b628a2235a7d448d85aef6366fc9eb23a11bb5ddc37b7d811c5b7c30010000006a47304402203248dec6e7ed6258665903647ec8b1ed3380841548db76182f2762c1451bccb00220144bdd3556fe5ac698ffd0eb9def42266ec49e9d80b0695a383cff344c290df701210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088fdffffff01a0860100000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac00000000\"],\"commitTxFee\":37000000,\"revealTxFees\":[58000000],\"commitAddrs\":[\"DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2\"]}")
     });
 
     test("psbt sign", async () => {
