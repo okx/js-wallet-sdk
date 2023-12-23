@@ -234,7 +234,7 @@ export class DogInscriptionTool {
             totalPrevOutputValue += prevOutputValue;
             revealTxs.push(tx);
             mustRevealTxFees.push(fee);
-            commitAddrs.push(i != this.inscriptionTxCtxDataList.length - 1 ? inscriptionTxCtxData.commitTxAddress! : this.revealAddr!);
+            commitAddrs.push(inscriptionTxCtxData.commitTxAddress!);
         }
         for (let i = 0, j = revealTxs.length - 1; i < j; i++, j--) {
             [revealTxs[i], revealTxs[j]] = [revealTxs[j], revealTxs[i]];
@@ -433,7 +433,7 @@ function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: I
         })
         lock.chunks.push(opcodeToChunk(ops.OP_TRUE))
         let lockhash = base.ripemd160(base.sha256(lock.toBuffer()))
-        let {output,address} = payments.p2sh({hash: Buffer.from(lockhash), network: network});
+        let {output, address} = payments.p2sh({hash: Buffer.from(lockhash), network: network});
         let ctx: DogInscriptionTxCtxData = {
             privateKey: privateKey,
             inscriptionScript: partial.toBuffer(),
