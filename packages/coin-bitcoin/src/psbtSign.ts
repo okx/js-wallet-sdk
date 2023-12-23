@@ -100,7 +100,7 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
 
 export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privateKey: string, network?: Network, opts?: signPsbtOptions []) {
     if (psbtHexs == undefined || psbtHexs.length == 0) {
-        return {};
+        return [];
     }
     let res: string[] = [];
     const optsSize = opts == undefined ? 0 : opts.length;
