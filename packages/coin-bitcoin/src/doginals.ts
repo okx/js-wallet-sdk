@@ -402,9 +402,7 @@ function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: I
         inscription.chunks.push(numberToChunk(parts.length - n - 1))
         inscription.chunks.push(bufferToChunk(part))
     })
-    let bf = inscription.toBuffer()
     let ctxDatas: DogInscriptionTxCtxData[] = [];
-    let index = 1;
     while (inscription.chunks.length) {
         let partial = new DogScript()
         if (ctxDatas.length == 0) {
