@@ -171,4 +171,37 @@ let signParams: SignTxParams = {
 let tx = await wallet.signTransaction(signParams);
 ```
 
+Doginals inscribe
+```typescript
+import { DogeWallet } from "@okxweb3/coin-bitcoin";
+
+let wallet = new DogeWallet()
+let privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs"
+const commitTxPrevOutputList: PrevOutput[] = [];
+commitTxPrevOutputList.push({
+    txId: "adc5edd2a536c92fed35b3d75cbdbc9f11212fe3aa6b55c0ac88c289ba7c4fae",
+    vOut: 2,
+    amount: 317250000,
+    address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+    privateKey: privateKey,
+});
+const inscriptionData: InscriptionData = {
+    contentType: "text/plain;charset=utf8",
+    body: base.fromHex(base.toHex(Buffer.from('{"p":"drc-20","op":"mint","tick":"tril","amt":"100"}'))),
+    revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+};
+
+const request = {
+    type: 1,
+    commitTxPrevOutputList,
+    commitFeeRate: 100000,
+    revealFeeRate: 100000,
+    revealOutValue: 100000,
+    inscriptionData,
+    changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+};
+let result = await wallet.signTransaction({privateKey: privateKey, data: request})
+console.log(result);
+```
+
 ## License: MIT
