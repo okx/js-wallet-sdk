@@ -547,15 +547,5 @@ function calculateSigHash(tx: bitcoin.Transaction, prevOutFetcher: PrevOutput[],
 
         sigHashList.push(base.toHex(sigHash))
     });
-
     return sigHashList;
-}
-
-function randPrvKey(network: bitcoin.Network) {
-    while (true) {
-        const privateKey = base.randomBytes(32);
-        if (secp256k1SignTest(privateKey)) {
-            return private2Wif(privateKey, network);
-        }
-    }
 }

@@ -9,7 +9,11 @@ import {toOutputScript} from './bitcoinjs-lib/address';
 import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
 import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
 import {Output} from "./bitcoinjs-lib/transaction";
-import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
+import {isP2PKH, isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
+import * as bitcoin from "./bitcoinjs-lib";
+import * as bcrypto from "./bitcoinjs-lib/crypto";
+import {PrevOutput} from "./inscribe";
+import * as bscript from "./bitcoinjs-lib/script";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -358,4 +362,70 @@ export function generateSignedBuyingTx(buyingData: BuyingData, privateKey: strin
     const publicKey = base.toHex(wif2Public(privateKey, network));
     const signedBuyingPsbt = psbtSign(generateUnsignedBuyingPsbt(buyingData, network, publicKey), privateKey, network);
     return extractPsbtTransaction(mergeSignedBuyingPsbt(signedBuyingPsbt, buyingData.sellerPsbts).toHex(), network);
+}
+
+
+// note brc20-mpc not support taproot address
+export function generateMPCUnsignedListingPSBT(psbtBase64: string, pubKeyHex: string, network?: Network) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const publicKey = base.fromHex(pubKeyHex);
+    const sighashTypes: number[] = [Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY];
+    let signHashList: string[] = [];
+    for (let i = 0; i < psbt.inputCount; i++) {
+        if (i != SELLER_INDEX) {
+            continue;
+        }
+        const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, sighashTypes);
+        signHashList.push(base.toHex(hash))
+    }
+    return {
+        psbtBase64: psbtBase64,
+        signHashList: signHashList,
+    }
+}
+
+export function generateMPCSignedListingPSBT(psbtBase64: string, pubKeyHex: string, signature: string, network?: Network) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const publicKey = base.fromHex(pubKeyHex);
+    const partialSig = [
+        {
+            pubkey: publicKey,
+            signature: bscript.signature.encode(base.fromHex(signature), Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY),
+        },
+    ];
+    psbt.data.updateInput(SELLER_INDEX, {partialSig});
+    return psbt.toBase64();
+}
+
+export function generateMPCUnsignedBuyingPSBT(psbtBase64: string, pubKeyHex: string, network?: Network) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const publicKey = base.fromHex(pubKeyHex);
+    const sighashTypes: number[] = [Transaction.SIGHASH_ALL];
+    let signHashList: string[] = [];
+    for (let i = 0; i < psbt.inputCount; i++) {
+        const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, sighashTypes);
+        signHashList.push(base.toHex(hash))
+    }
+    return {
+        psbtBase64: psbtBase64,
+        signHashList: signHashList,
+    }
+}
+
+export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    if (psbt.inputCount != signatureList.length) {
+        throw new Error("invalid signatureList");
+    }
+    const publicKey = base.fromHex(pubKeyHex);
+    for (let i = 0; i < psbt.inputCount; i++) {
+        const partialSig = [
+            {
+                pubkey: publicKey,
+                signature: bscript.signature.encode(base.fromHex(signatureList[i]), Transaction.SIGHASH_ALL),
+            },
+        ];
+        psbt.data.updateInput(i, {partialSig});
+    }
+    return psbt.toHex();
 }
