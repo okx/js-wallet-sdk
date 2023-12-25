@@ -1,5 +1,4 @@
 import * as bscript from './bitcoinjs-lib/script';
-import * as bitcoin from "bitcoinjs-lib"
 import { OPS } from "./bitcoinjs-lib/script";
 
 function encode(n: bigint): Uint8Array {
@@ -78,8 +77,7 @@ export function buildRuneData(isMainnet: boolean, edicts: Edict[]): Buffer {
   } else {
     prefix = 'RUNE_TEST'
   }
-  // const opReturnScript = bscript.compile([OPS.OP_RETURN, Buffer.from(prefix), Buffer.from(payload)])
-  const opReturnScript = bitcoin.script.compile([OPS.OP_RETURN, Buffer.from(prefix), Buffer.from(payload)])
+  const opReturnScript = bscript.compile([OPS.OP_RETURN, Buffer.from(prefix), Buffer.from(payload)])
 
   return opReturnScript
 }
