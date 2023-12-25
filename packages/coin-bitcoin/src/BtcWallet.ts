@@ -37,6 +37,7 @@ import {
 } from '@okxweb3/coin-base';
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 import * as bitcoin from "./index"
+import {dogInscribe} from "./doginals";
 
 export function convert2UtxoTx(utxoTx: any): bitcoin.utxoTx {
     const tx = cloneObject(utxoTx)
@@ -803,4 +804,17 @@ export class DogeWallet extends BtcWallet {
     network() {
         return dogeCoin
     }
+
+  async signTransaction(param: SignTxParams): Promise<any> {
+    const type = param.data.type || 0;
+    if (type === 1) { // inscribe
+      try {
+        return Promise.resolve(bitcoin.dogInscribe(dogeCoin,param.data));
+      } catch(e) {
+        return Promise.reject(SignTxError);
+      }
+    } else {
+      return super.signTransaction(param)
+    }
+  }
 }

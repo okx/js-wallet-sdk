@@ -44,7 +44,7 @@ export type InscribeTxs = {
     commitAddrs: string[]
 }
 
-type TxOut = {
+export type TxOut = {
     pkScript: Buffer
     value: number
 }
