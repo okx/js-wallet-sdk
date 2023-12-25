@@ -50,7 +50,7 @@ export interface Edict {
   output: number;
 }
 
-export function buildRuneData(edicts: Edict[], isMainnet: boolean): number[] {
+export function buildRuneData(edicts: Edict[]): number[] {
   let payload: number[] = []
 
   if (edicts.length > 0) {

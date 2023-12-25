@@ -77,7 +77,7 @@ test("transfer with OP_RETURN", () => {
 
     // 2. Add Output OP_RETURN
     
-    const runeData = buildRuneData([{ id: 0x2aa16001b, output: 0, amount: 1000 }], false)
+    const runeData = buildRuneData([{ id: 0x2aa16001b, output: 0, amount: 1000 }])
     const opReturnScript = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, Buffer.from('RUNE_TEST'), Buffer.from(runeData)])
     // const runeData = Buffer.from('Arbitrary OP_RETURN Message', 'utf8')
     // const embed = bitcoin.payments.embed({data: [runeData]})
