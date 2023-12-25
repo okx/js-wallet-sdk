@@ -120,7 +120,12 @@ export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privat
 }
 
 export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
-    const psbt = Psbt.fromHex(psbtHex, {network});
+    let psbt: Psbt;
+    if (base.isHexString("0x" + psbtHex)) {
+        psbt = Psbt.fromHex(psbtHex, {network});
+    } else {
+        psbt = Psbt.fromBase64(psbtHex, {network})
+    }
     signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, opts.autoFinalized, opts.toSignInputs)
     return psbt.toHex();
 }
