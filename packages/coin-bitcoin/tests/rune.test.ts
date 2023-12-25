@@ -1,10 +1,5 @@
-
-import {
-  buildRuneData,
-    networks,
-    toVarInt,
-    decode,
-} from "../src"
+import { networks } from "../src"
+import { buildRuneData, toVarInt, fromVarInt } from "../src/rune"
 import ECPairFactory from 'ecpair'
 import BIP32Factory from "bip32"
 import * as ecc from 'tiny-secp256k1'
@@ -120,7 +115,7 @@ test("varint full", () => {
   for (const [n, encoding] of testVectors) {
     const actual = toVarInt(BigInt(n))
     expect(actual).toEqual(encoding)
-    const [decoded, length] = decode(encoding)
+    const [decoded, length] = fromVarInt(encoding)
     expect(decoded).toEqual(BigInt(n))
     expect(length).toBe(encoding.length)
   }

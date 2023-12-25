@@ -32,8 +32,13 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "big-integer": "1.6.36",
+    "@okxweb3/coin-base": "^1.0.0",
     "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+    "big-integer": "1.6.36",
+    "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.5",
+    "ecpair": "^2.1.0",
+    "tiny-secp256k1": "^2.2.3"
   }
 }
