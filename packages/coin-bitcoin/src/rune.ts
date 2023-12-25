@@ -40,7 +40,7 @@ function decode(buffer: Uint8Array): [bigint, number] {
   }
 }
 
-export { encode as toVarInt, encodeToVec, decode };
+export { encode as toVarInt, encodeToVec, decode as fromVarInt};
 
 const TAG_BODY = BigInt(0)
 
