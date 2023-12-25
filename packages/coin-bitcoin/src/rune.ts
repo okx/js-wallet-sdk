@@ -1,3 +1,7 @@
+import * as bscript from './bitcoinjs-lib/script';
+import * as bitcoin from "bitcoinjs-lib"
+import { OPS } from "./bitcoinjs-lib/script";
+
 function encode(n: bigint): Uint8Array {
   let payload: number[] = [];
   encodeToVec(n, payload);
@@ -50,7 +54,7 @@ export interface Edict {
   output: number;
 }
 
-export function buildRuneData(edicts: Edict[]): number[] {
+export function buildRuneData(isMainnet: boolean, edicts: Edict[]): Buffer {
   let payload: number[] = []
 
   if (edicts.length > 0) {
@@ -67,5 +71,15 @@ export function buildRuneData(edicts: Edict[]): number[] {
     }
   }
 
-  return payload
+  // return payload
+  let prefix
+  if (isMainnet) {
+    prefix = 'R'
+  } else {
+    prefix = 'RUNE_TEST'
+  }
+  // const opReturnScript = bscript.compile([OPS.OP_RETURN, Buffer.from(prefix), Buffer.from(payload)])
+  const opReturnScript = bitcoin.script.compile([OPS.OP_RETURN, Buffer.from(prefix), Buffer.from(payload)])
+
+  return opReturnScript
 }
