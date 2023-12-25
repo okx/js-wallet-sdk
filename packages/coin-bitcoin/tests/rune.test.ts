@@ -32,6 +32,7 @@ test("Leather wallet", () => {
     const path1 = "m/84'/1'/0'/0/0"
     const child1 = root.derivePath(path1)
     const wif1 = child1.toWIF()
+    console.log("wif1: ", wif1)
     const address1 = getSegWitAddress(child1, network)
     expect(address1).toEqual("tb1qld79qrdvr8ljkl49ph8wxx275y45k0l3jwdzud")
 
@@ -72,8 +73,8 @@ test("transfer with OP_RETURN", () => {
 
     // 2. Add Output OP_RETURN
     
-    const runeData = buildRuneData([{ id: 0x2aa16001b, output: 0, amount: 1000 }])
-    const opReturnScript = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, Buffer.from('RUNE_TEST'), Buffer.from(runeData)])
+    const opReturnScript = buildRuneData(false, [{ id: 0x2aa16001b, output: 0, amount: 1000 }])
+    // const opReturnScript = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, Buffer.from('RUNE_TEST'), Buffer.from(runeData)])
     // const runeData = Buffer.from('Arbitrary OP_RETURN Message', 'utf8')
     // const embed = bitcoin.payments.embed({data: [runeData]})
     console.log("opReturnScript: ", opReturnScript )
@@ -85,7 +86,7 @@ test("transfer with OP_RETURN", () => {
     })
     .addOutput({
         // script: embed.output!,
-        script:opReturnScript,
+        script: opReturnScript,
         value: 0,
     })
 
