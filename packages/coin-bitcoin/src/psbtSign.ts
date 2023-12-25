@@ -397,12 +397,16 @@ export function generateMPCSignedListingPSBT(psbtBase64: string, pubKeyHex: stri
     return psbt.toBase64();
 }
 
-export function generateMPCUnsignedBuyingPSBT(psbtBase64: string, pubKeyHex: string, network?: Network) {
+export function generateMPCUnsignedBuyingPSBT(psbtBase64: string, pubKeyHex: string, network?: Network, batchSize: number = 1,) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     const publicKey = base.fromHex(pubKeyHex);
-    const sighashTypes: number[] = [Transaction.SIGHASH_ALL];
+    const sighashTypes: number[] = [Transaction.SIGHASH_ALL];// no taproot address
     let signHashList: string[] = [];
+    const sellerIndex = batchSize + 1
     for (let i = 0; i < psbt.inputCount; i++) {
+        if (i >= sellerIndex && i < sellerIndex + batchSize) {
+            continue;
+        }
         const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, sighashTypes);
         signHashList.push(base.toHex(hash))
     }
@@ -412,13 +416,14 @@ export function generateMPCUnsignedBuyingPSBT(psbtBase64: string, pubKeyHex: str
     }
 }
 
-export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
+export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network, batchSize: number = 1) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
-    if (psbt.inputCount != signatureList.length) {
-        throw new Error("invalid signatureList");
-    }
     const publicKey = base.fromHex(pubKeyHex);
+    const sellerIndex = batchSize + 1
     for (let i = 0; i < psbt.inputCount; i++) {
+        if (i >= sellerIndex && i < sellerIndex + batchSize) {
+            continue;
+        }
         const partialSig = [
             {
                 pubkey: publicKey,
@@ -427,5 +432,5 @@ export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string,
         ];
         psbt.data.updateInput(i, {partialSig});
     }
-    return psbt.toHex();
+    return extractPsbtTransaction(psbt.toHex(), network);
 }
