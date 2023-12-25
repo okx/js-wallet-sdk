@@ -38,6 +38,7 @@ import {
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 import * as bitcoin from "./index"
 import {dogInscribe} from "./doginals";
+import {generateMPCSignedBuyingTx} from "./index";
 
 export function convert2UtxoTx(utxoTx: any): bitcoin.utxoTx {
     const tx = cloneObject(utxoTx)
@@ -177,6 +178,30 @@ export class BtcWallet extends BaseWallet {
         } else if (type === 2) { // psbt
             try {
                 return Promise.resolve(bitcoin.psbtSign(param.data.psbt, param.privateKey, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === 21) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedListingPSBT(param.data.psbt, param.data.publicKey, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === 22) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedListingPSBT(param.data.psbt, param.data.publicKey, param.data.signature, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === 23) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedBuyingPSBT(param.data.psbt, param.data.publicKey, this.network(), param.data.batchSize));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === 24) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedBuyingTx(param.data.psbt, param.data.publicKey, param.data.signatureList, this.network(), param.data.batchSize));
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
@@ -790,20 +815,20 @@ export const dogeCoin: bitcoin.Network = {
 };
 
 export class DogeWallet extends BtcWallet {
-  network() {
-    return dogeCoin
-  }
-
-  async signTransaction(param: SignTxParams): Promise<any> {
-    const type = param.data.type || 0;
-    if (type === 1) { // inscribe
-      try {
-        return Promise.resolve(bitcoin.dogInscribe(dogeCoin,param.data));
-      } catch(e) {
-        return Promise.reject(SignTxError);
-      }
-    } else {
-      return super.signTransaction(param)
+    network() {
+        return dogeCoin
     }
-  }
+
+    async signTransaction(param: SignTxParams): Promise<any> {
+        const type = param.data.type || 0;
+        if (type === 1) { // inscribe
+            try {
+                return Promise.resolve(bitcoin.dogInscribe(dogeCoin, param.data));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else {
+            return super.signTransaction(param)
+        }
+    }
 }
