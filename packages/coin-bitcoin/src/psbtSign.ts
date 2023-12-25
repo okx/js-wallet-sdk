@@ -12,9 +12,10 @@ import { Output } from "./bitcoinjs-lib/transaction";
 import { isP2SHScript, isP2TR } from "./bitcoinjs-lib/psbt/psbtutils";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
+const defaultMaximumFeeRate = 5000
 
-export function buildPsbt(tx: utxoTx, network?: Network) {
-    const psbt = new Psbt( { network });
+export function buildPsbt(tx: utxoTx, network?: Network,maximumFeeRate?:number) {
+    const psbt = new Psbt( { network,maximumFeeRate:maximumFeeRate?maximumFeeRate:defaultMaximumFeeRate });
     tx.inputs.forEach((input: utxoInput) => {
         const outputScript = toOutputScript(input.address!, network);
         let inputData: PsbtInputExtended = {
@@ -90,8 +91,8 @@ export function buildPsbt(tx: utxoTx, network?: Network) {
     return psbt.toHex();
 }
 
-export function psbtSign(psbtBase64: string, privateKey: string, network?: Network) {
-    const psbt = Psbt.fromBase64(psbtBase64, { network });
+export function psbtSign(psbtBase64: string, privateKey: string, network?: Network,maximumFeeRate?:number) {
+    const psbt = Psbt.fromBase64(psbtBase64, { network ,maximumFeeRate:maximumFeeRate?maximumFeeRate: defaultMaximumFeeRate });
     psbtSignImpl(psbt, privateKey, network)
     return psbt.toBase64();
 }
@@ -129,8 +130,8 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
     }
 }
 
-export function extractPsbtTransaction(txHex: string, network?: Network) {
-    const psbt = Psbt.fromHex(txHex, { network });
+export function extractPsbtTransaction(txHex: string, network?: Network,maximumFeeRate?: number) {
+    const psbt = Psbt.fromHex(txHex, { network ,maximumFeeRate:maximumFeeRate?maximumFeeRate: defaultMaximumFeeRate});
     let extractedTransaction
     try {
         extractedTransaction = psbt.finalizeAllInputs().extractTransaction()
@@ -138,6 +139,7 @@ export function extractPsbtTransaction(txHex: string, network?: Network) {
         extractedTransaction = psbt.extractTransaction()
         console.log(e)
     }
+
     return extractedTransaction.toHex();
 }
 
