@@ -25,11 +25,12 @@ function varintBufNum(n: number) {
   return buf;
 }
 
-function magicHash(message: string) {
-  const prefix1 = varintBufNum(MAGIC_BYTES.length);
+function magicHash(message: string, messagePrefix?: string) {
+  const messagePrefixBuffer = messagePrefix ? Buffer.from(messagePrefix,"utf8") : MAGIC_BYTES;
+  const prefix1 = varintBufNum(messagePrefixBuffer.length);
   const messageBuffer = Buffer.from(message);
   const prefix2 = varintBufNum(messageBuffer.length);
-  const buf = Buffer.concat([prefix1, MAGIC_BYTES, prefix2, messageBuffer]);
+  const buf = Buffer.concat([prefix1, messagePrefixBuffer, prefix2, messageBuffer]);
   return base.doubleSha256(buf);
 }
 
@@ -70,4 +71,89 @@ export function getMPCSignedMessage(hash: string, sig: string, publicKey: string
   const recovery = signUtil.secp256k1.getV(base.fromHex(hash), base.toHex(r), base.toHex(s), base.fromHex(publicKey));
 
   return base.toBase64(toCompact(recovery, signature, true));
+}
+
+export function verifyWithAddress(address: string, message: string, sig: string, messagePrefix?: string): boolean {
+  const hash = magicHash(message, messagePrefix);
+  const sigBytes = base.fromBase64(sig);
+  const flagByte = sigBytes[0] - 27;
+  const rs = sigBytes.slice(1);
+  const r = flagByte & 3;
+  const segwitType= !(flagByte & 8)
+      ? null
+      : !(flagByte & 4)
+          ? SEGWIT_TYPES.P2SH_P2WPKH
+          : SEGWIT_TYPES.P2WPKH;
+  const compressed = !!(flagByte & 12);
+  const publicKey = signUtil.secp256k1.recover(rs, r, Buffer.from(hash), compressed);
+  if (publicKey == null) {
+    return false;
+  }
+  const publicKeyHash = Buffer.from(base.hash160(publicKey));
+
+  let actual: Buffer, expected:Buffer;
+  if (segwitType) {
+    if (segwitType === SEGWIT_TYPES.P2SH_P2WPKH) {
+      actual = segwitRedeemHash(publicKeyHash);
+      expected = base.fromBase58Check(address).slice(1);
+    } else {
+      actual = publicKeyHash;
+      expected = decodeBech32(address);
+    }
+  } else {
+    try {
+      expected = decodeBech32(address);
+      return bufferEquals(publicKeyHash,expected);
+    }catch (e) {
+      const redeemHash = segwitRedeemHash(publicKeyHash);
+      const except = base.fromBase58Check(address).slice(1);
+      return bufferEquals(publicKeyHash,except) || bufferEquals(redeemHash,except);
+    }
+  }
+  return bufferEquals(actual,expected);
+}
+
+const SEGWIT_TYPES = {
+  P2WPKH: 'p2wpkh',
+  P2SH_P2WPKH: 'p2sh(p2wpkh)'
+}
+
+function decodeBech32 (address: string) {
+  const result = base.bech32.decode(address)
+  const data = base.bech32.fromWords(result.words.slice(1))
+  return Buffer.from(data)
+}
+
+function segwitRedeemHash (publicKeyHash:Buffer) {
+  const redeemScript = Buffer.concat([
+    Buffer.from('0014', 'hex'),
+    publicKeyHash
+  ])
+  return Buffer.from(base.hash160(redeemScript))
+}
+
+function bufferEquals(a: Buffer,b: Buffer) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('Arguments must be Buffers');
+  }
+
+  if (a === b) {
+    return true;
+  }
+
+  if (typeof a.equals === 'function') {
+    return a.equals(b);
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
 }
