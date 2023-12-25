@@ -789,7 +789,13 @@ export class DogeWallet extends BtcWallet {
       } catch(e) {
         return Promise.reject(SignTxError);
       }
-    } else {
+    }else if (type === 2) { // psbt
+      try {
+        return Promise.resolve(bitcoin.psbtSign(param.data.psbt, param.privateKey, this.network(),param.data.maximumFeeRate?param.data.maximumFeeRate:100000));
+      } catch(e) {
+        return Promise.reject(SignTxError);
+      }
+    }  else {
       return super.signTransaction(param)
     }
   }
