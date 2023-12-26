@@ -384,6 +384,59 @@ test("transfer", () => {
     console.log(unSignedTx);
 });
 
+test("doge psbt transfer", () => {
+    const txInputs: utxoInput[] = [];
+    txInputs.push({
+        txId: "40b297cd9053fb8f74f7a32ff44faf53e60322ca82dddbd626b371b0c8b73c24",
+        vOut: 0,
+        amount: 100000000,
+        address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        privateKey: "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs",
+        nonWitnessUtxo: "0100000001e6ceae98323464d5e4781d3f4aac26d26ebd3d947f42979636d36b0ff0bd5a9e000000006a473044022067fb7896818b4ce5f38b50ac1b0091b17739e3694ea4d824861b4672e839ff3c02201e55ffbd274544c8ffaf5d94401c801224997e4277aa02576f3ca312c2563ffb012102343c091801439d900ad515247d8d045d730bd350346cb23e9c3edb01710fbd5d010000800200e1f505000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ace0df25a6000000001976a914ca1f4a2243a1d4898b02cfb021d29e6ba023564e88ac00000000",
+    });
+
+    const txOutputs: utxoOutput[] = [];
+    txOutputs.push({
+        address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        amount: 100000,
+    });
+    txOutputs.push({
+        address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+        amount: 78750000,
+    });
+
+    const uxtoTx: utxoTx = {
+        inputs: txInputs as any,
+        outputs: txOutputs as any,
+        address: 'DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2',
+    }
+    const unSignedTx = buildPsbt(uxtoTx, dogeCoin, 100000);
+    console.log(unSignedTx);
+    console.log(base.toBase64(base.fromHex(unSignedTx)))
+    const privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs";
+    const signedPsbt = psbtSign(base.toBase64(base.fromHex(unSignedTx)), privateKey, dogeCoin, 100000);
+    console.log(signedPsbt);
+    const tx = extractPsbtTransaction(base.toHex(base.fromBase64(signedPsbt)), dogeCoin, 100000)
+    console.log(tx)
+    expect(tx).toEqual('0200000001243cb7c8b071b326d6dbdd82ca2203e653af4ff42fa3f7748ffb5390cd97b240000000006a47304402204ac61e00fcbf1bcf8bf93621a6742de01d31d236c23fb4898e05fc0bd217449802201403df88e23f9d497ac3a6606df14d63d966b75b81b54251cba22e52a77baf4c01210257a64f1536472326d5fe61b21df965659847e14d2e885fd156761087489f0088ffffffff02a0860100000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac30a1b104000000001976a91476094cb45e019a8942a4861c02f4fd766bb662e588ac00000000')
+});
+
+
+test("dogewallet psbt sign", async () => {
+    const privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs";
+    let wallet = new DogeWallet()
+    let signParams: SignTxParams = {privateKey: privateKey,
+        data: {
+            type: 2,
+            maximumFeeRate: 100000,
+            psbt: 'cHNidP8BAHcCAAAAASQ8t8iwcbMm1tvdgsoiA+ZTr0/0L6P3dI/7U5DNl7JAAAAAAAD/////AqCGAQAAAAAAGXapFHYJTLReAZqJQqSGHAL0/XZrtmLliKwwobEEAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5YisAAAAAAABAOEBAAAAAebOrpgyNGTV5HgdP0qsJtJuvT2Uf0KXljbTaw/wvVqeAAAAAGpHMEQCIGf7eJaBi0zl84tQrBsAkbF3OeNpTqTYJIYbRnLoOf88AiAeVf+9J0VEyP+vXZRAHIASJJl+QneqAldvPKMSwlY/+wEhAjQ8CRgBQ52QCtUVJH2NBF1zC9NQNGyyPpw+2wFxD71dAQAAgAIA4fUFAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5Yis4N8lpgAAAAAZdqkUyh9KIkOh1ImLAs+wIdKea6AjVk6IrAAAAAABASIA4fUFAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5YisAAAA'
+        }
+    }
+    let tx = await wallet.signTransaction(signParams);
+    console.info(tx)
+    expect(tx).toEqual('cHNidP8BAHcCAAAAASQ8t8iwcbMm1tvdgsoiA+ZTr0/0L6P3dI/7U5DNl7JAAAAAAAD/////AqCGAQAAAAAAGXapFHYJTLReAZqJQqSGHAL0/XZrtmLliKwwobEEAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5YisAAAAAAABAOEBAAAAAebOrpgyNGTV5HgdP0qsJtJuvT2Uf0KXljbTaw/wvVqeAAAAAGpHMEQCIGf7eJaBi0zl84tQrBsAkbF3OeNpTqTYJIYbRnLoOf88AiAeVf+9J0VEyP+vXZRAHIASJJl+QneqAldvPKMSwlY/+wEhAjQ8CRgBQ52QCtUVJH2NBF1zC9NQNGyyPpw+2wFxD71dAQAAgAIA4fUFAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5Yis4N8lpgAAAAAZdqkUyh9KIkOh1ImLAs+wIdKea6AjVk6IrAAAAAABASIA4fUFAAAAABl2qRR2CUy0XgGaiUKkhhwC9P12a7Zi5YisIgICV6ZPFTZHIybV/mGyHfllZZhH4U0uiF/RVnYQh0ifAIhHMEQCIErGHgD8vxvPi/k2IaZ0LeAdMdI2wj+0iY4F/AvSF0SYAiAUA9+I4j+dSXrDpmBt8U1j2Wa3W4G1QlHLoi5Sp3uvTAEAAAA=')
+});
+
 test("extract psbt transaction", () => {
     const signedTx = extractPsbtTransaction("70736274ff01007c0200000002bf4c1b2a577d9a05b4e6de983f15d06e4049695d30cc40f96a785b6467c8806a0000000000ffffffff3c76eff76c2de230444149fab382621ca0b218681feb6364ad0f4868aba104830100000000ffffffff017aa401000000000017a914626771730d7eee802eb817d34bbb4a4b4e6cf81e870000000000010120a08601000000000017a91417acd79b72f853f559df7e16b22d83cedaa5d4e687010717160014b38081b4b6a2bb9f81a05caf8db6d67ba4708fa201086b024730440220521e52e62f610bd3f4f47608636661d95e5c33e93436142e8fd1197f3d8f589c02202d69f116675c0811069e796f821d4ab0fac4ae87c2eaa085df035eea4322a2130121023f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c242500010120d02700000000000017a91417acd79b72f853f559df7e16b22d83cedaa5d4e687010717160014b38081b4b6a2bb9f81a05caf8db6d67ba4708fa201086b024730440220651cbe46bbeeebafe962a1b6ac75745ddbc2b91d45ddf1ee10ef47bedf7d2b7302201f136a87716bb6e575137634b85ec9fa6c0811c7f34c747e7b59fe96ac185c970121023f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c24250000");
     console.info(signedTx)
@@ -546,7 +599,7 @@ test("sign psbt with key path and script path", async () => {
     const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
     const toSignInputs: toSignInput[] = [];
     toSignInputs.push({
-        index: 0,
+        index: 2,
         address: "tb1pyrujq6htc7crmd3uejdkllhk0kctahkfxq75dflnqlg846kgl34qpawucx",
         sighashTypes: [0],
         disableTweakSigner: false,
@@ -573,7 +626,7 @@ test("sign psbt with key path and script path for batch", async () => {
     const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
     const toSignInputs: toSignInput[] = [];
     toSignInputs.push({
-        index: 0,
+        index: 2,
         address: "tb1pyrujq6htc7crmd3uejdkllhk0kctahkfxq75dflnqlg846kgl34qpawucx",
         sighashTypes: [0],
         disableTweakSigner: false,
