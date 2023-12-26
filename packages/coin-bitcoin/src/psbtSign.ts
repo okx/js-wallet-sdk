@@ -1,39 +1,39 @@
 import {Psbt} from "./bitcoinjs-lib/psbt";
-import { base, signUtil } from '@okxweb3/crypto-lib';
-import { getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public } from './txBuild';
-import { Network, networks, payments, Transaction, address } from './bitcoinjs-lib';
+import {base, signUtil} from '@okxweb3/crypto-lib';
+import {getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public} from './txBuild';
+import {Network, networks, payments, Transaction, address} from './bitcoinjs-lib';
 import * as taproot from "./taproot";
-import { isTaprootInput, toXOnly } from "./bitcoinjs-lib/psbt/bip371";
-import { utxoInput, utxoOutput, utxoTx, BuyingData, ListingData } from './type';
-import { toOutputScript } from './bitcoinjs-lib/address';
-import { PsbtInputExtended, PsbtOutputExtended } from './bitcoinjs-lib/psbt';
-import { reverseBuffer } from "./bitcoinjs-lib/bufferutils";
-import { Output } from "./bitcoinjs-lib/transaction";
-import { isP2SHScript, isP2TR } from "./bitcoinjs-lib/psbt/psbtutils";
+import {isTaprootInput, toXOnly} from "./bitcoinjs-lib/psbt/bip371";
+import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData} from './type';
+import {toOutputScript} from './bitcoinjs-lib/address';
+import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
+import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
+import {Output} from "./bitcoinjs-lib/transaction";
+import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 const defaultMaximumFeeRate = 5000
 
-export function buildPsbt(tx: utxoTx, network?: Network,maximumFeeRate?:number) {
-    const psbt = new Psbt( { network,maximumFeeRate:maximumFeeRate?maximumFeeRate:defaultMaximumFeeRate });
+export function buildPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number) {
+    const psbt = new Psbt({network, maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate});
     tx.inputs.forEach((input: utxoInput) => {
         const outputScript = toOutputScript(input.address!, network);
         let inputData: PsbtInputExtended = {
             hash: input.txId,
             index: input.vOut,
-            witnessUtxo: { script: outputScript, value: input.amount },
+            witnessUtxo: {script: outputScript, value: input.amount},
         };
 
         const addressType = getAddressType(input.address!, network || networks.bitcoin);
-        if(input.bip32Derivation) {
+        if (input.bip32Derivation) {
             if (addressType === 'segwit_taproot') {
                 inputData.tapBip32Derivation = input.bip32Derivation!.map((derivation: any) => {
                     let pubBuf = base.fromHex(derivation.pubkey)
-                    if(pubBuf.length != 32) {
+                    if (pubBuf.length != 32) {
                         pubBuf = pubBuf.slice(1)
                     }
                     return {
-                        masterFingerprint: base.fromHex(derivation.masterFingerprint) ,
+                        masterFingerprint: base.fromHex(derivation.masterFingerprint),
                         pubkey: pubBuf,
                         path: derivation.path,
                         leafHashes: derivation.leafHashes.map((leaf: any) => {
@@ -44,7 +44,7 @@ export function buildPsbt(tx: utxoTx, network?: Network,maximumFeeRate?:number) 
             } else {
                 inputData.bip32Derivation = input.bip32Derivation!.map((derivation: any) => {
                     return {
-                        masterFingerprint: base.fromHex(derivation.masterFingerprint) ,
+                        masterFingerprint: base.fromHex(derivation.masterFingerprint),
                         pubkey: base.fromHex(derivation.pubkey),
                         path: derivation.path,
                     }
@@ -72,14 +72,14 @@ export function buildPsbt(tx: utxoTx, network?: Network,maximumFeeRate?:number) 
         psbt.addInput(inputData);
     });
     tx.outputs.forEach((output: utxoOutput) => {
-        if(output.omniScript) {
-            psbt.addOutput({ script: base.fromHex(output.omniScript), value: 0 });
+        if (output.omniScript) {
+            psbt.addOutput({script: base.fromHex(output.omniScript), value: 0});
         } else {
-            let outputData: PsbtOutputExtended = { address: output.address, value: output.amount };
+            let outputData: PsbtOutputExtended = {address: output.address, value: output.amount};
             if (output.bip32Derivation) {
                 outputData.bip32Derivation = output.bip32Derivation!.map((derivation: any) => {
                     return {
-                        masterFingerprint: base.fromHex(derivation.masterFingerprint) ,
+                        masterFingerprint: base.fromHex(derivation.masterFingerprint),
                         pubkey: base.fromHex(derivation.pubkey),
                         path: derivation.path,
                     }
@@ -91,8 +91,11 @@ export function buildPsbt(tx: utxoTx, network?: Network,maximumFeeRate?:number) 
     return psbt.toHex();
 }
 
-export function psbtSign(psbtBase64: string, privateKey: string, network?: Network,maximumFeeRate?:number) {
-    const psbt = Psbt.fromBase64(psbtBase64, { network ,maximumFeeRate:maximumFeeRate?maximumFeeRate: defaultMaximumFeeRate });
+export function psbtSign(psbtBase64: string, privateKey: string, network?: Network, maximumFeeRate?: number) {
+    const psbt = Psbt.fromBase64(psbtBase64, {
+        network,
+        maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate
+    });
     psbtSignImpl(psbt, privateKey, network)
     return psbt.toBase64();
 }
@@ -112,8 +115,8 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
     };
 
     const allowedSighashTypes = [
-        Transaction.SIGHASH_SINGLE|Transaction.SIGHASH_ANYONECANPAY,
-        Transaction.SIGHASH_ALL|Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_ALL | Transaction.SIGHASH_ANYONECANPAY,
         Transaction.SIGHASH_ALL,
         Transaction.SIGHASH_DEFAULT
     ];
@@ -126,16 +129,20 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
         }
         try {
             psbt.signInput(i, signer, allowedSighashTypes);
-        } catch (e) {}
+        } catch (e) {
+        }
     }
 }
 
-export function extractPsbtTransaction(txHex: string, network?: Network,maximumFeeRate?: number) {
-    const psbt = Psbt.fromHex(txHex, { network ,maximumFeeRate:maximumFeeRate?maximumFeeRate: defaultMaximumFeeRate});
+export function extractPsbtTransaction(txHex: string, network?: Network, maximumFeeRate?: number) {
+    const psbt = Psbt.fromHex(txHex, {
+        network,
+        maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate
+    });
     let extractedTransaction
     try {
         extractedTransaction = psbt.finalizeAllInputs().extractTransaction()
-    } catch (e){
+    } catch (e) {
         extractedTransaction = psbt.extractTransaction()
         console.log(e)
     }
@@ -161,29 +168,29 @@ export function generateUnsignedListingPsbt(listingData: ListingData, network?: 
         placeholderAddress = "tb1pcyj5mt2q4t4py8jnur8vpxvxxchke4pzy7tdr9yvj3u3kdfgrj6see4dpv";
     }
     tx.inputs.push(
-      {
-          txId: "0".repeat(64),
-          vOut: 0,
-          amount: 0,
-          address: placeholderAddress,
-      } as never,
-      {
-          txId: "0".repeat(64),
-          vOut: 1,
-          amount: 0,
-          address: placeholderAddress,
-      } as never
+        {
+            txId: "0".repeat(64),
+            vOut: 0,
+            amount: 0,
+            address: placeholderAddress,
+        } as never,
+        {
+            txId: "0".repeat(64),
+            vOut: 1,
+            amount: 0,
+            address: placeholderAddress,
+        } as never
     );
 
     tx.outputs.push(
-      {
-          address: placeholderAddress,
-          amount: 0,
-      } as never,
-      {
-          address: placeholderAddress,
-          amount: 0,
-      } as never
+        {
+            address: placeholderAddress,
+            amount: 0,
+        } as never,
+        {
+            address: placeholderAddress,
+            amount: 0,
+        } as never
     );
 
 
@@ -194,7 +201,7 @@ export function generateUnsignedListingPsbt(listingData: ListingData, network?: 
         amount: listingData.nftUtxo.coinAmount,
         publicKey: publicKey,
         nonWitnessUtxo: listingData.nftUtxo.rawTransation,
-        sighashType: Transaction.SIGHASH_SINGLE|Transaction.SIGHASH_ANYONECANPAY,
+        sighashType: Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
     } as never);
 
     tx.outputs.push({
@@ -241,7 +248,7 @@ export function generateUnsignedBuyingPsbt(buyingData: BuyingData, network?: Net
 
     const nftOutputs: Output[] = [];
     buyingData.sellerPsbts.forEach(sellerPsbt => {
-        const psbt = Psbt.fromBase64(sellerPsbt, { network });
+        const psbt = Psbt.fromBase64(sellerPsbt, {network});
         const nftInput = (psbt.data.globalMap.unsignedTx as any).tx.ins[SELLER_INDEX];
         nftOutputs.push((psbt.data.globalMap.unsignedTx as any).tx.outs[SELLER_INDEX]);
         let nftUtxo = psbt.data.inputs[SELLER_INDEX].witnessUtxo;
@@ -254,7 +261,7 @@ export function generateUnsignedBuyingPsbt(buyingData: BuyingData, network?: Net
             vOut: nftInput.index,
             address: address.fromOutputScript(nftUtxo.script, network),
             amount: nftUtxo.value,
-            sighashType: Transaction.SIGHASH_SINGLE|Transaction.SIGHASH_ANYONECANPAY,
+            sighashType: Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
         } as never);
 
         tx.outputs.push({
@@ -305,11 +312,11 @@ export function mergeSignedBuyingPsbt(signedBuyingPsbt: string, signedListingPsb
     const nftIndex = signedListingPsbts.length + 1;
     signedListingPsbts.forEach((signedListingPsbt, i) => {
         const sellerSignedPsbt = Psbt.fromBase64(signedListingPsbt);
-        (buyerSignedPsbt.data.globalMap.unsignedTx as any).tx.ins[nftIndex+i]
-          = (sellerSignedPsbt.data.globalMap.unsignedTx as any).tx.ins[SELLER_INDEX];
+        (buyerSignedPsbt.data.globalMap.unsignedTx as any).tx.ins[nftIndex + i]
+            = (sellerSignedPsbt.data.globalMap.unsignedTx as any).tx.ins[SELLER_INDEX];
 
-        buyerSignedPsbt.data.inputs[nftIndex+i]
-          = sellerSignedPsbt.data.inputs[SELLER_INDEX];
+        buyerSignedPsbt.data.inputs[nftIndex + i]
+            = sellerSignedPsbt.data.inputs[SELLER_INDEX];
     });
 
     return buyerSignedPsbt;
