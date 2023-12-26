@@ -223,6 +223,9 @@ export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: str
         } catch (e) {
             // todo handle err
             // console.info(e)
+            if (signInputMap?.size > 0 && signInputMap?.has(i)) {
+                throw e;
+            }
         }
     }
 }
