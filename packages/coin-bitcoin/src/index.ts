@@ -7,6 +7,6 @@ export * from "./inscribe"
 export * from "./doginals"
 export * from "./psbtSign"
 export * as message from "./message"
-export * from "./BtcWallet"
+export * from "./wallet/index"
 export * from "./onekey"
 
