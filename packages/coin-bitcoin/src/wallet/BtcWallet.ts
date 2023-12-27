@@ -150,6 +150,12 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
+        } else if (type === 101) { // src20
+            try {
+                return Promise.resolve(bitcoin.srcInscribe(this.network(), param.data));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
         } else if (type === 2) { // psbt
             try {
                 return Promise.resolve(bitcoin.psbtSign(param.data.psbt, param.privateKey, this.network()));
