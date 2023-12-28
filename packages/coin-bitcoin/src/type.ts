@@ -47,6 +47,17 @@ type utxoTx = {
     derivationPath?: string
     memo?: string
     memoPos?: number
+    runeData?: RuneData
+}
+
+type RuneData = {
+    edicts: Edict[]
+}
+
+type Edict = {
+    id: number
+    amount: number
+    output: number
 }
 
 type ListingData = {
@@ -81,5 +92,5 @@ type BuyingData = {
 }
 
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict
 };
