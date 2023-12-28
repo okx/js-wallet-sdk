@@ -91,4 +91,4 @@ type toSignInputs = {
 
 export {
     utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInputs
-};
+}

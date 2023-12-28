@@ -5,15 +5,12 @@ import * as bcrypto from "./bitcoinjs-lib/crypto";
 import {vectorSize} from "./bitcoinjs-lib/transaction";
 import {
     getAddressType,
-    private2Wif,
     private2public,
     privateKeyFromWIF,
     sign,
     wif2Public
 } from "./txBuild";
-import {secp256k1SignTest} from "@okxweb3/coin-base";
 import {isP2PKH, isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
-import * as buffer from "buffer";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
