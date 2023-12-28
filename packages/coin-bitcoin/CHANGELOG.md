@@ -30,8 +30,9 @@ All notable changes to this project will be documented in this file.
 - **coin-bitcoin:** support two memo types (string or hex ) by
   op_return  ([46](https://github.com/okx/js-wallet-sdk/pull/46))
 
-# [1.0.5](https://github.com/okx/js-wallet-sdk) (2023-12-23)
+# [1.0.5](https://github.com/okx/js-wallet-sdk) (2023-12-27)
 
 ### Feature
 
 - **coin-bitcoin:** support doginals  ([52](https://github.com/okx/js-wallet-sdk/pull/52))
+- **coin-bitcoin:** support src20 deploy,mint,transfer  ([58](https://github.com/okx/js-wallet-sdk/pull/58))
