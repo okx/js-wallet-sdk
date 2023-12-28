@@ -12,3 +12,4 @@ import * as bip0322 from './bip0322';
 export { address, crypto, networks, payments, script, bip0322 };
 export { Transaction } from './transaction';
 export { Network } from './networks';
+export { BufferWriter } from './bufferutils';

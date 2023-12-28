@@ -21,8 +21,8 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@okxweb3/coin-base": "^1.0.4",
-    "@okxweb3/coin-bitcoin": "^1.0.1",
+    "@okxweb3/coin-base": "^1.0.6",
+    "@okxweb3/coin-bitcoin": "^1.0.4",
     "@okxweb3/coin-ethereum": "^1.0.1",
     "@okxweb3/crypto-lib": "^1.0.1",
     "@scure/bip39": "^1.2.1"
