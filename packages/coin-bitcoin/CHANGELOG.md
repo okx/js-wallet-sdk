@@ -41,5 +41,5 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-bitcoin:** support psbt script-path spend  ([59](https://github.com/okx/js-wallet-sdk/pull/59))
+- **coin-bitcoin:** support psbt script-path spend  ([62](https://github.com/okx/js-wallet-sdk/pull/62))
 
