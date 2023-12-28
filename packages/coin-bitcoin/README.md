@@ -93,11 +93,12 @@ import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
 let wallet = new BtcWallet()
 let params5 = {
-  privateKey: "L22jGDH5pKE4WHb2m9r2MdiWTtGarDhTYRqMrntsjD5uCq5z9ahY",
-  addressType: "segwit_taproot",
+    publicKey: "03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045",
+    addressType: "segwit_taproot",
 }
 let address5 = await wallet.getAddressByPublicKey(params5);
 ```
+
 
 ### Sign Transaction
 sign transaction
