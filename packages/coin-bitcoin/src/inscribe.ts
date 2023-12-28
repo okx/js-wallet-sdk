@@ -1,5 +1,5 @@
 import * as bitcoin from "./bitcoinjs-lib";
-import {base,signUtil} from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import * as taproot from "./taproot";
 import * as bcrypto from "./bitcoinjs-lib/crypto";
 import {vectorSize} from "./bitcoinjs-lib/transaction";
@@ -10,6 +10,7 @@ import {
     sign,
     wif2Public
 } from "./txBuild";
+
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
 export type InscriptionData = {
@@ -44,7 +45,7 @@ export type InscribeTxs = {
     commitAddrs: string[]
 }
 
-type TxOut = {
+export type TxOut = {
     pkScript: Buffer
     value: number
 }
@@ -121,7 +122,7 @@ export class InscriptionTool {
             txWitness.push(emptySignature);
             txWitness.push(inscriptionTxCtxData.inscriptionScript);
             txWitness.push(emptyControlBlockWitness);
-            const fee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness)+2+3)/4)) * revealFeeRate);
+            const fee = Math.floor((tx.byteLength() + Math.floor((vectorSize(txWitness) + 2 + 3) / 4)) * revealFeeRate);
 
             const prevOutputValue = revealOutValue + fee;
             inscriptionTxCtxData.revealTxPrevOutput = {
@@ -168,10 +169,10 @@ export class InscriptionTool {
         const fee = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
         const changeAmount = totalSenderAmount - totalRevealPrevOutputValue - fee;
         if (changeAmount >= minChangeValue) {
-            tx.outs[tx.outs.length-1].value = changeAmount;
+            tx.outs[tx.outs.length - 1].value = changeAmount;
         } else {
-            tx.outs = tx.outs.slice(0, tx.outs.length-1);
-            txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length-1);
+            tx.outs = tx.outs.slice(0, tx.outs.length - 1);
+            txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
             const feeWithoutChange = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
             if (totalSenderAmount - totalRevealPrevOutputValue - feeWithoutChange < 0) {
                 this.mustCommitTxFee = fee;
@@ -201,7 +202,7 @@ export class InscriptionTool {
             revealTx.ins[0].witness = [Buffer.from(signature), ...this.inscriptionTxCtxDataList[i].witness];
 
             // check tx max tx wight
-            const revealWeight =  revealTx.weight()
+            const revealWeight = revealTx.weight()
             if (revealWeight > maxStandardTxWeight) {
                 throw new Error(`reveal(index ${i}) transaction weight greater than ${maxStandardTxWeight} (MAX_STANDARD_TX_WEIGHT): ${revealWeight}`);
             }
@@ -271,7 +272,7 @@ function signTx(tx: bitcoin.Transaction, commitTxPrevOutputList: PrevOutput[], n
             ];
 
             const redeemScript = Buffer.of(0x16, 0, 20, ...pubKeyHash);
-            if(addressType === "segwit_nested") {
+            if (addressType === "segwit_nested") {
                 input.script = redeemScript;
             }
         }
@@ -316,7 +317,7 @@ function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: I
         redeemVersion: 0xc0,
     };
 
-    const { output, witness, hash, address } = bitcoin.payments.p2tr({
+    const {output, witness, hash, address} = bitcoin.payments.p2tr({
         internalPubkey: internalPubKey,
         scriptTree,
         redeem,

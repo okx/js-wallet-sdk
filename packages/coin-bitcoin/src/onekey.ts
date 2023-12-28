@@ -1,10 +1,10 @@
-import { utxoInput, utxoOutput, utxoTx } from "./type";
-import { Transaction} from "./bitcoinjs-lib";
-import { reverseBuffer } from "./bitcoinjs-lib/bufferutils";
-import { base } from "@okxweb3/crypto-lib";
-import { convert2UtxoTx, number2Hex } from "./BtcWallet";
-import { getAddressType, signBtc } from "./txBuild";
-import { bitcoin, Network } from "./bitcoinjs-lib/networks";
+import {utxoInput, utxoOutput, utxoTx} from "./type";
+import {Transaction} from "./bitcoinjs-lib";
+import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
+import {base} from "@okxweb3/crypto-lib";
+import {convert2UtxoTx, number2Hex} from "./wallet";
+import {getAddressType, signBtc} from "./txBuild";
+import {bitcoin, Network} from "./bitcoinjs-lib/networks";
 
 type Input = {
     address_n: number[]
