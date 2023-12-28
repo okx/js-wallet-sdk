@@ -36,3 +36,10 @@ All notable changes to this project will be documented in this file.
 
 - **coin-bitcoin:** support doginals  ([52](https://github.com/okx/js-wallet-sdk/pull/52))
 - **coin-bitcoin:** support src20 deploy,mint,transfer  ([58](https://github.com/okx/js-wallet-sdk/pull/58))
+
+# [1.0.6](https://github.com/okx/js-wallet-sdk) (2023-12-28)
+
+### Feature
+
+- **coin-bitcoin:** support psbt script-path spend  ([59](https://github.com/okx/js-wallet-sdk/pull/59))
+
