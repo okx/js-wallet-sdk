@@ -15,7 +15,12 @@ const schnorr = signUtil.schnorr.secp256k1.schnorr
 const defaultMaximumFeeRate = 5000
 
 export function buildPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number) {
-    const psbt = new Psbt({network, maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate});
+    const psbt = classicToPsbt(tx, network, maximumFeeRate);
+    return psbt.toHex();
+}
+
+export function classicToPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number): Psbt {
+    const psbt = new Psbt({ network, maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate });
     tx.inputs.forEach((input: utxoInput) => {
         const outputScript = toOutputScript(input.address!, network);
         let inputData: PsbtInputExtended = {
@@ -88,7 +93,7 @@ export function buildPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number
             psbt.addOutput(outputData);
         }
     });
-    return psbt.toHex();
+    return psbt;
 }
 
 export function psbtSign(psbtBase64: string, privateKey: string, network?: Network, maximumFeeRate?: number) {
