@@ -104,5 +104,7 @@ type signPsbtOptions = {
 }
 
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput,signPsbtOptions
-};
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput, signPsbtOptions
+}
+
+

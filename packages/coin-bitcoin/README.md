@@ -204,4 +204,41 @@ let result = await wallet.signTransaction({privateKey: privateKey, data: request
 console.log(result);
 ```
 
+SRC20 inscribe
+
+    you need replace TBtcWallet with BtcWallet when you run on mainnet not testnet.
+```typescript
+import { TBtcWallet } from "@okxweb3/coin-bitcoin";
+ let wallet = new TBtcWallet()
+
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+
+        const commitTxPrevOutputList: PrevOutput[] = [];
+        commitTxPrevOutputList.push({
+            txId: "c865cd4dc206ccdaf1cff0fad4f0272f2075af5c975c670debbf8d56045391ad",
+            vOut: 3,
+            amount: 202000,
+            address: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+            privateKey: privateKey,
+        });
+        const inscriptionData: InscriptionData = {
+            contentType: "stamp:",
+            body: '{"p":"src-20","op":"deploy","tick":"coder","max":"21000000","lim":"1000","dec":"8"}',
+            revealAddr: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+        }
+
+        const request = {
+            commitTxPrevOutputList,
+            commitFeeRate: 100,
+            revealOutValue: 790,
+            inscriptionData,
+            changeAddress: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+            type: 101,
+        };
+
+        const txs: InscribeTxs =await wallet.signTransaction({privateKey: privateKey, data: request});
+        console.log(JSON.stringify(txs));
+```
+
 ## License: MIT
