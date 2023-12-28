@@ -5,6 +5,7 @@ import {
     isCashAddress,
     networks,
     oneKeyBuildBtcTx,
+    toSignInput,
     payments,
     private2Wif,
     TBtcWallet,
@@ -206,5 +207,4 @@ describe('hardware wallet test', () => {
         const unsignedTx = await oneKeyBuildBtcTx(txData as utxoTx, networks.testnet);
         console.log(JSON.stringify(unsignedTx));
     });
-
 })

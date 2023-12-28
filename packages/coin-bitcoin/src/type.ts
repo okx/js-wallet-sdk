@@ -35,6 +35,16 @@ type omniOutput = {
 }
 
 type utxoTx = {
+    // inputs: []
+    // outputs: []
+    // address: string   // change address
+    // feePerB?: number  //  Sat/b
+    // decimal?: number  // precision: 8 bit
+    // fee?: number      // fixed fee  eg: 0.001 AVAX
+    // omni?: omniOutput
+    // dustSize?: number
+    // bip32Derivation?: Bip32Derivation[] // derivation info
+    // derivationPath?: string
     inputs: []
     outputs: []
     address: string   // change address
@@ -91,6 +101,19 @@ type BuyingData = {
     sellerPsbts: string[]
 }
 
+type toSignInput = {
+    index: number,
+    address: string,
+    publicKey?: string,
+    sighashTypes?: number[],
+    disableTweakSigner?: boolean
+}
+
+type signPsbtOptions = {
+    autoFinalized?: boolean,
+    toSignInputs?: toSignInput[]
+}
+
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict, toSignInput, signPsbtOptions
 };

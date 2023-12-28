@@ -4,7 +4,7 @@ import {getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public} from './tx
 import {Network, networks, payments, Transaction, address} from './bitcoinjs-lib';
 import * as taproot from "./taproot";
 import {isTaprootInput, toXOnly} from "./bitcoinjs-lib/psbt/bip371";
-import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData} from './type';
+import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInput, signPsbtOptions} from './type';
 import {toOutputScript} from './bitcoinjs-lib/address';
 import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
 import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
@@ -104,6 +104,139 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     psbtSignImpl(psbt, privateKey, network)
     return psbt.toBase64();
 }
+
+export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privateKey: string, network?: Network, opts?: signPsbtOptions []) {
+    if (psbtHexs == undefined || psbtHexs.length == 0) {
+        return [];
+    }
+    let res: string[] = [];
+    const optsSize = opts == undefined ? 0 : opts.length;
+    let i: number = 0;
+    for (i = 0; i < psbtHexs.length; i++) {
+        let opt: signPsbtOptions = {};
+        if (i < optsSize && opts) {
+            opt = opts[i]
+        }
+        const signedPsbt = signPsbtWithKeyPathAndScriptPath(psbtHexs[i], privateKey, network, {
+            autoFinalized: opt.autoFinalized,
+            toSignInputs: opt.toSignInputs
+        });
+        res.push(signedPsbt);
+    }
+    return res
+}
+
+export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
+    let psbt: Psbt;
+    if (base.isHexString("0x" + psbtHex)) {
+        psbt = Psbt.fromHex(psbtHex, {network});
+    } else {
+        psbt = Psbt.fromBase64(psbtHex, {network})
+    }
+    signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, opts.autoFinalized, opts.toSignInputs)
+    return psbt.toHex();
+}
+
+export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: string, network?: Network, autoFinalized?: boolean, signInputs?: toSignInput[]) {
+    network = network || networks.bitcoin
+    const privKeyHex = privateKeyFromWIF(privateKey, network);
+    const signInputMap = new Map<number, toSignInput>();
+    if (signInputs != undefined) {
+        signInputs.map(e => {
+            signInputMap.set(e.index, e);
+        });
+    }
+    const signer = {
+        psbtIndex: 0,
+        needTweak: true,
+        tweakHash: Buffer.alloc(0),
+        toSignInputsMap: signInputMap,
+        publicKey: Buffer.alloc(0),
+        sign(hash: Buffer): Buffer {
+            return sign(hash, privKeyHex);
+        },
+        signSchnorr(hash: Buffer): Buffer {
+            let tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex));
+            if (this.toSignInputsMap?.has(this.psbtIndex)) {
+                if (this.toSignInputsMap.get(this.psbtIndex)?.disableTweakSigner) {
+                    // tweakedPrivKey = base.fromHex(privKeyHex);
+                    return Buffer.from(schnorr.sign(hash, privKeyHex, base.randomBytes(32)));
+                }
+            }
+            if (!this.needTweak) {
+                return Buffer.from(schnorr.sign(hash, privKeyHex, base.randomBytes(32)));
+            }
+            if (this.needTweak && this.tweakHash.length > 0) {
+                tweakedPrivKey = taproot.taprootTweakPrivKey(base.fromHex(privKeyHex), this.tweakHash);
+            }
+            return Buffer.from(schnorr.sign(hash, tweakedPrivKey, base.randomBytes(32)));
+        },
+    };
+
+    let allowedSighashTypes = [
+        Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_ALL,
+        Transaction.SIGHASH_DEFAULT
+    ];
+
+    for (let i = 0; i < psbt.inputCount; i++) {
+        if (signInputMap?.size > 0 && !signInputMap?.has(i)) {
+            continue;
+        }
+        signer.psbtIndex = i;
+        const input = psbt.data.inputs[i];
+        if (isTaprootInput(input)) {
+            // default key path spend
+            signer.needTweak = true;
+            signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
+            // if user set disableTweakSigner, we should use it.
+            if (signInputMap?.has(i)) {
+                if (signInputMap?.get(i)?.disableTweakSigner) {
+                    // signer.publicKey = toXOnly(wif2Public(privateKey, network));
+                    signer.publicKey = wif2Public(privateKey, network);
+                    signer.needTweak = false;
+                }
+            }
+            // script path spend
+            if (input.tapLeafScript && input.tapLeafScript?.length > 0 && !input.tapMerkleRoot) {
+                input.tapLeafScript.map(e => {
+                    if (e.controlBlock && e.script) {
+                        signer.publicKey = wif2Public(privateKey, network);
+                        signer.needTweak = false;
+                    }
+                });
+            } else if (input.tapMerkleRoot) {// script path utxo but key path spend
+                signer.needTweak = true;
+                signer.tweakHash = input.tapMerkleRoot;
+                signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)), input.tapMerkleRoot)[0]);
+            }
+        } else {
+            signer.needTweak = false;
+            signer.tweakHash = Buffer.alloc(0);
+            signer.publicKey = wif2Public(privateKey, network);
+        }
+        try {
+            if (signInputMap?.has(i)) {
+                const sighashTypes = signInputMap?.get(i)?.sighashTypes;
+                if (sighashTypes != undefined) {
+                    allowedSighashTypes = sighashTypes;
+                }
+            }
+            psbt.signInput(i, signer, allowedSighashTypes);
+            if (autoFinalized != undefined && !autoFinalized) {
+                continue;
+            }
+            psbt.finalizeInput(i)
+        } catch (e) {
+            // todo handle err
+            // console.info(e)
+            if (signInputMap?.size > 0 && signInputMap?.has(i)) {
+                throw e;
+            }
+        }
+    }
+}
+
 
 export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) {
     network = network || networks.bitcoin
