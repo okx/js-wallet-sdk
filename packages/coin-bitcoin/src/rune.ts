@@ -63,7 +63,7 @@ export function buildRuneData(isMainnet: boolean, edicts: Edict[]): Buffer {
 
         let id = 0
         for (const edict of edicts) {
-            encodeToVec(BigInt(edict.id), payload)
+            encodeToVec(BigInt(edict.id - id), payload)
             encodeToVec(BigInt(edict.amount), payload)
             encodeToVec(BigInt(edict.output), payload)
             id = edict.id
