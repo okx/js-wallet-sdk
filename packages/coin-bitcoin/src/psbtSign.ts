@@ -20,7 +20,7 @@ export function buildPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number
 }
 
 export function classicToPsbt(tx: utxoTx, network?: Network, maximumFeeRate?: number): Psbt {
-    const psbt = new Psbt({ network, maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate });
+    const psbt = new Psbt({network, maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate});
     tx.inputs.forEach((input: utxoInput) => {
         const outputScript = toOutputScript(input.address!, network);
         let inputData: PsbtInputExtended = {
@@ -223,10 +223,11 @@ export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: str
                 }
             }
             psbt.signInput(i, signer, allowedSighashTypes);
-            if (autoFinalized != undefined && !autoFinalized) {
-                continue;
+            // the same with NFT marketplace
+            if (autoFinalized != undefined && autoFinalized) {
+                psbt.finalizeInput(i)
+                //continue;
             }
-            psbt.finalizeInput(i)
         } catch (e) {
             // todo handle err
             // console.info(e)
