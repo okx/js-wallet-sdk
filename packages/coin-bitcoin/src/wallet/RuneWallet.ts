@@ -77,7 +77,7 @@ export class RuneWallet extends BtcWallet {
         return txHex
     }
 
-    async signLegacyTransaction(param: SignTxParams): Promise<any> {
+    async signTransaction(param: SignTxParams): Promise<any> {
         const network = this.network()
         let txHex = null;
         try {
