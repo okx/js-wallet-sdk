@@ -5,14 +5,11 @@ import {
     isCashAddress,
     networks,
     oneKeyBuildBtcTx,
-    toSignInput,
-    payments,
     private2Wif,
     TBtcWallet,
     utxoTx,
     ValidateBitcashP2PkHAddress,
-    ValidSignedTransaction,
-    wif2Public
+    ValidSignedTransaction
 } from '../src';
 
 import {base} from "@okxweb3/crypto-lib";
@@ -25,6 +22,68 @@ describe("bitcoin", () => {
         let key = await wallet.getRandomPrivateKey()
         console.log(key)
     })
+
+    test("bitcoin address", async () => {
+        let privateKey = "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs"
+
+        let btcWallet = new TBtcWallet();
+        let param = {
+            privateKey: privateKey,
+            addressType: "Legacy"
+        }
+        let address = await btcWallet.getNewAddress(param);
+        console.info(address)
+
+        param = {
+            privateKey: privateKey,
+            addressType: "segwit_native"
+        }
+        address = await btcWallet.getNewAddress(param);
+        console.info(address)
+
+        param = {
+            privateKey: privateKey,
+            addressType: "segwit_nested"
+        }
+        address = await btcWallet.getNewAddress(param);
+        console.info(address)
+
+        param = {
+            privateKey: privateKey,
+            addressType: "segwit_taproot"
+        }
+        address = await btcWallet.getNewAddress(param);
+        console.info(address)
+    });
+
+    test("legacy tx sign", async () => {
+        let wallet = new TBtcWallet()
+        let btcTxParams = {
+            inputs: [
+                {
+                    txId: "3e0268753ed06317e60c51c244fe05a4db472bd3ca4641067a3795a56cc41246",
+                    vOut: 0,
+                    amount: 100000
+                },
+            ],
+            outputs: [
+                {
+                    address: "ms7j2BVUaAoXff5JgKLyHQhqAfpyExuXfd",
+                    amount: 50000
+                }
+            ],
+            address: "ms7j2BVUaAoXff5JgKLyHQhqAfpyExuXfd",
+            feePerB: 2
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs",
+            data: btcTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.info(tx);
+    })
+
 
     test("tx sign", async () => {
         let wallet = new TBtcWallet()
@@ -56,15 +115,6 @@ describe("bitcoin", () => {
         console.info(tx);
         expect(tx).toEqual('0200000000010123a0f76bb214f2b3804879b161ceb29dbd08b45f62a399eda2512e3fedebeda700000000171600145c005c5532ce810ddf20f9d1d939631b47089ecdffffffff03f0490200000000001600145c005c5532ce810ddf20f9d1d939631b47089ecdd88401000000000017a914ef05515a0595d15eaf90d9f62fb85873a6d8c0b4870000000000000000366a343d3a653a3078386239346336346666376433396361616161633234343530656236363565346564663661663065393a3a743a333002483045022100b897da3b077f27ff0752346adacf2654c354aac94768fe73a72824f8986ca51d02200ac592435dbc25855c080dd80a660614e390a6b2372a3a940e2821d296a2d50c01210357bbb2d4a9cb8a2357633f201b9c518c2795ded682b7913c6beef3fe23bd6d2f00000000')
     });
-
-    test("address", async () => {
-        let network = networks.bitcoin;
-        let privateKey = "L22jGDH5pKE4WHb2m9r2MdiWTtGarDhTYRqMrntsjD5uCq5z9ahY";
-        const pk = wif2Public(privateKey, network);
-        const {address} = payments.p2pkh({pubkey: pk, network});
-        console.info(address)
-    });
-
 
     test("message sign", async () => {
         const wif = private2Wif(base.fromHex("adce25dc25ef89f06a722abdc4b601d706c9efc6bc84075355e6b96ca3871621"), networks.testnet)
