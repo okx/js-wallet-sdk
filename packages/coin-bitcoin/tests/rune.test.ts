@@ -15,7 +15,7 @@ describe('rune test', () => {
         expect(opReturnScript.toString('hex')).toEqual('6a0952554e455f544553540900a9cfd6ff1b866800')
     })
 
-    test("transfer rune legacy", async () => {
+    test("legacy transfer rune", async () => {
         const privateKey = 'cUsEDaPqb1MqLabsYJeCJvZ734DdGfPhML2N7nr6RAqwdKiG8Mv9' // testnet
 
         // modified from transfer: https://mempool.space/testnet/tx/b386056c2d4b92b12e342d57040bba0b56b1c4fae2ad1d196ceb6d548ffde920
@@ -66,6 +66,46 @@ describe('rune test', () => {
 
         let tx = await wallet.signTransaction(signParams);
         expect(tx).toEqual('02000000000102de9d202412442cf7a75a9ecd27c58c33beae4151ca090fc5f9db8bdd403ed8020000000000ffffffff16a40a0cdb1cc824309363b0a03334832cac330e1f9174357100221edcb6e2480100000000ffffffff032202000000000000225120746061e2000a36d6c93b5a3f82ef83fc08d92e98005454859dad6427a14144990000000000000000166a0952554e455f544553540a0083ed9fceff01866800ac05010000000000160014fb7c500dac19ff2b7ea50dcee3195ea12b4b3ff1024730440220175e616b43ee2423714e2b6d04ba0af205227dc9b29e99f434175141a3ff416b022047dd412f79bd1e4f1128fc6b1a514a2dae1819bdc8f0e524cb842a626f547060012102ad268ae319c4dc271753072ddd690cb6fbe85c3782259daa0faff0919b86e2c4024830450221009475ebd9094776af49337b93ba522327341e772d1f8b8d170699321425346fc30220454f6facda188068e57c89a3fa81856bafce381adfd192128500f21254c684a7012102ad268ae319c4dc271753072ddd690cb6fbe85c3782259daa0faff0919b86e2c400000000')
+    });
+
+    test("segwit_taproot transfer rune", async () => {
+        let wallet = new RuneTestWallet()
+        let runeTxParams = {
+            inputs: [
+                {
+                    txId: "01b2cb8cc98cd25b2f1cfb8b157d4d3168747fd52d8a4471a3eb923ce3c4022d",
+                    vOut: 1,
+                    amount: 48692,
+                    address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d"
+                },
+            ],
+            outputs: [
+                {
+                    address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
+                    amount: 10000
+                }
+            ],
+            address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
+            feePerB: 10,
+            runeData: {
+                "edicts": [
+                    {
+                        "id": "26e4140001",
+                        "amount": 1000,
+                        "output": 0
+                    }
+                ],
+                "etching": null,
+                "burn": false
+            }
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs",
+            data: runeTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.info(tx)
     });
 
     test("transfer rune psbt", () => {

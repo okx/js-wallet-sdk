@@ -32,28 +32,28 @@ describe("bitcoin", () => {
             addressType: "Legacy"
         }
         let address = await btcWallet.getNewAddress(param);
-        console.info(address)
+        console.info("Legacy address: ", address)
 
         param = {
             privateKey: privateKey,
             addressType: "segwit_native"
         }
         address = await btcWallet.getNewAddress(param);
-        console.info(address)
+        console.info("segwit_native address: ", address)
 
         param = {
             privateKey: privateKey,
             addressType: "segwit_nested"
         }
         address = await btcWallet.getNewAddress(param);
-        console.info(address)
+        console.info("segwit_nested address: ", address)
 
         param = {
             privateKey: privateKey,
             addressType: "segwit_taproot"
         }
         address = await btcWallet.getNewAddress(param);
-        console.info(address)
+        console.info("segwit_taproot address: ", address)
     });
 
     test("legacy tx sign", async () => {
@@ -84,6 +84,92 @@ describe("bitcoin", () => {
         console.info(tx);
     })
 
+    test("segwit_native tx sign", async () => {
+        let wallet = new TBtcWallet()
+        let btcTxParams = {
+            inputs: [
+                {
+                    txId: "17814e41d2eee3b61c1dc80818fa9e9012317a5f7624d318cc9a8747c8292d11",
+                    vOut: 0,
+                    amount: 50000,
+                    address: "tb1q0u7de2mz7pawxhhll8j5dtmk68v48fq2kdly4m"
+                },
+            ],
+            outputs: [
+                {
+                    address: "tb1q0u7de2mz7pawxhhll8j5dtmk68v48fq2kdly4m",
+                    amount: 10000
+                }
+            ],
+            address: "tb1q0u7de2mz7pawxhhll8j5dtmk68v48fq2kdly4m",
+            feePerB: 2
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs",
+            data: btcTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.info(tx);
+    })
+
+    test("segwit_nested tx sign", async () => {
+        let wallet = new TBtcWallet()
+        let btcTxParams = {
+            inputs: [
+                {
+                    txId: "5214fe65530d36ec35a3391f3b5262f8d3149a14a3b870e688d485bed96159a8",
+                    vOut: 0,
+                    amount: 50000,
+                    address: "2NF22uz9DnyXQ9CSsewWoufxDD7fFTS7JBj"
+                },
+            ],
+            outputs: [
+                {
+                    address: "2NF22uz9DnyXQ9CSsewWoufxDD7fFTS7JBj",
+                    amount: 1000
+                }
+            ],
+            address: "2NF22uz9DnyXQ9CSsewWoufxDD7fFTS7JBj",
+            feePerB: 2
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs",
+            data: btcTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.info(tx);
+    })
+
+    test("segwit_taproot tx sign", async () => {
+        let wallet = new TBtcWallet()
+        let btcTxParams = {
+            inputs: [
+                {
+                    txId: "a73cbbc67173451a4828e469376dce4a82c8fb7b976b224995dd0af94406e559",
+                    vOut: 0,
+                    amount: 50000,
+                    address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d"
+                },
+            ],
+            outputs: [
+                {
+                    address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
+                    amount: 1000
+                }
+            ],
+            address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
+            feePerB: 2
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs",
+            data: btcTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.info(tx);
+    })
 
     test("tx sign", async () => {
         let wallet = new TBtcWallet()
