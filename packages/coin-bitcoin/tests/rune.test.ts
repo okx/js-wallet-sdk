@@ -72,18 +72,28 @@ describe('rune test', () => {
         let wallet = new RuneTestWallet()
         let runeTxParams = {
             inputs: [
+                { // rune input
+                    txId: "6bab7bba30ef8b1d099fea53c014f76d8b3690786c2bd24f258984a6e2dec625",
+                    vOut: 2,
+                    amount: 546,
+                    address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d"
+                },
                 {
-                    txId: "01b2cb8cc98cd25b2f1cfb8b157d4d3168747fd52d8a4471a3eb923ce3c4022d",
-                    vOut: 1,
-                    amount: 48692,
+                    txId: "9bde9a6ee28159505ff84167cb52933859a128d0dcc49169d272e54b7d35025c",
+                    vOut: 2,
+                    amount: 17604,
                     address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d"
                 },
             ],
             outputs: [
+                { // rune output
+                    address: "tb1p633pqtj8hfmxr475wqkxtpzrtx5wty8ecgmn3v5rrhak38qhtecqvrjmt6",
+                    amount: 546
+                },
                 {
                     address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
-                    amount: 10000
-                }
+                    amount: 546
+                },
             ],
             address: "tb1pvg07jhy2q72mtn9p2mnp4ccrasn4yl2yhfvasmleyymkf6c08enqad2n2d",
             feePerB: 10,
