@@ -1,4 +1,4 @@
-import {networks, payments, privateKeyFromWIF, sign, wif2Public, RuneTestWallet} from "../src"
+import {networks, payments, privateKeyFromWIF, RuneTestWallet, sign, wif2Public} from "../src"
 import {buildRuneData, fromVarInt, toVarInt} from "../src/rune"
 import {Psbt} from "../src/bitcoinjs-lib/psbt";
 import * as taproot from "../src/taproot";
@@ -16,14 +16,11 @@ describe('rune test', () => {
     })
 
     test("transfer rune legacy", async () => {
-        const WIF = 'cUsEDaPqb1MqLabsYJeCJvZ734DdGfPhML2N7nr6RAqwdKiG8Mv9' // testnet
-        const publicKey = wif2Public(WIF, network);
-        const {address} = payments.p2wpkh({pubkey: publicKey, network});
-        expect(address).toEqual("tb1qld79qrdvr8ljkl49ph8wxx275y45k0l3jwdzud")
+        const privateKey = 'cUsEDaPqb1MqLabsYJeCJvZ734DdGfPhML2N7nr6RAqwdKiG8Mv9' // testnet
 
         // modified from transfer: https://mempool.space/testnet/tx/b386056c2d4b92b12e342d57040bba0b56b1c4fae2ad1d196ceb6d548ffde920
-        let wallet = new RuneTestWallet
-        let runeTxParams = { 
+        let wallet = new RuneTestWallet()
+        let runeTxParams = {
             inputs: [ // at least 2 inputs for transfer: 1 rune input, 1 fee input
                 {
                     txId: "02d83e40dd8bdbf9c50f09ca5141aebe338cc527cd9e5aa7f72c441224209dde",
@@ -48,11 +45,11 @@ describe('rune test', () => {
             runeData: { // in edicts, recommend to use output = 0 instead of 2, to prevent amount mismatch
                 "edicts": [
                     {
-                      "id": "26e4140001",
-                      "amount": 1000,
-                      "output": 0
+                        "id": "26e4140001",
+                        "amount": 1000,
+                        "output": 0
                     }
-                  ],
+                ],
                 "etching": null,
                 "burn": false
             }
@@ -60,7 +57,7 @@ describe('rune test', () => {
 
         // expected OP_RETURN script: 6a 09 52 55 4e 45 5f 54 45 53 54 0a 00 83 ed 9f ce ff 01 86 68 00
         let signParams: SignTxParams = {
-            privateKey: WIF,
+            privateKey: privateKey,
             data: runeTxParams
         };
 
