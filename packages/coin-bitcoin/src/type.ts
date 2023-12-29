@@ -57,6 +57,17 @@ type utxoTx = {
     derivationPath?: string
     memo?: string
     memoPos?: number
+    runeData?: RuneData
+}
+
+type RuneData = {
+    edicts: Edict[]
+}
+
+type Edict = {
+    id: number
+    amount: number
+    output: number
 }
 
 type ListingData = {
@@ -104,7 +115,5 @@ type signPsbtOptions = {
 }
 
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, toSignInput, signPsbtOptions
-}
-
-
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict, toSignInput, signPsbtOptions
+};
