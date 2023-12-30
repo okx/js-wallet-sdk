@@ -24,7 +24,7 @@ describe("bitcoin", () => {
     })
 
     test("bitcoin address", async () => {
-        let privateKey = "cSNaeMCaB5KTYUgMp895E3FyaPHHhECPfDVocraQoH6jmrLgiFUs"
+        let privateKey = "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS"
 
         let btcWallet = new TBtcWallet();
         let param = {

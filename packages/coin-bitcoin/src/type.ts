@@ -11,6 +11,7 @@ type utxoInput = {
     bip32Derivation?: Bip32Derivation[],
     derivationPath?: string,
     sighashType?: number,
+    data?: any  // xrc20 token info
 }
 
 type Bip32Derivation = {
@@ -27,6 +28,7 @@ type utxoOutput = {
     bip32Derivation?: Bip32Derivation[]
     derivationPath?: string
     isChange?: boolean
+    data?: any // xrc20 token info
 }
 
 type omniOutput = {
@@ -60,8 +62,11 @@ type utxoTx = {
     runeData?: RuneData
 }
 
+// rune
 type RuneData = {
     edicts: Edict[]
+    etching?: any,
+    burn?: boolean
 }
 
 type Edict = {
