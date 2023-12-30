@@ -2,19 +2,14 @@ import * as bitcoin from "./bitcoinjs-lib";
 import {base, signUtil} from "@okxweb3/crypto-lib";
 import * as taproot from "./taproot";
 import * as bcrypto from "./bitcoinjs-lib/crypto";
-import {vectorSize} from "./bitcoinjs-lib/transaction";
 import {
     getAddressType,
     private2public,
     privateKeyFromWIF,
-    sign,
-    wif2Public
+    sign
 } from "./txBuild";
 import {InscriptionData, PrevOutput, TxOut} from "./inscribe";
 import {BufferWriter} from "./bitcoinjs-lib";
-import {isPoint} from "./bitcoinjs-lib/types";
-
-var rc4 = require('arc4');
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -74,7 +69,7 @@ export class SrcInscriptionTool {
         return tool;
     }
 
-    buildCommitTx(network: bitcoin.Network, inscriptionData: InscriptionData, revealOutValue: number, commitTxPrevOutputList: PrevOutput[], changeAddress: string,  commitFeeRate: number, minChangeValue: number): boolean {
+    buildCommitTx(network: bitcoin.Network, inscriptionData: InscriptionData, revealOutValue: number, commitTxPrevOutputList: PrevOutput[], changeAddress: string, commitFeeRate: number, minChangeValue: number): boolean {
         let prefix = Buffer.from(inscriptionData.contentType)
         let body = Buffer.from(inscriptionData.body)
         while (body[body.length - 1] == 0) {
@@ -91,8 +86,7 @@ export class SrcInscriptionTool {
         }
         //"ba50757c612b8a539f7368cd0aa98f0e046333b83c38a292f71888b3b4e0e662b5e3a3dcf66f781b001069c3d9e07764e1aaa40de9df17b2460bc838a188676f309845e35580f4e0f4f94243049bfb69539c0ca2a109afbcf595e022651884e6befe3d88555c5ab83b1c40e0c0e375069c88d44a357d97d44e566e84"
         let data = bufferWriter.end()
-        var cipher = rc4('arc4', base.fromHex(commitTxPrevOutputList[0].txId));
-        let buf = base.fromHex(cipher.encodeString(data))
+        let buf = base.fromHex(xcp_rc4(commitTxPrevOutputList[0].txId, data.toString("hex")));
         let totalSenderAmount = 0;
         let totalRevealPrevOutputValue = 0;
         const tx = new bitcoin.Transaction();
@@ -242,4 +236,58 @@ export function srcInscribe(network: bitcoin.Network, request: SrcInscriptionReq
         ...tool.calculateFee(),
         commitAddrs: tool.commitAddrs,
     };
+}
+
+// @ts-ignore
+function rc4(key, str) {
+    var s = [],
+        j = 0,
+        x,
+        res = ''
+    for (var i = 0; i < 256; i++) {
+        s[i] = i
+    }
+    for (i = 0; i < 256; i++) {
+        j = (j + s[i] + key.charCodeAt(i % key.length)) % 256
+        x = s[i]
+        s[i] = s[j]
+        s[j] = x
+    }
+    i = 0
+    j = 0
+    for (var y = 0; y < str.length; y++) {
+        i = (i + 1) % 256
+        j = (j + s[i]) % 256
+        x = s[i]
+        s[i] = s[j]
+        s[j] = x
+        res += String.fromCharCode(str.charCodeAt(y) ^ s[(s[i] + s[j]) % 256])
+    }
+    return res
+}
+
+function hex2bin(hex: string) {
+    var bytes = []
+    var str
+    for (var i = 0; i < hex.length - 1; i += 2) {
+        var ch = parseInt(hex.substr(i, 2), 16)
+        bytes.push(ch)
+    }
+    str = String.fromCharCode.apply(String, bytes)
+    return str
+}
+
+function bin2hex(s: string) {
+    // http://kevin.vanzonneveld.net
+    var i, l, o = '', n
+    s += ''
+    for (i = 0, l = s.length; i < l; i++) {
+        n = s.charCodeAt(i).toString(16)
+        o += n.length < 2 ? '0' + n : n
+    }
+    return o
+}
+
+function xcp_rc4(key: string, datachunk: string) {
+    return bin2hex(rc4(hex2bin(key), hex2bin(datachunk)))
 }

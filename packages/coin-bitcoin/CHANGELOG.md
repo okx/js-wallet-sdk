@@ -30,9 +30,18 @@ All notable changes to this project will be documented in this file.
 - **coin-bitcoin:** support two memo types (string or hex ) by
   op_return  ([46](https://github.com/okx/js-wallet-sdk/pull/46))
 
-# [1.0.5](https://github.com/okx/js-wallet-sdk) (2023-12-27)
+# [1.0.6](https://github.com/okx/js-wallet-sdk) (2023-12-28)
 
 ### Feature
 
 - **coin-bitcoin:** support doginals  ([52](https://github.com/okx/js-wallet-sdk/pull/52))
 - **coin-bitcoin:** support src20 deploy,mint,transfer  ([58](https://github.com/okx/js-wallet-sdk/pull/58))
+- **coin-bitcoin:** support psbt script-path spend  ([62](https://github.com/okx/js-wallet-sdk/pull/62))
+
+# [1.0.7](https://github.com/okx/js-wallet-sdk) (2023-12-29)
+
+### BugFix
+
+- **coin-bitcoin:** Modify the library of rc4 for src20, the plug-in side does not support  ([65](https://github.com/okx/js-wallet-sdk/pull/65))
+- **coin-bitcoin:** add for psbt and change autofinalize into false  ([68](https://github.com/okx/js-wallet-sdk/pull/68))
+
