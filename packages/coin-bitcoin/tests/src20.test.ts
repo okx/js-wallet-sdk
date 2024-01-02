@@ -65,7 +65,7 @@ describe('src20 test', () => {
             type: 101,
         };
 
-        const txs: InscribeTxs =await wallet.signTransaction({privateKey: privateKey, data: request});
+        const txs: InscribeTxs = await wallet.signTransaction({privateKey: privateKey, data: request});
         console.log(JSON.stringify(txs));
         expect(txs.commitTxFee).toEqual(39400)
         expect(txs.revealTxs.length).toEqual(0)
