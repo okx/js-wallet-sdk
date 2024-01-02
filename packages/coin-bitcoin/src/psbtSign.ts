@@ -10,6 +10,7 @@ import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
 import {Output} from "./bitcoinjs-lib/transaction";
 import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
 import * as bscript from "./bitcoinjs-lib/script";
+import {sha256} from "./bitcoinjs-lib/crypto";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 const defaultMaximumFeeRate = 5000
@@ -555,7 +556,9 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
             signHashList.push(base.toHex(hash))
         } catch (e) {
             // todo handle err
-            signHashList.push(pubKeyHex)
+            const h = sha256(base.fromHex(pubKeyHex))
+            // console.log(h.length)
+            signHashList.push(base.toHex(h))
         }
     }
     return {
