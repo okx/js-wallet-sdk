@@ -537,3 +537,39 @@ export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string,
     return extractPsbtTransaction(psbt.toHex(), network);
 }
 
+export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, network?: Network, batchSize: number = 1,) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const publicKey = base.fromHex(pubKeyHex);
+    let sighashTypes: number[] = [Transaction.SIGHASH_ALL];// no taproot address
+    let signHashList: string[] = [];
+    for (let i = 0; i < psbt.inputCount; i++) {
+        if (isTaprootInput(psbt.data.inputs[i])) {
+            sighashTypes = [Transaction.SIGHASH_DEFAULT]
+        }
+        const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, sighashTypes);
+        signHashList.push(base.toHex(hash))
+    }
+    return {
+        psbtBase64: psbtBase64,
+        signHashList: signHashList,
+    }
+}
+
+export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
+    const psbt = Psbt.fromBase64(psbtBase64, {network});
+    const publicKey = base.fromHex(pubKeyHex);
+    let sighashTypes: number = Transaction.SIGHASH_ALL;// no taproot address
+    for (let i = 0; i < psbt.inputCount; i++) {
+        if (isTaprootInput(psbt.data.inputs[i])) {
+            sighashTypes = Transaction.SIGHASH_DEFAULT
+        }
+        const partialSig = [
+            {
+                pubkey: publicKey,
+                signature: bscript.signature.encode(base.fromHex(signatureList[i]), sighashTypes),
+            },
+        ];
+        psbt.data.updateInput(i, {partialSig});
+    }
+    return psbt.toBase64();
+}
