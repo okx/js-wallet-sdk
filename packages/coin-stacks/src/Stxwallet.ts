@@ -194,6 +194,9 @@ export class StxWallet extends BaseWallet {
 
     async signTransaction(param: SignTxParams): Promise<any> {
         try {
+            if (param.privateKey.startsWith("0x")) {
+                param.privateKey = param.privateKey.substring(2);
+            }
             const data: StxSignData = param.data
             if (data.type == 'transfer') {
                 const transferParam = data.data as StxTransfer;
@@ -260,6 +263,9 @@ export class StxWallet extends BaseWallet {
 
     async signMessage(param: SignTxParams): Promise<any> {
         try {
+            if (param.privateKey.startsWith("0x")) {
+                param.privateKey = param.privateKey.substring(2);
+            }
             const privateKey = createStacksPrivateKey(param.privateKey);
             if (param.data.type == "signMessage") {
                 const messageHash = hashMessage(param.data.message);
