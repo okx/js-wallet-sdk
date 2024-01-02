@@ -1,12 +1,11 @@
-import {Psbt} from "./bitcoinjs-lib/psbt";
+import {Psbt, PsbtInputExtended, PsbtOutputExtended} from "./bitcoinjs-lib/psbt";
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {getAddressType, privateKeyFromWIF, sign, signBtc, wif2Public} from './txBuild';
-import {Network, networks, payments, Transaction, address} from './bitcoinjs-lib';
+import {address, Network, networks, payments, Transaction} from './bitcoinjs-lib';
 import * as taproot from "./taproot";
 import {isTaprootInput, toXOnly} from "./bitcoinjs-lib/psbt/bip371";
-import {utxoInput, utxoOutput, utxoTx, BuyingData, ListingData, toSignInput, signPsbtOptions} from './type';
+import {BuyingData, ListingData, signPsbtOptions, toSignInput, utxoInput, utxoOutput, utxoTx} from './type';
 import {toOutputScript} from './bitcoinjs-lib/address';
-import {PsbtInputExtended, PsbtOutputExtended} from './bitcoinjs-lib/psbt';
 import {reverseBuffer} from "./bitcoinjs-lib/bufferutils";
 import {Output} from "./bitcoinjs-lib/transaction";
 import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
@@ -223,11 +222,10 @@ export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: str
                 }
             }
             psbt.signInput(i, signer, allowedSighashTypes);
-            // the same with NFT marketplace
-            if (autoFinalized != undefined && autoFinalized) {
-                psbt.finalizeInput(i)
-                //continue;
+            if (autoFinalized != undefined && !autoFinalized) {
+                continue;
             }
+            psbt.finalizeInput(i)
         } catch (e) {
             // todo handle err
             // console.info(e)

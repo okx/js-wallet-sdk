@@ -45,3 +45,8 @@ All notable changes to this project will be documented in this file.
 - **coin-bitcoin:** Modify the library of rc4 for src20, the plug-in side does not support  ([65](https://github.com/okx/js-wallet-sdk/pull/65))
 - **coin-bitcoin:** add for psbt and change autofinalize into false  ([68](https://github.com/okx/js-wallet-sdk/pull/68))
 
+# [1.0.8](https://github.com/okx/js-wallet-sdk) (2024-01-02)
+
+### Feature
+
+- **coin-bitcoin:** add for psbt and change autofinalize into true  ([70](https://github.com/okx/js-wallet-sdk/pull/70))

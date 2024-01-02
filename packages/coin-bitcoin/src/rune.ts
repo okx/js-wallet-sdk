@@ -1,5 +1,6 @@
 import * as bscript from './bitcoinjs-lib/script';
 import {OPS} from './bitcoinjs-lib/ops';
+import {Edict} from "./type";
 
 function encode(n: bigint): Uint8Array {
     let payload: number[] = [];
@@ -46,12 +47,6 @@ function decode(buffer: Uint8Array): [bigint, number] {
 export {encode as toVarInt, encodeToVec, decode as fromVarInt};
 
 const TAG_BODY = BigInt(0)
-
-export interface Edict {
-    id: number;
-    amount: number;
-    output: number;
-}
 
 export function buildRuneData(isMainnet: boolean, edicts: Edict[]): Buffer {
     let payload: number[] = []
