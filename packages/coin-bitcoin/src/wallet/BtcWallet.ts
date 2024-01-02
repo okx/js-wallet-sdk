@@ -186,6 +186,18 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
+        } else if (type === 25) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedPSBT(param.data.psbt, param.data.publicKey, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === 26) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedPSBT(param.data.psbt, param.data.publicKey, param.data.signatureList, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
         } else if (type === 3) { // psbt key-path and script-path spend
             try {
                 return Promise.resolve(bitcoin.signPsbtWithKeyPathAndScriptPath(param.data.psbt, param.privateKey, this.network(), {
