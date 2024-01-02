@@ -1,6 +1,6 @@
 import {
     buildPsbt,
-    extractPsbtTransaction,
+    extractPsbtTransaction, generateMPCSignedPSBT,
     generateSignedBuyingTx,
     generateSignedListingPsbt,
     networks, TBtcWallet, toSignInput,
@@ -12,7 +12,7 @@ import {psbtSign} from "@okxweb3/coin-bitcoin";
 import {SignTxParams} from "@okxweb3/coin-base";
 
 describe("psbt test", () => {
-
+    const network = networks.testnet;
     test("buildPsbt", () => {
         const txInputs: utxoInput[] = [];
         txInputs.push({
@@ -103,12 +103,10 @@ describe("psbt test", () => {
         console.log(unSignedTx);
     });
 
-
     test("extract psbt transaction", () => {
         const signedTx = extractPsbtTransaction("70736274ff01007c0200000002bf4c1b2a577d9a05b4e6de983f15d06e4049695d30cc40f96a785b6467c8806a0000000000ffffffff3c76eff76c2de230444149fab382621ca0b218681feb6364ad0f4868aba104830100000000ffffffff017aa401000000000017a914626771730d7eee802eb817d34bbb4a4b4e6cf81e870000000000010120a08601000000000017a91417acd79b72f853f559df7e16b22d83cedaa5d4e687010717160014b38081b4b6a2bb9f81a05caf8db6d67ba4708fa201086b024730440220521e52e62f610bd3f4f47608636661d95e5c33e93436142e8fd1197f3d8f589c02202d69f116675c0811069e796f821d4ab0fac4ae87c2eaa085df035eea4322a2130121023f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c242500010120d02700000000000017a91417acd79b72f853f559df7e16b22d83cedaa5d4e687010717160014b38081b4b6a2bb9f81a05caf8db6d67ba4708fa201086b024730440220651cbe46bbeeebafe962a1b6ac75745ddbc2b91d45ddf1ee10ef47bedf7d2b7302201f136a87716bb6e575137634b85ec9fa6c0811c7f34c747e7b59fe96ac185c970121023f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c24250000");
         console.info(signedTx)
     });
-
 
     test("listing nft", async () => {
         const listingData = {
@@ -259,3 +257,4 @@ describe("psbt test", () => {
         console.log(raw);
     });
 });
+

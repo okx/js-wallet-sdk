@@ -1,8 +1,8 @@
 import * as bitcoin from "../src";
 import {
     generateMPCSignedBuyingTx,
-    generateMPCSignedListingPSBT, generateMPCUnsignedBuyingPSBT,
-    generateMPCUnsignedListingPSBT,
+    generateMPCSignedListingPSBT, generateMPCSignedPSBT, generateMPCUnsignedBuyingPSBT,
+    generateMPCUnsignedListingPSBT, generateMPCUnsignedPSBT,
     inscribe,
     InscribeTxs,
     InscriptionData,
@@ -189,5 +189,38 @@ describe("brc20 psbt for mpc", () => {
         };
         let signedBuyingPSBT = await wallet.signTransaction(signParams);
         console.info(signedBuyingPSBT);
+    });
+
+    test("generateMPCUnsignedPSBT", async () => {
+        const publicKey = "031cf908e7712d7a1c4cee9d18c41309fbc750ca47fde5e26a52704ea7fa196a50";
+        const listPsbtB64 = "cHNidP8BAPoCAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAP////9nkHnScgaQYFvJqaARFDqF/nH80fHeC+3Lq/UPu7ZHNgAAAAAA/////wMAAAAAAAAAACJRIMElTa1AquoSHlPgzsCZhjYvbNQiJ5bRlIyUeRs1KBy1AAAAAAAAAAAiUSDBJU2tQKrqEh5T4M7AmYY2L2zUIieW0ZSMlHkbNSgctRwlAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkAAAAAAAEBKwAAAAAAAAAAIlEgwSVNrUCq6hIeU+DOwJmGNi9s1CInltGUjJR5GzUoHLUAAQErAAAAAAAAAAAiUSDBJU2tQKrqEh5T4M7AmYY2L2zUIieW0ZSMlHkbNSgctQABAR8QJwAAAAAAABYAFIDNS2itKrrOJql1sntGifkc0sX5AQMEgwAAAAAAAAA=";
+        let unsignedListPsbt = generateMPCUnsignedPSBT(listPsbtB64, publicKey, network)
+        console.log(unsignedListPsbt)
+
+        const buyingPsbtB64 = "cHNidP8BAPoCAAAAA7ouJZmXXTg3kmzK3BFWdAxkRu6DFaniiIDzjqzcuRvNAwAAAAD/////ui4lmZddODeSbMrcEVZ0DGRG7oMVqeKIgPOOrNy5G80CAAAAAP////9nkHnScgaQYFvJqaARFDqF/nH80fHeC+3Lq/UPu7ZHNgEAAAAA/////wP0AQAAAAAAACJRICD5IGrrx7A9tjzMm2/+9n2wvt7JMD1Gp/MH0HrqyPxqIgIAAAAAAAAiUSAg+SBq68ewPbY8zJtv/vZ9sL7eyTA9RqfzB9B66sj8atwFAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkAAAAAAAEBH1gCAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkBAwQBAAAAAAEBHyICAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkBAwQBAAAAAAEBH9AHAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkiAgMc+QjncS16HEzunRjEEwn7x1DKR/3l4mpScE6n+hlqUEcwRAIgGByM9KNQWC6TUAhqP27YpyUCk1wBV4N2Jd2xhDEw82UCIC5OViBv/40P0z0OKaD9kEWwaM2qcKskUiG3y7AIvOCugwEDBIMAAAAAAAAA";
+        const unsignedBuyingPsbt = generateMPCUnsignedPSBT(buyingPsbtB64, publicKey, network)
+        console.log(unsignedBuyingPsbt)
+    });
+
+    test("generateMPCSignedPSBT", async () => {
+        const publicKey = "031cf908e7712d7a1c4cee9d18c41309fbc750ca47fde5e26a52704ea7fa196a50";
+        const listPsbtB64 = "cHNidP8BAPoCAAAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAP////9nkHnScgaQYFvJqaARFDqF/nH80fHeC+3Lq/UPu7ZHNgAAAAAA/////wMAAAAAAAAAACJRIMElTa1AquoSHlPgzsCZhjYvbNQiJ5bRlIyUeRs1KBy1AAAAAAAAAAAiUSDBJU2tQKrqEh5T4M7AmYY2L2zUIieW0ZSMlHkbNSgctRwlAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkAAAAAAAEBKwAAAAAAAAAAIlEgwSVNrUCq6hIeU+DOwJmGNi9s1CInltGUjJR5GzUoHLUAAQErAAAAAAAAAAAiUSDBJU2tQKrqEh5T4M7AmYY2L2zUIieW0ZSMlHkbNSgctQABAR8QJwAAAAAAABYAFIDNS2itKrrOJql1sntGifkc0sX5AQMEgwAAAAAAAAA=";
+        const signatureList = [
+            "fe1457b72163fd89189161c2e8b5543d5fbd9e0db431830f5801e58c5acbe170702c9143598c6b637c0e91c2e953cf6ad21d4d4f07dc967c90cf78e93bfe223a",
+            "fe1457b72163fd89189161c2e8b5543d5fbd9e0db431830f5801e58c5acbe170702c9143598c6b637c0e91c2e953cf6ad21d4d4f07dc967c90cf78e93bfe223a",
+            "fe1457b72163fd89189161c2e8b5543d5fbd9e0db431830f5801e58c5acbe170702c9143598c6b637c0e91c2e953cf6ad21d4d4f07dc967c90cf78e93bfe223a"
+        ];
+        const signedListPsbt = generateMPCSignedPSBT(listPsbtB64, publicKey, signatureList, network)
+        console.log(signedListPsbt)
+
+
+        const buyingPsbtB64 = "cHNidP8BAPoCAAAAA7ouJZmXXTg3kmzK3BFWdAxkRu6DFaniiIDzjqzcuRvNAwAAAAD/////ui4lmZddODeSbMrcEVZ0DGRG7oMVqeKIgPOOrNy5G80CAAAAAP////9nkHnScgaQYFvJqaARFDqF/nH80fHeC+3Lq/UPu7ZHNgEAAAAA/////wP0AQAAAAAAACJRICD5IGrrx7A9tjzMm2/+9n2wvt7JMD1Gp/MH0HrqyPxqIgIAAAAAAAAiUSAg+SBq68ewPbY8zJtv/vZ9sL7eyTA9RqfzB9B66sj8atwFAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkAAAAAAAEBH1gCAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkBAwQBAAAAAAEBHyICAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkBAwQBAAAAAAEBH9AHAAAAAAAAFgAUgM1LaK0qus4mqXWye0aJ+RzSxfkiAgMc+QjncS16HEzunRjEEwn7x1DKR/3l4mpScE6n+hlqUEcwRAIgGByM9KNQWC6TUAhqP27YpyUCk1wBV4N2Jd2xhDEw82UCIC5OViBv/40P0z0OKaD9kEWwaM2qcKskUiG3y7AIvOCugwEDBIMAAAAAAAAA";
+        const signatureListOfBuyer = [
+            "5f01d5e8337c9b077a4a4044d9984179ca51719d8be2d0d10282ced645d446e53a21ec53569763a1ad7cbd0462f677158c906ec439c212c68ea95c807d03a874",
+            "e7c39ee67acd81125bf9b618fce0aa5ad32c68a43f09ce56d9d1837c352fa04b5ca73d01becdfa1b0e65c467755ae73b3db734e48256c14217506efcc4fd28c7",
+            "fe1457b72163fd89189161c2e8b5543d5fbd9e0db431830f5801e58c5acbe170702c9143598c6b637c0e91c2e953cf6ad21d4d4f07dc967c90cf78e93bfe223a"
+        ];
+        const signedBuyingPsbt = generateMPCSignedPSBT(buyingPsbtB64, publicKey, signatureListOfBuyer, network)
+        console.log(signedBuyingPsbt)
     });
 });

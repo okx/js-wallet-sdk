@@ -537,17 +537,26 @@ export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string,
     return extractPsbtTransaction(psbt.toHex(), network);
 }
 
-export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, network?: Network, batchSize: number = 1,) {
+export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, network?: Network) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     const publicKey = base.fromHex(pubKeyHex);
-    let sighashTypes: number[] = [Transaction.SIGHASH_ALL];// no taproot address
+    const allowedSighashTypes = [
+        Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_ALL | Transaction.SIGHASH_ANYONECANPAY,
+        Transaction.SIGHASH_ALL,
+        Transaction.SIGHASH_DEFAULT
+    ];
+    ;// no taproot address
     let signHashList: string[] = [];
     for (let i = 0; i < psbt.inputCount; i++) {
-        if (isTaprootInput(psbt.data.inputs[i])) {
-            sighashTypes = [Transaction.SIGHASH_DEFAULT]
+        try {
+            const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, allowedSighashTypes);
+            signHashList.push(base.toHex(hash))
+        } catch (e) {
+            // todo handle err
+            signHashList.push(pubKeyHex)
         }
-        const {hash, sighashType} = psbt.getHashAndSighashType(i, publicKey, sighashTypes);
-        signHashList.push(base.toHex(hash))
     }
     return {
         psbtBase64: psbtBase64,
@@ -558,18 +567,23 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
 export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     const publicKey = base.fromHex(pubKeyHex);
-    let sighashTypes: number = Transaction.SIGHASH_ALL;// no taproot address
+    let sighashType: number = Transaction.SIGHASH_ALL;// no taproot address
     for (let i = 0; i < psbt.inputCount; i++) {
-        if (isTaprootInput(psbt.data.inputs[i])) {
-            sighashTypes = Transaction.SIGHASH_DEFAULT
+        if (psbt.data.inputs[i].sighashType != undefined) {
+            sighashType = psbt.data.inputs[i].sighashType!
         }
         const partialSig = [
             {
                 pubkey: publicKey,
-                signature: bscript.signature.encode(base.fromHex(signatureList[i]), sighashTypes),
+                signature: bscript.signature.encode(base.fromHex(signatureList[i]), sighashType),
             },
         ];
-        psbt.data.updateInput(i, {partialSig});
+        try {
+            psbt.data.updateInput(i, {partialSig});
+        } catch (e) {
+            // todo handle err
+        }
+
     }
     return psbt.toBase64();
 }
