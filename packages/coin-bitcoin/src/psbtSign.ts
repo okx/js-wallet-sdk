@@ -222,11 +222,10 @@ export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: str
                 }
             }
             psbt.signInput(i, signer, allowedSighashTypes);
-            // the same with NFT marketplace
-            if (autoFinalized != undefined && autoFinalized) {
-                psbt.finalizeInput(i)
-                //continue;
+            if (autoFinalized != undefined && !autoFinalized) {
+                continue;
             }
+            psbt.finalizeInput(i)
         } catch (e) {
             // todo handle err
             // console.info(e)
