@@ -558,16 +558,33 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
             signHashList.push(base.toHex(hash))
         } catch (e) {
             // todo handle err
-            const h = sha256(randomBytes(32))
+            const s = getRandomHash();
             // console.log(h.length)
-            const s = base.toHex(h.slice(0, 31))
-            signHashList.push("ff" + s)
+            signHashList.push(s);
         }
     }
+    const m = new Map<string, number>();
+
+    signHashList.map((e, i) => {
+        let count = m.get(e);
+        count = count == undefined ? 0 : count
+        if (count != undefined && count >= 1) {
+            signHashList[i] = getRandomHash();
+        }
+        m.set(e, count + 1)
+    });
+
     return {
         psbtBase64: psbtBase64,
         signHashList: signHashList,
     }
+}
+
+function getRandomHash() {
+    const h = sha256(randomBytes(32))
+    // console.log(h.length)
+    const s = base.toHex(h.slice(0, 31))
+    return "ff" + s;
 }
 
 export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
