@@ -35,7 +35,7 @@ describe('atomical test FT:  ', () => {
                     ]  
                 }
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
@@ -80,7 +80,7 @@ describe('atomical test FT:  ', () => {
                     ]  
                 }
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
@@ -132,7 +132,7 @@ describe('atomical test FT:  ', () => {
                     ]  
                 },
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
@@ -186,7 +186,7 @@ describe('atomical test FT:  ', () => {
                     ]  
                 },
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
@@ -234,7 +234,7 @@ describe('atomical test NFT:  ', () => {
                     ]  
                 }
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
@@ -280,7 +280,7 @@ describe('atomical test NFT:  ', () => {
                     ]  
                 }
             ],
-            changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
             feePerB: 1,
             dustSize : 100 
         };
