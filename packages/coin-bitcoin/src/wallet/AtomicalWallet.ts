@@ -136,8 +136,11 @@ export class AtomicalWallet extends BtcWallet {
                     let changeAmount = inputAmount - sendAmount
                     if (changeAmount < clonedParamData.minChangeValue){
                         throw new Error(JSON.stringify({ 
-                            errCode:ErrCodeVoutDust,
-                            vOut: txOutput.length
+                            errCode:ErrCodeAtomicalChangeFail,
+                            date:{
+                                atomicalId: atomicalId,
+                                amount: inputAmount-sendAmount
+                            }
                         }))
                     }
                     // auto change
