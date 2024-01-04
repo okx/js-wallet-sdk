@@ -559,7 +559,7 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
         } catch (e) {
             // todo handle err
             const s = getRandomHash();
-            // console.log(h.length)
+            console.log(e)
             signHashList.push(s);
         }
     }
@@ -591,7 +591,12 @@ export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, sig
     const psbt = Psbt.fromBase64(psbtBase64, {network});
     const publicKey = base.fromHex(pubKeyHex);
     let sighashType: number = Transaction.SIGHASH_ALL;// no taproot address
+    const res = generateMPCUnsignedPSBT(psbtBase64, pubKeyHex, network);
+    const signHashList = res.signHashList
     for (let i = 0; i < psbt.inputCount; i++) {
+        if (signHashList[i].slice(0, 2) == "ff") {
+            continue;
+        }
         if (psbt.data.inputs[i].sighashType != undefined) {
             sighashType = psbt.data.inputs[i].sighashType!
         }
@@ -610,3 +615,27 @@ export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, sig
     }
     return psbt.toBase64();
 }
+
+// export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
+//     const psbt = Psbt.fromBase64(psbtBase64, {network});
+//     const publicKey = base.fromHex(pubKeyHex);
+//     let sighashType: number = Transaction.SIGHASH_ALL;// no taproot address
+//     for (let i = 0; i < psbt.inputCount; i++) {
+//         if (psbt.data.inputs[i].sighashType != undefined) {
+//             sighashType = psbt.data.inputs[i].sighashType!
+//         }
+//         const partialSig = [
+//             {
+//                 pubkey: publicKey,
+//                 signature: bscript.signature.encode(base.fromHex(signatureList[i]), sighashType),
+//             },
+//         ];
+//         try {
+//             psbt.data.updateInput(i, {partialSig});
+//         } catch (e) {
+//             // todo handle err
+//         }
+//
+//     }
+//     return psbt.toBase64();
+// }
