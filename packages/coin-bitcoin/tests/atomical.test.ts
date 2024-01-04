@@ -36,8 +36,8 @@ describe('atomical test FT:  ', () => {
                 }
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {
@@ -81,8 +81,8 @@ describe('atomical test FT:  ', () => {
                 }
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {
@@ -133,8 +133,8 @@ describe('atomical test FT:  ', () => {
                 },
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {
@@ -187,8 +187,8 @@ describe('atomical test FT:  ', () => {
                 },
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {
@@ -235,8 +235,8 @@ describe('atomical test NFT:  ', () => {
                 }
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {
@@ -281,8 +281,8 @@ describe('atomical test NFT:  ', () => {
                 }
             ],
             changeAddress: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
-            feeRate: 1,
-            minChangeValue : 100 
+            feePerB: 1,
+            dustSize : 100 
         };
 
         let signParams: SignTxParams = {

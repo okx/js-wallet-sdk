@@ -3,6 +3,14 @@ import {BtcWallet} from "./BtcWallet";
 import * as bitcoin from "../index"
 import {networks, signBtc, utxoTx} from "../index"
 
+export const ErrCodeLessAtomicalAmt     = 100;
+export const ErrCodeAtomicalChangeFail  = 101;
+export const ErrCodeVoutDust            = 102;
+export const ErrCodeCommon              = 103;
+export const ErrCodeUnknownAsset        = 104;
+export const ErrInsufficientBalance     = 105;
+export const ErrCodeMul                 = 201;
+
 export class AtomicalWallet extends BtcWallet {
 
     convert2AtomicalTx(paramData: any): utxoTx {
@@ -14,8 +22,8 @@ export class AtomicalWallet extends BtcWallet {
         let txInput = []
         let txOutput = []
 
-        const feePerB = clonedParamData.feeRate || 10; 
-        const dustSize = clonedParamData.minChangeValue || 546
+        const feePerB = clonedParamData.feePerB || 10; 
+        const dustSize = clonedParamData.dustSize || 546
 
         // Calculate the total Atomical asset input value from the 'input' field
         // and construct the 'input' field for the UTXO (Unspent Transaction Output).
@@ -52,7 +60,7 @@ export class AtomicalWallet extends BtcWallet {
             }
 
             if (Object.keys(atomicalInputMap).length > 1){ 
-                throw new Error(JSON.stringify({ errCode:201 }))
+                throw new Error(JSON.stringify({ errCode:ErrCodeMul }))
             }
 
             txInput.push({
@@ -86,7 +94,7 @@ export class AtomicalWallet extends BtcWallet {
                     }
 
                     if (atomicalTypeMap.get(atomicalId) != atomicalIdType){
-                        throw new Error(JSON.stringify({ errCode:104 }))
+                        throw new Error(JSON.stringify({ errCode:ErrCodeUnknownAsset }))
                     }
 
                     let beforeAmount = atomicalSendMap.get(atomicalId);
@@ -96,13 +104,13 @@ export class AtomicalWallet extends BtcWallet {
                         atomicalSendMap.set(atomicalId, beforeAmount + atomicalAmount);
                         // Avoid trying to bind the same NFT to multiple outputs 
                         if (atomicalIdType == "NFT"){ 
-                            throw new Error(JSON.stringify({ errCode:201 }))
+                            throw new Error(JSON.stringify({ errCode:ErrCodeMul }))
                         }
                     }
                 }
             }
             if (Object.keys(atomicalSendMap).length > 1){ 
-                throw new Error(JSON.stringify({ errCode:201 }))
+                throw new Error(JSON.stringify({ errCode:ErrCodeMul }))
             }
             txOutput.push({
                 amount:output.amount,
@@ -120,7 +128,7 @@ export class AtomicalWallet extends BtcWallet {
 
                 // Disable signing if certain input assets lack corresponding outputs
                 if (sendAmount == null) { 
-                    throw new Error(JSON.stringify({ errCode:103 })) 
+                    throw new Error(JSON.stringify({ errCode:ErrCodeCommon })) 
                 }
 
                 if (inputAmount != null && sendAmount != null && inputAmount > sendAmount) {
@@ -128,7 +136,7 @@ export class AtomicalWallet extends BtcWallet {
                     let changeAmount = inputAmount - sendAmount
                     if (changeAmount < clonedParamData.minChangeValue){
                         throw new Error(JSON.stringify({ 
-                            errCode:102,
+                            errCode:ErrCodeVoutDust,
                             vOut: txOutput.length
                         }))
                     }
@@ -139,7 +147,7 @@ export class AtomicalWallet extends BtcWallet {
                     })
                 } else if (inputAmount != null && sendAmount != null && inputAmount < sendAmount){ 
                     throw new Error(JSON.stringify({ 
-                        errCode:100,
+                        errCode:ErrCodeLessAtomicalAmt,
                         date:{
                             atomicalId: atomicalId,
                             amount: inputAmount-sendAmount
@@ -149,7 +157,7 @@ export class AtomicalWallet extends BtcWallet {
             }else if (atomicalTypeMap.get(atomicalId) == "NFT"){
                 // Disable signing if certain input assets lack corresponding outputs
                 if (sendAmount == null) { 
-                    throw new Error(JSON.stringify({ errCode:103 })) 
+                    throw new Error(JSON.stringify({ errCode:ErrCodeCommon })) 
                 }
             }
         }
@@ -157,7 +165,7 @@ export class AtomicalWallet extends BtcWallet {
         // check all output dustSize
         for (const [index, curUtxo] of txOutput.entries()){
             if (curUtxo.amount < dustSize){
-                throw new Error(JSON.stringify({ errCode:102 , vOut:index }))
+                throw new Error(JSON.stringify({ errCode:ErrCodeVoutDust , vOut:index }))
             }
         }
 
