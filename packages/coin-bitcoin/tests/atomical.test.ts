@@ -1,7 +1,7 @@
 import {AtomicalTestWallet} from "../src"
 import {SignTxParams} from "@okxweb3/coin-base";
 
-const curPrivateKey  = "aa"
+const curPrivateKey  = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
 
 describe('atomical test FT:  ', () => {
     test("Same Asset One-to-One Transfer", async () => {
