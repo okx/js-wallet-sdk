@@ -464,3 +464,9 @@ export function generateSignedBuyingTx(buyingData: BuyingData, privateKey: strin
     const signedBuyingPsbt = psbtSign(generateUnsignedBuyingPsbt(buyingData, network, publicKey), privateKey, network);
     return extractPsbtTransaction(mergeSignedBuyingPsbt(signedBuyingPsbt, buyingData.sellerPsbts).toHex(), network);
 }
+
+export function genSignedBuyingPSBTWithoutListSignature(buyingData: BuyingData, privateKey: string, network?: Network) {
+    const publicKey = base.toHex(wif2Public(privateKey, network));
+    const signedBuyingPsbt = psbtSign(generateUnsignedBuyingPsbt(buyingData, network, publicKey), privateKey, network);
+    return mergeSignedBuyingPsbt(signedBuyingPsbt, buyingData.sellerPsbts).toBase64();
+}
