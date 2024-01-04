@@ -145,7 +145,7 @@ export class AtomicalWallet extends BtcWallet {
                     }
                     // auto change
                     txOutput.push({
-                        address:clonedParamData.changeAddress,
+                        address:clonedParamData.address,
                         amount:changeAmount
                     })
                 } else if (inputAmount != null && sendAmount != null && inputAmount < sendAmount){ 
@@ -175,7 +175,7 @@ export class AtomicalWallet extends BtcWallet {
         return {
             inputs: txInput as [],
             outputs: txOutput as [],
-            address: clonedParamData.changeAddress,
+            address: clonedParamData.address,
             feePerB: feePerB,
         }
     }
