@@ -583,8 +583,8 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
 function getRandomHash() {
     const h = sha256(randomBytes(32))
     // console.log(h.length)
-    const s = base.toHex(h.slice(0, 31))
-    return "ff" + s;
+    const s = base.toHex(h.slice(0, 28))
+    return "ffffffff" + s;
 }
 
 export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
@@ -594,12 +594,13 @@ export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, sig
     const res = generateMPCUnsignedPSBT(psbtBase64, pubKeyHex, network);
     const signHashList = res.signHashList
     for (let i = 0; i < psbt.inputCount; i++) {
-        if (signHashList[i].slice(0, 2) == "ff") {
+        if (signHashList[i].slice(0, 8) == "ffffffff") {
             continue;
         }
         if (psbt.data.inputs[i].sighashType != undefined) {
             sighashType = psbt.data.inputs[i].sighashType!
         }
+        console.log(sighashType);
         const partialSig = [
             {
                 pubkey: publicKey,
