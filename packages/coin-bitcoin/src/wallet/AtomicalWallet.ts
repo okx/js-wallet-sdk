@@ -3,13 +3,12 @@ import {BtcWallet} from "./BtcWallet";
 import * as bitcoin from "../index"
 import {networks, signBtc, utxoTx} from "../index"
 
-export const ErrCodeLessAtomicalAmt     = 100;
-export const ErrCodeAtomicalChangeFail  = 101;
-export const ErrCodeVoutDust            = 102;
-export const ErrCodeCommon              = 103;
-export const ErrCodeUnknownAsset        = 104;
-export const ErrInsufficientBalance     = 105;
-export const ErrCodeMul                 = 201;
+export const ErrCodeLessAtomicalAmt     = 2011400;
+export const ErrCodeAtomicalChangeFail  = 2011401;
+export const ErrCodeVoutDust            = 2011402;
+export const ErrCodeCommon              = 2011403;
+export const ErrCodeUnknownAsset        = 2011404;
+export const ErrCodeMul                 = 2011420;
 
 export class AtomicalWallet extends BtcWallet {
 
@@ -134,7 +133,7 @@ export class AtomicalWallet extends BtcWallet {
                 if (inputAmount != null && sendAmount != null && inputAmount > sendAmount) {
                     isAtomicalChange = true
                     let changeAmount = inputAmount - sendAmount
-                    if (changeAmount < clonedParamData.minChangeValue){
+                    if (changeAmount < dustSize){
                         throw new Error(JSON.stringify({ 
                             errCode:ErrCodeAtomicalChangeFail,
                             date:{
