@@ -343,4 +343,12 @@ describe('hardware wallet test', () => {
         const unsignedTx = await oneKeyBuildBtcTx(txData as utxoTx, networks.testnet);
         console.log(JSON.stringify(unsignedTx));
     });
+
+    test("enum",async ()=>{
+       let type=1;
+       if (type===bitcoin.BtcXrcTypes.INSCRIBE){
+           console.log(1);
+       }
+        console.log(bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH_BATCH)
+    });
 })
