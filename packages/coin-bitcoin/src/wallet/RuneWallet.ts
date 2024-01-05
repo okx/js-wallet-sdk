@@ -57,7 +57,7 @@ export class RuneWallet extends BtcWallet {
         for (const id of runeInputMap.keys()) {
             let inputAmount = runeInputMap.get(id);
             let sendAmount = runeSendMap.get(id);
-            if (inputAmount != null && sendAmount != null && inputAmount > sendAmount) {
+            if ((inputAmount != null && sendAmount != null && inputAmount > sendAmount) || (inputAmount != null && sendAmount == null)) {
                 isRuneChange = true
             }
         }
