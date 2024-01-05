@@ -1,4 +1,4 @@
-import {RuneTestWallet} from "../src"
+import {BtcWallet, RuneTestWallet, TBtcWallet} from "../src"
 import {buildRuneData, fromVarInt, toVarInt} from "../src/rune"
 import {SignTxParams} from "@okxweb3/coin-base";
 
@@ -12,8 +12,9 @@ describe('rune test', () => {
 
     // https://testnet.runealpha.xyz/txs/9edf897ad90b15b681d0c466d9e4f83c32a60fae21ee1f90313280b86a10dd89
     test("segwit_taproot transfer rune", async () => {
-        let wallet = new RuneTestWallet()
+        let wallet = new TBtcWallet()
         let runeTxParams = {
+            type: 102,
             inputs: [
                 // rune token info
                 {
@@ -50,8 +51,12 @@ describe('rune test', () => {
             privateKey: "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS",
             data: runeTxParams
         };
+        let fee = await wallet.estimateFee(signParams)
+        expect(fee).toEqual(2730)
         let tx = await wallet.signTransaction(signParams);
         console.info(tx)
+        const partial = /^02000000000102734b56605c57e3511a3dc52c5e5a50217104bb24d8e433dc78926628c56c8a4f0000000000ffffffff734b56605c57e3511a3dc52c5e5a50217104bb24d8e433dc78926628c56c8a4f0200000000ffffffff04220200000000000022512099b87db19a8b792411ae5bff483fe43ff68de5318d286aafd054e9a3da98190c22020000000000001600147d1c5da3f6b93ee9626b0c6713465d4bc8333e7e0000000000000000156a0952554e455f54455354090083ed9fceff016401567001000000000022512099b87db19a8b792411ae5bff483fe43ff68de5318d286aafd054e9a3da98190c0140[0-9a-fA-F]{260}00000000$/
+        expect(tx).toMatch(partial)
     });
 
     test("varint full", () => {
