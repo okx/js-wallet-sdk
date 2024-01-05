@@ -148,7 +148,7 @@ export interface TransactionSimulationResponse {
   fee_estimation: EstimateFeeResponse;
 }
 
-// As RPC and Sequencer response diverge, use RPC as common response
+// As RPC and Sequencer response diverge, use RPC as common.ts response
 export interface StateUpdateResponse {
   block_hash: string;
   new_root: string;

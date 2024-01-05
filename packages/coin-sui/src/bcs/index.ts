@@ -1475,7 +1475,7 @@ export function decodeStr(data: string, encoding: Encoding): Uint8Array {
 }
 
 /**
- * Register the base set of primitive and common types.
+ * Register the base set of primitive and common.ts types.
  * Is called in the `BCS` constructor automatically but can
  * be ignored if the `withPrimitives` argument is not set.
  */
