@@ -18,7 +18,7 @@ export const isTypeStruct = (type: string, structs: AbiStructs) => type in struc
  */
 
 /**
- * Uint256 cairo type (helper for common struct type)
+ * Uint256 cairo type (helper for common.ts struct type)
  */
 export const uint256 = (it: BigNumberish): Uint256 => {
   const bn = BigInt(it);
@@ -32,7 +32,7 @@ export const uint256 = (it: BigNumberish): Uint256 => {
 };
 
 /**
- * unnamed tuple cairo type (helper same as common struct type)
+ * unnamed tuple cairo type (helper same as common.ts struct type)
  */
 export const tuple = (...args: (BigNumberish | object)[]) => ({ ...args });
 

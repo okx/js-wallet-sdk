@@ -10,4 +10,4 @@ export * from "./psbtSign"
 export * as message from "./message"
 export * from "./wallet/index"
 export * from "./onekey"
-
+export * from "./common"

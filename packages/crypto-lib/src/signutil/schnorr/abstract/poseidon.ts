@@ -31,7 +31,7 @@ export function validateOpts(opts: PoseidonOpts) {
 
     const _sboxPower = BigInt(sboxPower);
     let sboxFn = (n: bigint) => FpPow(Fp, n, _sboxPower);
-    // Unwrapped sbox power for common cases (195->142μs)
+    // Unwrapped sbox power for common.ts cases (195->142μs)
     if (sboxPower === 3) sboxFn = (n: bigint) => Fp.mul(Fp.sqrN(n), n);
     else if (sboxPower === 5) sboxFn = (n: bigint) => Fp.mul(Fp.sqrN(Fp.sqrN(n)), n);
 

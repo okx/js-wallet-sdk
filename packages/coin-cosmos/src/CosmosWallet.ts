@@ -258,7 +258,7 @@ export abstract class CosmosWallet extends BaseWallet {
 
 export class CommonCosmosWallet extends CosmosWallet {
   getPrefix(): string {
-    throw new Error("common wallet must input prefix in param")
+    throw new Error("common.ts wallet must input prefix in param")
   }
 
   supportEthSign(): boolean {
