@@ -60,6 +60,7 @@ export class RuneWallet extends BtcWallet {
             if ((inputAmount != null && sendAmount != null && inputAmount > sendAmount) || (inputAmount != null && sendAmount == null)) {
                 isRuneChange = true
             }
+            isRuneChange = true //Phase I fix: always prepend rune change address to prevent unintended transfer
         }
 
         let outputIndex = 0;
