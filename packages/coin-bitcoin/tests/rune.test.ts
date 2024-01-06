@@ -1,4 +1,4 @@
-import {BtcWallet, RuneTestWallet, TBtcWallet} from "../src"
+import {BtcWallet, BtcXrcTypes, RuneTestWallet, TBtcWallet} from "../src"
 import {buildRuneData, fromVarInt, toVarInt} from "../src/rune"
 import {SignTxParams} from "@okxweb3/coin-base";
 
@@ -14,7 +14,7 @@ describe('rune test', () => {
     test("segwit_taproot transfer rune", async () => {
         let wallet = new TBtcWallet()
         let runeTxParams = {
-            type: 102,
+            type: BtcXrcTypes.RUNE,
             inputs: [
                 // rune token info
                 {

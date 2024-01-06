@@ -178,7 +178,7 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        } else if (type === bitcoin.BtcXrcTypes.RUNE) { // src20
+        } else if (type === bitcoin.BtcXrcTypes.RUNE) { // rune
             try {
                 let wallet = new RuneWallet()
                 if (this.network() === networks.testnet) {
@@ -408,10 +408,30 @@ export class BtcWallet extends BaseWallet {
     async estimateFee(param: SignTxParams): Promise<number> {
         try {
             const type = param.data.type || 0;
-            if (type === 1) { // inscribe
+            if (type === bitcoin.BtcXrcTypes.INSCRIBE) { // inscribe
                 return Promise.reject(EstimateFeeError);
-            } else if (type === 2) { // psbt
+            } else if (type === bitcoin.BtcXrcTypes.PSBT) { // psbt
                 return Promise.reject(EstimateFeeError);
+            } else if (type === bitcoin.BtcXrcTypes.RUNE) { // rune
+                try {
+                    let wallet = new RuneWallet()
+                    if (this.network() === networks.testnet) {
+                        wallet = new RuneTestWallet()
+                    }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
+            } else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
+                try {
+                    let wallet = new AtomicalWallet()
+                    if (this.network() === networks.testnet) {
+                        wallet = new AtomicalTestWallet()
+                    }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
             } else {
                 const utxoTx = convert2UtxoTx(param.data);
                 const fee = bitcoin.estimateBtcFee(utxoTx, this.network());
