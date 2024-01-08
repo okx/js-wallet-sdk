@@ -224,7 +224,7 @@ describe("brc20 psbt for mpc", () => {
         const signedBuyingPsbt = generateMPCSignedPSBT(buyingPsbtB64, publicKey, signatureListOfBuyer, network)
         console.log(signedBuyingPsbt)
 
-        const signedTx = extractPsbtTransaction(mergeSignedBuyingPsbt(signedBuyingPsbt, [signedListPsbt]).toHex(), network);
-        console.log(signedTx);
+        // const signedTx = extractPsbtTransaction(mergeSignedBuyingPsbt(signedBuyingPsbt, [signedListPsbt]).toHex(), network);
+        // console.log(signedTx);
     });
 });
