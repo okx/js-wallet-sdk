@@ -12,7 +12,7 @@ import {isP2SHScript, isP2TR} from "./bitcoinjs-lib/psbt/psbtutils";
 import * as bscript from "./bitcoinjs-lib/script";
 import {sha256} from "./bitcoinjs-lib/crypto";
 import {range} from "./bitcoinjs-lib/bip174/converter/tools";
-import {randomBytes} from "crypto";
+import {pbkdf2Sync, randomBytes} from "crypto";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 const defaultMaximumFeeRate = 5000
@@ -129,13 +129,8 @@ export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privat
     return res
 }
 
-export function signPsbtWithKeyPathAndScriptPath(psbtHex: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
-    let psbt: Psbt;
-    if (base.isHexString("0x" + psbtHex)) {
-        psbt = Psbt.fromHex(psbtHex, {network});
-    } else {
-        psbt = Psbt.fromBase64(psbtHex, {network})
-    }
+export function signPsbtWithKeyPathAndScriptPath(psbtStr: string, privateKey: string, network?: Network, opts: signPsbtOptions = {}) {
+    const psbt = getPsbtFromString(psbtStr, network)
     signPsbtWithKeyPathAndScriptPathImpl(psbt, privateKey, network, opts.autoFinalized, opts.toSignInputs)
     return psbt.toHex();
 }
@@ -540,8 +535,8 @@ export function generateMPCSignedBuyingTx(psbtBase64: string, pubKeyHex: string,
     return extractPsbtTransaction(psbt.toHex(), network);
 }
 
-export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, network?: Network) {
-    const psbt = Psbt.fromBase64(psbtBase64, {network});
+export function generateMPCUnsignedPSBT(psbtStr: string, pubKeyHex: string, network?: Network) {
+    const psbt = getPsbtFromString(psbtStr, network);
     const publicKey = base.fromHex(pubKeyHex);
     const allowedSighashTypes = [
         Transaction.SIGHASH_SINGLE | Transaction.SIGHASH_ANYONECANPAY,
@@ -559,7 +554,6 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
         } catch (e) {
             // todo handle err
             const s = getRandomHash();
-            console.log(e)
             signHashList.push(s);
         }
     }
@@ -575,23 +569,22 @@ export function generateMPCUnsignedPSBT(psbtBase64: string, pubKeyHex: string, n
     });
 
     return {
-        psbtBase64: psbtBase64,
+        psbtBase64: psbtStr,
         signHashList: signHashList,
     }
 }
 
 function getRandomHash() {
     const h = sha256(randomBytes(32))
-    // console.log(h.length)
     const s = base.toHex(h.slice(0, 28))
     return "ffffffff" + s;
 }
 
-export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
-    const psbt = Psbt.fromBase64(psbtBase64, {network});
+export function generateMPCSignedPSBT(psbtStr: string, pubKeyHex: string, signatureList: string[], network?: Network) {
+    const psbt = getPsbtFromString(psbtStr, network);
     const publicKey = base.fromHex(pubKeyHex);
     let sighashType: number = Transaction.SIGHASH_ALL;// no taproot address
-    const res = generateMPCUnsignedPSBT(psbtBase64, pubKeyHex, network);
+    const res = generateMPCUnsignedPSBT(psbtStr, pubKeyHex, network);
     const signHashList = res.signHashList
     for (let i = 0; i < psbt.inputCount; i++) {
         if (signHashList[i].slice(0, 8) == "ffffffff") {
@@ -600,7 +593,6 @@ export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, sig
         if (psbt.data.inputs[i].sighashType != undefined) {
             sighashType = psbt.data.inputs[i].sighashType!
         }
-        console.log(sighashType);
         const partialSig = [
             {
                 pubkey: publicKey,
@@ -617,26 +609,12 @@ export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, sig
     return psbt.toBase64();
 }
 
-// export function generateMPCSignedPSBT(psbtBase64: string, pubKeyHex: string, signatureList: string[], network?: Network) {
-//     const psbt = Psbt.fromBase64(psbtBase64, {network});
-//     const publicKey = base.fromHex(pubKeyHex);
-//     let sighashType: number = Transaction.SIGHASH_ALL;// no taproot address
-//     for (let i = 0; i < psbt.inputCount; i++) {
-//         if (psbt.data.inputs[i].sighashType != undefined) {
-//             sighashType = psbt.data.inputs[i].sighashType!
-//         }
-//         const partialSig = [
-//             {
-//                 pubkey: publicKey,
-//                 signature: bscript.signature.encode(base.fromHex(signatureList[i]), sighashType),
-//             },
-//         ];
-//         try {
-//             psbt.data.updateInput(i, {partialSig});
-//         } catch (e) {
-//             // todo handle err
-//         }
-//
-//     }
-//     return psbt.toBase64();
-// }
+function getPsbtFromString(psbtStr: string, network?: Network) {
+    let psbt: Psbt;
+    if (base.isHexString("0x" + psbtStr)) {
+        psbt = Psbt.fromHex(psbtStr, {network});
+    } else {
+        psbt = Psbt.fromBase64(psbtStr, {network})
+    }
+    return psbt;
+}
