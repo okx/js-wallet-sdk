@@ -569,7 +569,7 @@ export function generateMPCUnsignedPSBT(psbtStr: string, pubKeyHex: string, netw
     });
 
     return {
-        psbtBase64: psbtStr,
+        psbtStr: psbtStr,
         signHashList: signHashList,
     }
 }
@@ -604,9 +604,8 @@ export function generateMPCSignedPSBT(psbtStr: string, pubKeyHex: string, signat
         } catch (e) {
             // todo handle err
         }
-
     }
-    return psbt.toBase64();
+    return psbt.toHex();
 }
 
 function getPsbtFromString(psbtStr: string, network?: Network) {
