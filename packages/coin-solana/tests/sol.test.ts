@@ -121,5 +121,5 @@ describe("address", () => {
 
     let signedTx = await api.getMPCTransaction(rawDataHex, sig, publicKey)
     assert.strictEqual(signedTx, "4aGt1dZvfn33Pnxky1sqyLJQs78etBfUF6KdTLhdZWR5bCQHt41qpgy2g1TbZFT9jfsRhaGGGBS8pg4mdjAJnf1EWtUGYdKLY7FiUTTN26FqqcahWYGfY38HbfDy8tdpp3zMan3jjWSfw3P2AsVGgfaJHGjXYG4zVGphnMojxfV1kwMBDuL9HpVrByBup5jX9b4DEQn9jPDWFcDpMjkahUbCZqKzNfbPzZTbo4bR4TuJ3rCFwESFuBXNX8trf5Yn3rViwhTEpiMWHpRNXnYrudfeLH5s2DsxeEKrf")
-  })
+  });
 })
