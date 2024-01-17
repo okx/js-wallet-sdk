@@ -2,6 +2,8 @@ import {
     CalcTxHashParams,
     DerivePriKeyParams,
     GetDerivedPathParam,
+    MpcRawTransactionParam,
+    MpcTransactionParam,
     HardwareRawTransactionParam,
     NewAddressData,
     NewAddressParams,
@@ -19,7 +21,7 @@ import {
     GetHardwareSignedTransactionError,
     NewAddressError,
     SignTxError,
-    validSignedTransactionError,
+    validSignedTransactionError, GetAddressParams,
 } from '@okxweb3/coin-base';
 import { base } from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
@@ -160,6 +162,30 @@ export class SolWallet extends BaseWallet {
             return Promise.resolve(base.toBase58(transaction.signature));
         } catch (e) {
             return Promise.reject(CalcTxHashError);
+        }
+    }
+
+    getAddressByPublicKey(param: GetAddressParams): Promise<string> {
+        return Promise.resolve(base.toBase58(base.fromHex(param.publicKey)));
+    }
+
+    async getMPCRawTransaction(param: MpcRawTransactionParam): Promise<any> {
+        try {
+            const mpcRaw = await this.signTransaction(param as SignTxParams);
+            // return Promise.resolve({ hash: mpcRaw });
+            // return Promise.resolve({ mpcRaw });
+            return Promise.resolve({ hash: mpcRaw });
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
+
+    async getMPCTransaction(param: MpcTransactionParam): Promise<any> {
+        try {
+            const signedTx = api.getMPCTransaction(param.raw, param.sigs as string, param.publicKey!);
+            return Promise.resolve(signedTx);
+        } catch (e) {
+            return Promise.reject(e);
         }
     }
 

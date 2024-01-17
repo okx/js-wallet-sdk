@@ -213,3 +213,9 @@ export function validSignedTransaction(tx: string, version: boolean, skipCheckSi
     }
     return transaction;
 }
+
+export function getMPCTransaction(raw: string, sig: string, publicKey: string): Promise<string> {
+    let tx = web3.Transaction.from(base.fromHex(raw))
+    tx.addSignature(new PublicKey(publicKey), base.fromHex(sig))
+    return Promise.resolve(base.toBase58(tx.serialize()))
+}

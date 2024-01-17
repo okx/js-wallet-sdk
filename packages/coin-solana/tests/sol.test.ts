@@ -3,6 +3,7 @@ import {PublicKey} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
 import {base} from "@okxweb3/crypto-lib";
 import {ed25519_getRandomPrivateKey} from "@okxweb3/coin-base";
+import assert from "assert";
 
 const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
 const privateKeyBase58 = base.toBase58(base.fromHex(privateKey))
@@ -112,4 +113,13 @@ describe("address", () => {
 
     console.log(signedTx);
   });
+
+  test('getMPCTransaction', async () => {
+    let	rawDataHex = "010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000103d84e93f864287b8be1b3d6c5363b6b0dc0140fbbfadcc4c3cb15eae5da9019265ea35151687d4d7f5d0ab49e180f20e41fbd14dbe42b85fd32b02a478733f7de0000000000000000000000000000000000000000000000000000000000000000575bff0f588c71a59fbf405077fb760eefa2a53e0a045cdf981fad4151b698da01020200010c0200000000e1f50500000000"
+    const sig = '4a5a4c1f8a8e3b033ebae7f512a7789d0cbfaa75265b9d7a4942cde4eb5a06e604c848b4d1651e4f9a8ff31067edcbb0edb2cadd1c740c399ced13bfff64040e'
+    const publicKey = "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1"
+
+    let signedTx = await api.getMPCTransaction(rawDataHex, sig, publicKey)
+    assert.strictEqual(signedTx, "4aGt1dZvfn33Pnxky1sqyLJQs78etBfUF6KdTLhdZWR5bCQHt41qpgy2g1TbZFT9jfsRhaGGGBS8pg4mdjAJnf1EWtUGYdKLY7FiUTTN26FqqcahWYGfY38HbfDy8tdpp3zMan3jjWSfw3P2AsVGgfaJHGjXYG4zVGphnMojxfV1kwMBDuL9HpVrByBup5jX9b4DEQn9jPDWFcDpMjkahUbCZqKzNfbPzZTbo4bR4TuJ3rCFwESFuBXNX8trf5Yn3rViwhTEpiMWHpRNXnYrudfeLH5s2DsxeEKrf")
+  })
 })
