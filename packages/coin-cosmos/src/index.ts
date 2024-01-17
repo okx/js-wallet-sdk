@@ -1,21 +1,21 @@
 import {base, Long, signUtil} from "@okxweb3/crypto-lib";
 import {Coin} from "./types/cosmos/base/v1beta1/coin";
-import { GeneratedType, registerExtraTypes, registry } from './registry';
-import { GammAminoConverters, GammRegistry } from "./osmosis"
+import {GeneratedType, registerExtraTypes, registry} from './registry';
+import {GammAminoConverters, GammRegistry} from "./osmosis"
 
-import { doSign, makeSignBytes, makeSignDoc, signTx } from './tx';
+import {doSign, makeSignBytes, makeSignDoc, signTx} from './tx';
 
-import { Height, MsgTransfer } from './types/ibc/applications/transfer/v1/tx';
-import { EncodeObject, encodeSecp256k1Signature, StdFee } from './encoding';
-import { AminoConverter, AminoConverters, AminoMsg, AminoTypes } from './amino/aminotypes';
-import { createDefaultAminoConverters } from './amino/aminoRegistry';
+import {Height, MsgTransfer} from './types/ibc/applications/transfer/v1/tx';
+import {EncodeObject, encodeSecp256k1Signature, StdFee} from './encoding';
+import {AminoConverter, AminoConverters, AminoMsg, AminoTypes} from './amino/aminotypes';
+import {createDefaultAminoConverters} from './amino/aminoRegistry';
 
 import * as amino from "./amino/signDoc"
-import { AuthInfo, SignDoc, TxRaw } from './types/cosmos/tx/v1beta1/tx';
-import { PubKey } from './types/cosmos/crypto/secp256k1/keys';
+import {AuthInfo, SignDoc, TxRaw} from './types/cosmos/tx/v1beta1/tx';
+import {PubKey} from './types/cosmos/crypto/secp256k1/keys';
 
 export function public2Address(publicKey: Uint8Array, useEthSecp256k1: boolean): Uint8Array {
-    return useEthSecp256k1? base.keccak(publicKey.slice(1)).slice(-20) : base.hash160(publicKey)
+    return useEthSecp256k1 ? base.keccak(publicKey.slice(1)).slice(-20) : base.hash160(publicKey)
 }
 
 export function private2Public(privateKey: Uint8Array, compress: boolean): Uint8Array {
@@ -36,14 +36,14 @@ export function addressFromPublic(publicKeyHex: string, prefix: string = "cosmos
     let address;
     let publicKey = base.fromHex(publicKeyHex);
     if (useEthSecp256k1) {
-        if (publicKey.length !== 64) {
+        if (publicKey.length !== 65) {
             const pk = signUtil.secp256k1.publicKeyConvert(publicKey, false);
-            publicKey = Buffer.from(pk!.slice(1));
+            publicKey = Buffer.from(pk!);
         }
         address = public2Address(publicKey, true);
     } else {
         if (publicKey.length !== 33) {
-            publicKey = signUtil.secp256k1.publicKeyConvert(publicKey, true)!;
+        publicKey = signUtil.secp256k1.publicKeyConvert(publicKey, true)!;
         }
         address = public2Address(publicKey, false);
     }
@@ -60,19 +60,19 @@ export function validateAddress(address: string, prefix = "cosmos") {
 }
 
 export async function sendToken(
-  privateKey: Uint8Array,
-  chainId: string,
-  sequence: number,
-  accountNumber: number,
-  senderAddress: string,
-  recipientAddress: string,
-  amount: Coin[],
-  fee: StdFee,
-  timeoutHeight?: number,
-  memo?: string,
-  useEthSecp256k1?: boolean,
-  publicKey?: string,
-  pubKeyUrl?: string): Promise<any> {
+    privateKey: Uint8Array,
+    chainId: string,
+    sequence: number,
+    accountNumber: number,
+    senderAddress: string,
+    recipientAddress: string,
+    amount: Coin[],
+    fee: StdFee,
+    timeoutHeight?: number,
+    memo?: string,
+    useEthSecp256k1?: boolean,
+    publicKey?: string,
+    pubKeyUrl?: string): Promise<any> {
     const sendMsg: EncodeObject = {
         typeUrl: "/cosmos.bank.v1beta1.MsgSend",
         value: {
@@ -81,7 +81,7 @@ export async function sendToken(
             amount: [...amount],
         },
     }
-    const result = await signTx([sendMsg], fee, memo,  Long.fromNumber(timeoutHeight || 0), {
+    const result = await signTx([sendMsg], fee, memo, Long.fromNumber(timeoutHeight || 0), {
         accountNumber: accountNumber,
         sequence: sequence,
         chainId: chainId,
@@ -97,27 +97,27 @@ export async function sendToken(
 }
 
 export async function sendIBCToken(
-  privateKey: Uint8Array,
-  chainId: string,
-  sequence: number,
-  accountNumber: number,
-  senderAddress: string,
-  recipientAddress: string,
-  amount: Coin,
-  sourcePort: string,
-  sourceChannel: string,
-  fee: StdFee,
-  timeoutHeight?: number,
-  ibcTimeoutHeight?: Height,
-  /** timeout in seconds */
-  ibcTimeoutTimestamp?: number,
-  memo?: string,
-  useEthSecp256k1?: boolean,
-  publicKey?: string,
-  pubKeyUrl?: string): Promise<string> {
+    privateKey: Uint8Array,
+    chainId: string,
+    sequence: number,
+    accountNumber: number,
+    senderAddress: string,
+    recipientAddress: string,
+    amount: Coin,
+    sourcePort: string,
+    sourceChannel: string,
+    fee: StdFee,
+    timeoutHeight?: number,
+    ibcTimeoutHeight?: Height,
+    /** timeout in seconds */
+    ibcTimeoutTimestamp?: number,
+    memo?: string,
+    useEthSecp256k1?: boolean,
+    publicKey?: string,
+    pubKeyUrl?: string): Promise<string> {
     const timeoutTimestampNanoseconds = ibcTimeoutTimestamp
-      ? Long.fromNumber(ibcTimeoutTimestamp).multiply(1_000_000_000)
-      : undefined;
+        ? Long.fromNumber(ibcTimeoutTimestamp).multiply(1_000_000_000)
+        : undefined;
     const transferMsg: EncodeObject = {
         typeUrl: "/ibc.applications.transfer.v1.MsgTransfer",
         value: MsgTransfer.fromPartial({
@@ -147,19 +147,19 @@ export async function sendIBCToken(
 
 // append `MsgExecuteContract` to messages, need to associate `typeurl` with `extraTypes`
 export async function sendMessages(
-  privateKey: Uint8Array,
-  chainId: string,
-  sequence: number,
-  accountNumber: number,
-  messages: EncodeObject[],
-  fee: StdFee,
-  extraTypes?: ReadonlyArray<[string, GeneratedType]>,
-  timeoutHeight?: number,
-  memo?: string,
-  useEthSecp256k1?: boolean,
-  pubKeyUrl?: string): Promise<string> {
+    privateKey: Uint8Array,
+    chainId: string,
+    sequence: number,
+    accountNumber: number,
+    messages: EncodeObject[],
+    fee: StdFee,
+    extraTypes?: ReadonlyArray<[string, GeneratedType]>,
+    timeoutHeight?: number,
+    memo?: string,
+    useEthSecp256k1?: boolean,
+    pubKeyUrl?: string): Promise<string> {
     registerExtraTypes(extraTypes)
-    const result = await signTx(messages, fee, memo,  Long.fromNumber(timeoutHeight || 0), {
+    const result = await signTx(messages, fee, memo, Long.fromNumber(timeoutHeight || 0), {
         accountNumber: accountNumber,
         sequence: sequence,
         chainId: chainId,
@@ -197,7 +197,7 @@ export async function SignWithSignDocForINJ(privateKey: Uint8Array, message: str
     const publicKey = private2Public(privateKey, true)
     const signDocBytes = makeSignBytes(signDoc);
     const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
-    const { signature } = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    const {signature} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
 
@@ -208,7 +208,7 @@ export async function signWithStdSignDocForINJ(privateKey: Uint8Array, message: 
     if (!privateKey) {
         return Promise.resolve(base.toHex(messageHash));
     }
-    const { signature } = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    const {signature} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
     const publicKey = private2Public(privateKey, true)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
@@ -233,10 +233,10 @@ export async function signWithStdSignDoc(privateKey: Uint8Array, message: string
     if (!privateKey) {
         return Promise.resolve(base.toHex(messageHash));
     }
-    const { signature, recovery } = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    const {signature, recovery} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
 
     const publicKey = private2Public(privateKey, true)
-    if(useEthSecp256k1) {
+    if (useEthSecp256k1) {
         const l = [Uint8Array.from(signature), Uint8Array.of(recovery)]
         const signatureR1 = Buffer.concat(l);
         return Promise.resolve(encodeSecp256k1Signature(publicKey, signatureR1, true))
@@ -256,11 +256,11 @@ export async function sendAminoMessage(privateKey: Uint8Array,
     registerExtraTypes(extraTypes)
     const m: AminoMsgData = JSON.parse(data)
     let converters = createDefaultAminoConverters(prefix)
-    if(extraConverters) {
-        converters = { ...converters, ...extraConverters }
+    if (extraConverters) {
+        converters = {...converters, ...extraConverters}
     }
     const aminoTypes = new AminoTypes(converters)
-    const messages = m.msgs.map(it=>aminoTypes.fromAmino(it))
+    const messages = m.msgs.map(it => aminoTypes.fromAmino(it))
     const result = await signTx(messages, m.fee, m.memo, Long.fromNumber(0), {
         accountNumber: Number(m.account_number),
         sequence: Number(m.sequence),
@@ -281,7 +281,7 @@ export function amount2Coin(demon: string, amount: number): Coin {
 }
 
 export function amount2StdFee(demon: string, amount: number, gasLimit: number): StdFee {
-    return { amount: amount2Coins(demon, amount), gas: gasLimit.toString() }
+    return {amount: amount2Coins(demon, amount), gas: gasLimit.toString()}
 }
 
 export function getMPCTransaction(raw: string, sig: string, publicKey: string, useEthSecp256k1?: boolean) {
@@ -323,10 +323,10 @@ export function validSignedTransaction(tx: string, chainId: string, accountNumbe
     const publicKey = PubKey.decode(authInfo.signerInfos[0].publicKey!.value)
     const hash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
     let signature = raw.signatures[0]
-    if(useEthSecp256k1) {
-        signature = signature.slice(0, signature.length-1)
+    if (useEthSecp256k1) {
+        signature = signature.slice(0, signature.length - 1)
     }
-    if(!skipCheckSig && !signUtil.secp256k1.verifyWithNoRecovery(hash, signature, publicKey.key)) {
+    if (!skipCheckSig && !signUtil.secp256k1.verifyWithNoRecovery(hash, signature, publicKey.key)) {
         throw Error("signature error")
     }
 
@@ -342,6 +342,16 @@ export function validSignedTransaction(tx: string, chainId: string, accountNumbe
     };
 }
 
-export { Coin, Height, EncodeObject, StdFee, GeneratedType, AminoConverters, AminoConverter, GammAminoConverters, GammRegistry }
+export {
+    Coin,
+    Height,
+    EncodeObject,
+    StdFee,
+    GeneratedType,
+    AminoConverters,
+    AminoConverter,
+    GammAminoConverters,
+    GammRegistry
+}
 export * from "./CosmosWallet"
 

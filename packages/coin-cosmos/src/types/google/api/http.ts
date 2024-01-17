@@ -163,7 +163,7 @@ export interface Http {
  * Note that when using `*` in the body mapping, it is not possible to
  * have HTTP parameters, as all fields not bound by the path end in
  * the body. This makes this option more rarely used in practice of
- * defining REST APIs. The common usage of `*` is in custom methods
+ * defining REST APIs. The common.ts usage of `*` is in custom methods
  * which don't use the URL at all for transferring data.
  *
  * It is possible to define multiple HTTP methods for one RPC by using
