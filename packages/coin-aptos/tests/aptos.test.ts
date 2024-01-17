@@ -8,8 +8,9 @@ import {
     simulateTransaction,
     transfer,
     transferPayload,
-    HexString, SignMessagePayload, AptosWallet, SignMessageByPayloadParams
+    HexString, SignMessagePayload, AptosWallet, SignMessageByPayloadParams, transferCoin, AptosParam
 } from '../src';
+import {SignTxParams} from "@okxweb3/coin-base";
 
 describe("aptos", () => {
     test("address", async () => {
@@ -194,5 +195,31 @@ describe("aptos", () => {
         };
         let res = await wallet.signMessageByPayload(signParams);
         expect(res.signature).toBe("f731756c76517cbf91e41a5f2a05ea99de22ef3959993ee65a6da7ac8a59542cfe5fb90798d5f08f6a51bb056420d5ee0e37fa0d05b7e0ffc8cd51265a757104")
+    });
+
+    test("tokenTransfer", async () => {
+        let wallet = new AptosWallet()
+        const param: AptosParam = {
+            type: "tokenTransfer",
+            base: {
+                sequenceNumber: "1",
+                chainId: 32,
+                maxGasAmount: "10000",
+                gasUnitPrice: "100",
+                expirationTimestampSecs: "1660131587",
+            },
+            data: {
+                tyArg: "0x1::aptos_coin::AptosCoin",
+                recipientAddress: "0x0163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd01",
+                amount: 1000,
+            }
+        }
+        let signParams: SignTxParams = {
+            privateKey: "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc",
+            data: param
+        };
+        let tx = await wallet.signTransaction(signParams);
+        const expected = "8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e0002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f36200000000200020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40974a2ad3312540a3b15b911e50263e50d90206563a680d455d6bc922bb9906d354a38970358ca12e5081e73d0e703227e11c8254564762abce412e5002999008"
+        expect(tx).toBe(expected)
     });
 });
