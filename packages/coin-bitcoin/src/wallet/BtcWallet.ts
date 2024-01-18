@@ -37,6 +37,7 @@ import {
 } from '@okxweb3/coin-base';
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 import * as bitcoin from "../index"
+import { networks} from "../index";
 
 
 export const BITCOIN_MESSAGE_ECDSA = 0
@@ -144,25 +145,19 @@ export class BtcWallet extends BaseWallet {
 
     async signTransaction(param: SignTxParams): Promise<any> {
         const type = param.data.type || 0;
-        if (type === 1) { // inscribe
+        if (type === bitcoin.BtcXrcTypes.INSCRIBE) { // inscribe
             try {
                 return Promise.resolve(bitcoin.inscribe(this.network(), param.data));
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        } else if (type === 101) { // src20
-            try {
-                return Promise.resolve(bitcoin.srcInscribe(this.network(), param.data));
-            } catch (e) {
-                return Promise.reject(SignTxError);
-            }
-        } else if (type === 2) { // psbt
+        } else if (type === bitcoin.BtcXrcTypes.PSBT) { // psbt
             try {
                 return Promise.resolve(bitcoin.psbtSign(param.data.psbt, param.privateKey, this.network()));
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        } else if (type === 3) { // psbt key-path and script-path spend
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH) { // psbt key-path and script-path spend
             try {
                 return Promise.resolve(bitcoin.signPsbtWithKeyPathAndScriptPath(param.data.psbt, param.privateKey, this.network(), {
                     autoFinalized: param.data.autoFinalized,
@@ -171,7 +166,7 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        } else if (type === 4) { // batch of psbt key-path and script-path spend
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH_BATCH) { // batch of psbt key-path and script-path spend
             try {
                 return Promise.resolve(bitcoin.signPsbtWithKeyPathAndScriptPathBatch(param.data.psbtHexs, param.privateKey, this.network(), param.data.options));
             } catch (e) {
@@ -387,9 +382,9 @@ export class BtcWallet extends BaseWallet {
     async estimateFee(param: SignTxParams): Promise<number> {
         try {
             const type = param.data.type || 0;
-            if (type === 1) { // inscribe
+            if (type === bitcoin.BtcXrcTypes.INSCRIBE) { // inscribe
                 return Promise.reject(EstimateFeeError);
-            } else if (type === 2) { // psbt
+            } else if (type === bitcoin.BtcXrcTypes.PSBT) { // psbt
                 return Promise.reject(EstimateFeeError);
             } else {
                 const utxoTx = convert2UtxoTx(param.data);
