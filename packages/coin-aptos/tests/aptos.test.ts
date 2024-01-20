@@ -1,16 +1,25 @@
 import * as aptos from "../src"
-// @ts-ignore
-import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
-    AptosAccount, createRawTransaction,
+    AptosAccount,
+    AptosParam,
+    AptosWallet,
+    createRawTransaction,
     createRawTransactionByABI,
-    generateBCSTransaction, offerNFTTokenPayloadObject,
+    generateBCSTransaction,
+    HexString,
+    offerNFTTokenPayloadObject,
+    SignMessageByPayloadParams,
+    SignMessagePayload,
     simulateTransaction,
     transfer,
-    transferPayload,
-    HexString, SignMessagePayload, AptosWallet, SignMessageByPayloadParams, transferCoin, AptosParam
-} from '../src';
+    transferPayload
+} from "../src"
+// @ts-ignore
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {SignTxParams} from "@okxweb3/coin-base";
+import {AptosConfig, Transaction} from '../src/v2/api'
+import {Network} from "../src/v2/utils/apiEndpoints";
+import {Account, AnyRawTransaction, InputEntryFunctionData, SimpleTransaction} from "../src/v2";
 
 describe("aptos", () => {
     test("address", async () => {
@@ -199,8 +208,6 @@ describe("aptos", () => {
     });
 
     test("tokenTransfer", async () => {
-        const ts = Math.floor(Date.now() / 1000) + 3000;
-        console.log(ts);
         let wallet = new AptosWallet()
         const param: AptosParam = {
             type: "tokenTransfer",
@@ -226,4 +233,55 @@ describe("aptos", () => {
         // const expected = "8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e0002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f36200000000200020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40974a2ad3312540a3b15b911e50263e50d90206563a680d455d6bc922bb9906d354a38970358ca12e5081e73d0e703227e11c8254564762abce412e5002999008"
         // expect(tx).toBe(expected)
     });
+});
+
+describe("v2", () => {
+    test("sign", async () => {
+        const privateKey = "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc";
+        const alice = Account.generate();
+        const bob = Account.generate();
+        const sponsor = Account.generate();
+
+        // Variables to hold Alice and sponsor accounts address
+        const aliceAddress = alice.accountAddress;
+        const bobAddress = bob.accountAddress;
+        const sponsorAddress = sponsor.accountAddress;
+        const from = aliceAddress;
+        const to = bobAddress;
+        const amount = 1000;
+        const aptosConfig = new AptosConfig({network: Network.MAINNET});
+        const transaction = new Transaction(aptosConfig);
+        /**
+         * export type InputEntryFunctionData = {
+         *   function: MoveFunctionId;
+         *   typeArguments?: Array<TypeTag | string>;
+         *   functionArguments: Array<EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes>;
+         * };
+         */
+        // let data: InputEntryFunctionData={
+        //     function:"0x1::aptos_account::transfer",
+        //     typeArguments:["string"],
+        //     functionArguments:[],
+        // }
+        const rawTx = await transaction.build.simple({
+            sender: from,
+            withFeePayer: true,
+            data: {
+                function: "0x1::aptos_account::transfer",
+                functionArguments: [to, amount],
+            },
+        });
+        // Alice signs
+        const senderSignature = transaction.sign({signer: alice, transaction: rawTx});
+        console.log("senderSignature :", senderSignature);
+        // Sponsor signs
+        const sponsorSignature = transaction.signAsFeePayer({signer: sponsor, transaction: rawTx});
+        console.log("sponsorSignature :", sponsorSignature);
+    });
+
+    test("signAsFeePayer", async () => {
+
+    });
+
+
 });
