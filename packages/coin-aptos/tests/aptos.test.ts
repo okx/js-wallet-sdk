@@ -258,25 +258,36 @@ describe("v2", () => {
          *   functionArguments: Array<EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes>;
          * };
          */
-        // let data: InputEntryFunctionData={
-        //     function:"0x1::aptos_account::transfer",
-        //     typeArguments:["string"],
-        //     functionArguments:[],
-        // }
+            // let data: InputEntryFunctionData={
+            //     function:"0x1::aptos_account::transfer",
+            //     typeArguments:["string"],
+            //     functionArguments:[],
+            // }
         const rawTx = await transaction.build.simple({
-            sender: from,
-            withFeePayer: true,
-            data: {
-                function: "0x1::aptos_account::transfer",
-                functionArguments: [to, amount],
-            },
-        });
+                sender: from,
+                withFeePayer: true,
+                data: {
+                    function: "0x1::aptos_account::transfer",
+                    functionArguments: [to, amount],
+                },
+                options: {
+                    maxGasAmount: 10000,
+                    gasUnitPrice: 100,
+                    expireTimestamp: 1660131587,
+                    chainId: 1,
+                    accountSequenceNumber: 1,
+                },
+
+            });
         // Alice signs
         const senderSignature = transaction.sign({signer: alice, transaction: rawTx});
-        console.log("senderSignature :", senderSignature);
+        console.log("senderSignature :", senderSignature.bcsToHex());
+
         // Sponsor signs
         const sponsorSignature = transaction.signAsFeePayer({signer: sponsor, transaction: rawTx});
-        console.log("sponsorSignature :", sponsorSignature);
+        console.log("sponsorSignature :", sponsorSignature.bcsToHex());
+
+        console.log(rawTx);
     });
 
     test("signAsFeePayer", async () => {

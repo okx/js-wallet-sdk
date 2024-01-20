@@ -7,7 +7,7 @@
  * and a signed transaction that can be simulated, signed and submitted to chain.
  */
 import {sha3_256 as sha3Hash} from "@noble/hashes/sha3";
-import { AptosConfig } from "../../api/aptosConfig";
+import {AptosConfig} from "../../api/aptosConfig";
 import {AccountAddress, AccountAddressInput, Hex, PublicKey} from "../../core";
 import {Account} from "../../core/account";
 import {AnyPublicKey} from "../../core/crypto/anyPublicKey";
@@ -197,34 +197,42 @@ export async function generateRawTransaction(args: {
     sender: AccountAddressInput;
     payload: AnyTransactionPayloadInstance;
     options?: InputGenerateTransactionOptions;
-    chain_id?: number;
 }): Promise<RawTransaction> {
-    const {aptosConfig, sender, payload, options, chain_id} = args;
+    const {aptosConfig, sender, payload, options} = args;
     let getSequenceNumber: any;
     getSequenceNumber = options?.accountSequenceNumber;
     let getGasUnitPrice: any;
     getGasUnitPrice = options?.gasUnitPrice;
     let getChainId: any;
-    getChainId = chain_id;
-    const [{sequence_number: sequenceNumber}, {chain_id: chainId}, {gas_estimate: gasEstimate}] = await Promise.all(
-        [getSequenceNumber, getChainId, getGasUnitPrice],
-    );
+    getChainId = options?.chainId;
+    // const [{sequence_number: sequenceNumber}, {chain_id: chainId}, {gas_estimate: gasEstimate}] = await Promise.all(
+    //     [getSequenceNumber, getChainId, getGasUnitPrice],
+    // );
 
-    const {maxGasAmount, gasUnitPrice, expireTimestamp} = {
+    const {maxGasAmount, gasUnitPrice, expireTimestamp, chainId} = {
         maxGasAmount: options?.maxGasAmount ? BigInt(options.maxGasAmount) : BigInt(DEFAULT_MAX_GAS_AMOUNT),
-        gasUnitPrice: BigInt(gasEstimate),
+        gasUnitPrice: BigInt(options?.gasUnitPrice!),
         expireTimestamp: BigInt(Math.floor(Date.now() / 1000) + DEFAULT_TXN_EXP_SEC_FROM_NOW),
         ...options,
     };
 
+    // return new RawTransaction(
+    //     AccountAddress.from(sender),
+    //     BigInt(sequenceNumber),
+    //     payload,
+    //     BigInt(maxGasAmount),
+    //     BigInt(gasUnitPrice),
+    //     BigInt(expireTimestamp),
+    //     new ChainId(chainId),
+    // );
     return new RawTransaction(
         AccountAddress.from(sender),
-        BigInt(sequenceNumber),
+        BigInt(getSequenceNumber),
         payload,
         BigInt(maxGasAmount),
         BigInt(gasUnitPrice),
         BigInt(expireTimestamp),
-        new ChainId(chainId),
+        new ChainId(chainId!),
     );
 }
 
