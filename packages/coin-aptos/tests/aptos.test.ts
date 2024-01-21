@@ -19,7 +19,7 @@ import {base, signUtil} from '@okxweb3/crypto-lib';
 import {SignTxParams} from "@okxweb3/coin-base";
 import {AptosConfig, Transaction} from '../src/v2/api'
 import {Network} from "../src/v2/utils/apiEndpoints";
-import {Account, AnyRawTransaction, InputEntryFunctionData, SimpleTransaction} from "../src/v2";
+import {Account, AnyRawTransaction, Ed25519PrivateKey, InputEntryFunctionData, SimpleTransaction} from "../src/v2";
 
 describe("aptos", () => {
     test("address", async () => {
@@ -237,7 +237,11 @@ describe("aptos", () => {
 
 describe("v2", () => {
     test("sign", async () => {
-        const privateKey = "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc";
+        const privateKey = "4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26";
+        const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
+        const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
+        expect(senderAccount.accountAddress.toString()).toBe("0x7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c19")
+        console.log("senderAccount :", senderAccount.accountAddress.toString());
         const alice = Account.generate();
         const bob = Account.generate();
         const sponsor = Account.generate();
