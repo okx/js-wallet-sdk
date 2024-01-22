@@ -19,7 +19,16 @@ import {base, signUtil} from '@okxweb3/crypto-lib';
 import {SignTxParams} from "@okxweb3/coin-base";
 import {AptosConfig, Transaction} from '../src/v2/api'
 import {Network} from "../src/v2/utils/apiEndpoints";
-import {Account, AnyRawTransaction, Ed25519PrivateKey, InputEntryFunctionData, SimpleTransaction} from "../src/v2";
+import {
+    Account, AccountAddress,
+    AnyRawTransaction,
+    Deserializer,
+    Ed25519PrivateKey,
+    InputEntryFunctionData,
+    RawTransaction,
+    SimpleTransaction
+} from "../src/v2";
+import {hexToBytes} from "@noble/hashes/utils";
 
 describe("aptos", () => {
     test("address", async () => {
@@ -274,17 +283,53 @@ describe("v2", () => {
         });
         // Alice signs
         const senderSignature = transaction.sign({signer: alice, transaction: rawTx});
-        console.log("senderSignature :", senderSignature.bcsToHex());
+        console.log("senderSignature :", senderSignature.bcsToHex().toString());
+        console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+        console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
+        console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+        console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
 
+
+        const deserializer = new Deserializer(rawTx.rawTransaction.bcsToBytes());
+        const rawTransaction = RawTransaction.deserialize(deserializer);
+        const raw = {
+            rawTransaction: rawTransaction,
+            feePayerAddress: rawTx.feePayerAddress,
+            secondarySignerAddresses: undefined
+        }
         // Sponsor signs
-        const sponsorSignature = transaction.signAsFeePayer({signer: sponsor, transaction: rawTx});
-        console.log("sponsorSignature :", sponsorSignature.bcsToHex());
+        const sponsorSignature = transaction.signAsFeePayer({signer: sponsor, transaction: raw});
+        console.log("sponsorSignature :", sponsorSignature.bcsToHex().toString());
+        console.log("raw :", raw.rawTransaction.bcsToHex().toString());
+        console.log("raw feePayerAddress :", raw.feePayerAddress?.toString());
+        console.log("raw secondarySignerAddresses :", raw.secondarySignerAddresses);
+        console.log("sponsorAddress :", sponsorAddress.toString());
 
-        console.log(rawTx);
+
     });
 
     test("signAsFeePayer", async () => {
+        const sponsor = Account.generate();
+        const sponsorAddress = sponsor.accountAddress;
+        const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
+        const aptosConfig = new AptosConfig({network: Network.MAINNET, moveModule: m});
+        const transaction = new Transaction(aptosConfig);
 
+        const rawTransactionHex = "0xa9389f2a1cd49bed52d3d8c236afe113c74087911392954a82bc9355976530ef01000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002207cdc46c4dbfa421989105412cdf4fe74f9ffa64cfa5835522d1ab43f4d5e16f508e803000000000000102700000000000064000000000000000399f3620000000001";
+        const deserializer = new Deserializer(base.fromHex(rawTransactionHex));
+        const rawTransaction = RawTransaction.deserialize(deserializer);
+        const raw = {
+            rawTransaction: rawTransaction,
+            feePayerAddress: AccountAddress.ZERO,
+            secondarySignerAddresses: undefined
+        };
+        // Sponsor signs
+        const sponsorSignature = transaction.signAsFeePayer({signer: sponsor, transaction: raw});
+        console.log("sponsorSignature :", sponsorSignature.bcsToHex().toString());
+        console.log("raw :", raw.rawTransaction.bcsToHex().toString());
+        console.log("raw feePayerAddress :", raw.feePayerAddress?.toString());
+        console.log("raw secondarySignerAddresses :", raw.secondarySignerAddresses);
+        console.log("sponsorAddress :", sponsorAddress.toString());
     });
 
 
