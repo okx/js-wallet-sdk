@@ -138,6 +138,8 @@ export type AptosSettings = {
 
   readonly indexer?: string;
 
+  readonly moveModule?: string;
+
   readonly clientConfig?: ClientConfig;
 
   readonly client?: Client;

@@ -25,6 +25,8 @@ export class AptosConfig {
      */
     readonly indexer?: string;
 
+    readonly moveModule?: string;
+
     readonly clientConfig?: ClientConfig;
 
     constructor(settings?: AptosSettings) {
@@ -32,6 +34,7 @@ export class AptosConfig {
         this.fullnode = settings?.fullnode;
         this.faucet = settings?.faucet;
         this.indexer = settings?.indexer;
+        this.moveModule = settings?.moveModule;
         this.clientConfig = settings?.clientConfig ?? {};
     }
 }
