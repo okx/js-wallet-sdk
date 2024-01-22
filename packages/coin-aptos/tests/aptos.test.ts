@@ -236,7 +236,7 @@ describe("aptos", () => {
 });
 
 describe("v2", () => {
-    test("sign", async () => {
+    test("sign for simple_sponsor_transaction", async () => {
         const privateKey = "4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26";
         const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
         const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
