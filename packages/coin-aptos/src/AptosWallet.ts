@@ -1,34 +1,35 @@
 // @ts-ignore
 import {
+    BaseWallet,
+    CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
+    ed25519_getDerivedPrivateKey,
+    ed25519_getRandomPrivateKey,
+    GenPrivateKeyError,
     GetDerivedPathParam,
+    jsonStringifyUniform,
     NewAddressData,
+    NewAddressError,
     NewAddressParams,
+    SignMsgError,
+    SignTxError,
     SignTxParams,
     ValidAddressData,
     ValidAddressParams,
-    ValidSignedTransactionParams,
-    BaseWallet,
-    CalcTxHashError,
-    GenPrivateKeyError,
-    NewAddressError,
-    SignTxError,
     validSignedTransactionError,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
-    jsonStringifyUniform, SignMsgError
+    ValidSignedTransactionParams
 } from "@okxweb3/coin-base";
 import {base} from '@okxweb3/crypto-lib';
 import {
     AptosAccount,
-    HexString,
     burnCoin,
     claimNFTTokenPayload,
     createRawTransaction,
     createRawTransactionByABI,
     generateBCSSimulateTransaction,
     generateBCSTransaction,
+    HexString,
     mintCoin,
     offerNFTTokenPayload,
     offerNFTTokenPayloadObject,
@@ -37,9 +38,13 @@ import {
     transferPayload,
 } from './index';
 import * as client from './client'
+import {Account, AccountAddress, AptosConfig, Deserializer, Ed25519PrivateKey, RawTransaction, Transaction} from "./v2";
+import {Network} from "./v2/utils/apiEndpoints";
+import {number} from "@okxweb3/coin-bitcoin/dist/bitcoinjs-lib/script";
+import any = jasmine.any;
 
 export type AptosParam = {
-    type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" | "offerNftObject" | "claimNft" | "offerNft_simulate" | "claimNft_simulate"
+    type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" | "offerNftObject" | "claimNft" | "offerNft_simulate" | "claimNft_simulate" | "simple_transaction" | "simulate_simple_transaction"
     base: AptosBasePram,
     data: any
 }
@@ -95,6 +100,19 @@ export type AptosClaimNFTParam = {
     collectionName: string,
     tokenName: string,
     version: string
+}
+
+export type AptosSimpleTransactionParam = {
+    tyArg: Array<any>,
+    function: `${string}::${string}::${string}`,
+    functionArguments: Array<any>,
+    recipientAddress: string,
+    amount: string,
+    moveModule: string,
+    rawTransaction: string,
+    feePayerAddress: string,
+    withFeePayer: boolean,
+    signAsFeePayer: boolean,
 }
 
 export type AptosBasePram = {
@@ -198,6 +216,11 @@ export class AptosWallet extends BaseWallet {
             if (ap.base.sender) {
                 sender = HexString.ensure(ap.base.sender)
             }
+            // compatible v2
+            const privateKey = HexString.ensure(param.privateKey).toString();
+            const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
+            const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
+            const senderAddress = senderAccount.accountAddress;
 
             const tp = ap.type
             let tx: Uint8Array
@@ -291,6 +314,71 @@ export class AptosWallet extends BaseWallet {
                     break
                 }
                 case "claimNft_simulate": {
+                    const baseParam = ap.base
+                    const data = ap.data as AptosClaimNFTParam
+                    const payload = claimNFTTokenPayload(HexString.ensure(data.sender), HexString.ensure(data.creator), data.collectionName, data.tokenName, BigInt(data.version))
+                    const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSSimulateTransaction(account, rawTxn);
+                    break
+                }
+                case "simple_transaction": {
+                    const baseParam = ap.base;
+                    const data = ap.data as AptosSimpleTransactionParam;
+
+                    const network = baseParam.chainId == 1 ? Network.MAINNET : Network.TESTNET;
+                    const aptosConfig = new AptosConfig({network: network, moveModule: data.moveModule});
+                    const transaction = new Transaction(aptosConfig);
+
+                    if (data.signAsFeePayer) {
+                        const rawTransactionHex = data.rawTransaction;
+                        const deserializer = new Deserializer(base.fromHex(rawTransactionHex));
+                        const rawTransaction = RawTransaction.deserialize(deserializer);
+                        const rawTx = {
+                            rawTransaction: rawTransaction,
+                            feePayerAddress: AccountAddress.ZERO,
+                            secondarySignerAddresses: undefined
+                        };
+                        // Sponsor signs
+                        const sponsorSignature = transaction.signAsFeePayer({
+                            signer: senderAccount,
+                            transaction: rawTx
+                        });
+
+                        const raw = {
+                            rawTransaction: rawTx.rawTransaction.bcsToHex(),
+                            sponsorSignature: sponsorSignature.bcsToHex(),
+                        };
+                        return Promise.resolve(JSON.stringify(raw));
+                    }
+
+                    const res = transaction.build.simple({
+                        sender: senderAddress,
+                        withFeePayer: data.withFeePayer,
+                        data: {
+                            function: data.function,
+                            typeArguments: data.tyArg,
+                            functionArguments: [data.recipientAddress, data.amount],
+                        },
+                        options: {
+                            maxGasAmount: Number(baseParam.maxGasAmount),
+                            gasUnitPrice: Number(baseParam.gasUnitPrice),
+                            expireTimestamp: Number(baseParam.expirationTimestampSecs),
+                            chainId: Number(baseParam.chainId),
+                            accountSequenceNumber: Number(baseParam.sequenceNumber),
+                        },
+                    }).then(rawTx => {
+                        const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
+                        console.log("senderSignature :", senderSignature.bcsToHex().toString());
+
+                        const raw = {
+                            rawTransaction: rawTx.rawTransaction.bcsToHex(),
+                            senderSignature: senderSignature.bcsToHex(),
+                        };
+                        return JSON.stringify(raw);
+                    });
+                    return res;
+                }
+                case "simulate_simple_transaction": {
                     const baseParam = ap.base
                     const data = ap.data as AptosClaimNFTParam
                     const payload = claimNFTTokenPayload(HexString.ensure(data.sender), HexString.ensure(data.creator), data.collectionName, data.tokenName, BigInt(data.version))

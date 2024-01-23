@@ -10,31 +10,11 @@ import {DEFAULT_NETWORK} from "../utils";
 export class AptosConfig {
     /** The Network that this SDK is associated with. Defaults to DEVNET */
     readonly network: Network;
-    /**
-     * The optional hardcoded fullnode URL to send requests to instead of using the network
-     */
-    readonly fullnode?: string;
-
-    /**
-     * The optional hardcoded faucet URL to send requests to instead of using the network
-     */
-    readonly faucet?: string;
-
-    /**
-     * The optional hardcoded indexer URL to send requests to instead of using the network
-     */
-    readonly indexer?: string;
 
     readonly moveModule?: string;
 
-    readonly clientConfig?: ClientConfig;
-
     constructor(settings?: AptosSettings) {
         this.network = settings?.network ?? DEFAULT_NETWORK;
-        this.fullnode = settings?.fullnode;
-        this.faucet = settings?.faucet;
-        this.indexer = settings?.indexer;
         this.moveModule = settings?.moveModule;
-        this.clientConfig = settings?.clientConfig ?? {};
     }
 }

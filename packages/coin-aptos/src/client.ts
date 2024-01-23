@@ -1,5 +1,5 @@
-import { HexString, MaybeHexString } from './hex_string';
-import { AptosAccount } from './aptos_account';
+import {HexString, MaybeHexString} from './hex_string';
+import {AptosAccount} from './aptos_account';
 
 import {
     TxnBuilderTypes,
@@ -16,8 +16,9 @@ import {
 } from './transaction_builder/aptos_types';
 import {AnyNumber, bcsToBytes, Deserializer, Uint64, Uint8} from './transaction_builder/bcs';
 import {EntryFunctionId, MoveModuleBytecode, MoveType} from './transaction_builder/move_types';
-import { base, signUtil } from '@okxweb3/crypto-lib';
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {ArgumentABI, EntryFunctionABI, TypeArgumentABI} from "./transaction_builder/aptos_types/abi";
+
 declare const TextEncoder: any;
 
 /**
@@ -34,18 +35,18 @@ declare const TextEncoder: any;
  * @returns transaction hash
  */
 export function transfer(
-  account: AptosAccount,
-  recipientAddress: string | HexString,
-  amount: AnyNumber,
-  sequenceNumber: Uint64,
-  chainId: Uint8,
-  maxGasAmount: Uint64,
-  gasUnitPrice: Uint64,
-  expirationTimestampSecs: Uint64
+    account: AptosAccount,
+    recipientAddress: string | HexString,
+    amount: AnyNumber,
+    sequenceNumber: Uint64,
+    chainId: Uint8,
+    maxGasAmount: Uint64,
+    gasUnitPrice: Uint64,
+    expirationTimestampSecs: Uint64
 ): Uint8Array {
-  const payload = transferPayload(recipientAddress, amount)
-  const rawTxn = createRawTransaction(account.address(), payload, sequenceNumber, chainId, maxGasAmount, gasUnitPrice, expirationTimestampSecs)
-  return generateBCSTransaction(account, rawTxn);
+    const payload = transferPayload(recipientAddress, amount)
+    const rawTxn = createRawTransaction(account.address(), payload, sequenceNumber, chainId, maxGasAmount, gasUnitPrice, expirationTimestampSecs)
+    return generateBCSTransaction(account, rawTxn);
 }
 
 export function createRawTransaction(sender: HexString,
@@ -56,15 +57,15 @@ export function createRawTransaction(sender: HexString,
                                      gasUnitPrice: Uint64,
                                      expirationTimestampSecs: Uint64) {
 
-  return new TxnBuilderTypes.RawTransaction(
-    TxnBuilderTypes.AccountAddress.fromHex(sender),
-    sequenceNumber,
-    payload,
-    maxGasAmount,
-    gasUnitPrice,
-    expirationTimestampSecs,
-    new TxnBuilderTypes.ChainId(chainId),
-  );
+    return new TxnBuilderTypes.RawTransaction(
+        TxnBuilderTypes.AccountAddress.fromHex(sender),
+        sequenceNumber,
+        payload,
+        maxGasAmount,
+        gasUnitPrice,
+        expirationTimestampSecs,
+        new TxnBuilderTypes.ChainId(chainId),
+    );
 }
 
 export function simulateTransaction(account: AptosAccount,
@@ -74,78 +75,78 @@ export function simulateTransaction(account: AptosAccount,
                                     maxGasAmount: Uint64,
                                     gasUnitPrice: Uint64,
                                     expirationTimestampSecs: Uint64) {
-  const rawTransaction = createRawTransaction(account.address(), payload, sequenceNumber, chainId, maxGasAmount, gasUnitPrice, expirationTimestampSecs)
-  return generateBCSSimulateTransaction(account, rawTransaction)
+    const rawTransaction = createRawTransaction(account.address(), payload, sequenceNumber, chainId, maxGasAmount, gasUnitPrice, expirationTimestampSecs)
+    return generateBCSSimulateTransaction(account, rawTransaction)
 }
 
 
 // Move models must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
 export function transferPayload(recipientAddress: string | HexString, amount: AnyNumber) {
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      '0x1::aptos_account',
-      'transfer',
-      [],
-      [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(recipientAddress)), BCS.bcsSerializeUint64(amount),
-      ],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            '0x1::aptos_account',
+            'transfer',
+            [],
+            [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(recipientAddress)), BCS.bcsSerializeUint64(amount),
+            ],
+        ),
+    );
 }
 
 export function registerCoin(tyArg: string) {
-  const token = new TxnBuilderTypes.TypeTagStruct(
-    TxnBuilderTypes.StructTag.fromString(tyArg),
-  );
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(tyArg),
+    );
 
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural("0x1::managed_coin", "register", [token], []),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural("0x1::managed_coin", "register", [token], []),
+    );
 }
 
 // The owner account can mint MoonCoin by calling 0x1::managed_coin::mint.
 export function mintCoin(tyArg: string, receiverAddress: string, amount: AnyNumber) {
-  const token = new TxnBuilderTypes.TypeTagStruct(
-    TxnBuilderTypes.StructTag.fromString(tyArg),
-  );
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(tyArg),
+    );
 
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x1::managed_coin",
-      "mint",
-      [token],
-      [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiverAddress)), BCS.bcsSerializeUint64(amount)],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x1::managed_coin",
+            "mint",
+            [token],
+            [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiverAddress)), BCS.bcsSerializeUint64(amount)],
+        ),
+    );
 }
 
 export function burnCoin(tyArg: string, amount: AnyNumber) {
-  const token = new TxnBuilderTypes.TypeTagStruct(
-    TxnBuilderTypes.StructTag.fromString(tyArg),
-  );
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(tyArg),
+    );
 
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x1::managed_coin",
-      "burn",
-      [token],
-      [BCS.bcsSerializeUint64(amount)],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x1::managed_coin",
+            "burn",
+            [token],
+            [BCS.bcsSerializeUint64(amount)],
+        ),
+    );
 }
 
 export function transferCoin(tyArg: string, receiverAddress: string, amount: AnyNumber) {
-  const token = new TxnBuilderTypes.TypeTagStruct(
-    TxnBuilderTypes.StructTag.fromString(tyArg),
-  );
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(tyArg),
+    );
 
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x1::coin",
-      "transfer",
-      [token],
-      [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiverAddress)), BCS.bcsSerializeUint64(amount)],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x1::coin",
+            "transfer",
+            [token],
+            [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiverAddress)), BCS.bcsSerializeUint64(amount)],
+        ),
+    );
 }
 
 // NFT
@@ -182,12 +183,12 @@ TokenId	--
 TokenDataId points to the metadata of this token. The property_version represents a token with mutated PropertyMap from default_properties in the TokenData.
  */
 function serializeVectorBool(vecBool: boolean[]) {
-  const serializer = new BCS.Serializer();
-  serializer.serializeU32AsUleb128(vecBool.length);
-  vecBool.forEach((el) => {
-    serializer.serializeBool(el);
-  });
-  return serializer.getBytes();
+    const serializer = new BCS.Serializer();
+    serializer.serializeU32AsUleb128(vecBool.length);
+    vecBool.forEach((el) => {
+        serializer.serializeBool(el);
+    });
+    return serializer.getBytes();
 }
 
 // first NFT
@@ -196,21 +197,21 @@ function serializeVectorBool(vecBool: boolean[]) {
 // Giving that token to someone else.
 // The on-chain lazy mint token through mutation.
 export function createNFTCollectionPayload(name: string, description: string, uri: string) {
-  const NUMBER_MAX: number = 9007199254740991;
-  return  new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x3::token",
-      "create_collection_script",
-      [],
-      [
-        BCS.bcsSerializeStr(name),
-        BCS.bcsSerializeStr(description),
-        BCS.bcsSerializeStr(uri),
-        BCS.bcsSerializeUint64(NUMBER_MAX),
-        serializeVectorBool([false, false, false]),
-      ],
-    ),
-  );
+    const NUMBER_MAX: number = 9007199254740991;
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x3::token",
+            "create_collection_script",
+            [],
+            [
+                BCS.bcsSerializeStr(name),
+                BCS.bcsSerializeStr(description),
+                BCS.bcsSerializeStr(uri),
+                BCS.bcsSerializeUint64(NUMBER_MAX),
+                serializeVectorBool([false, false, false]),
+            ],
+        ),
+    );
 }
 
 export function createNFTTokenPayload(account: AptosAccount,
@@ -219,63 +220,63 @@ export function createNFTTokenPayload(account: AptosAccount,
                                       description: string,
                                       supply: number | bigint,
                                       uri: string) {
-  const NUMBER_MAX: number = 9007199254740991;
+    const NUMBER_MAX: number = 9007199254740991;
 
-  // Serializes empty arrays
-  const serializer = new BCS.Serializer();
-  serializer.serializeU32AsUleb128(0);
+    // Serializes empty arrays
+    const serializer = new BCS.Serializer();
+    serializer.serializeU32AsUleb128(0);
 
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x3::token",
-      "create_token_script",
-      [],
-      [
-        BCS.bcsSerializeStr(collection_name),
-        BCS.bcsSerializeStr(name),
-        BCS.bcsSerializeStr(description),
-        BCS.bcsSerializeUint64(supply),
-        BCS.bcsSerializeUint64(NUMBER_MAX),
-        BCS.bcsSerializeStr(uri),
-        BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(account.address())),
-        BCS.bcsSerializeUint64(0),
-        BCS.bcsSerializeUint64(0),
-        serializeVectorBool([false, false, false, false, false]),
-        serializer.getBytes(),
-        serializer.getBytes(),
-        serializer.getBytes(),
-      ],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x3::token",
+            "create_token_script",
+            [],
+            [
+                BCS.bcsSerializeStr(collection_name),
+                BCS.bcsSerializeStr(name),
+                BCS.bcsSerializeStr(description),
+                BCS.bcsSerializeUint64(supply),
+                BCS.bcsSerializeUint64(NUMBER_MAX),
+                BCS.bcsSerializeStr(uri),
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(account.address())),
+                BCS.bcsSerializeUint64(0),
+                BCS.bcsSerializeUint64(0),
+                serializeVectorBool([false, false, false, false, false]),
+                serializer.getBytes(),
+                serializer.getBytes(),
+                serializer.getBytes(),
+            ],
+        ),
+    );
 }
 
 // The sender must first register that a token is available for the recipient to claim, the recipient must then claim this token.
-export function offerNFTTokenPayload( receiver: HexString,
-                                      creator: HexString,
-                                      collection_name: string,
-                                      token_name: string,
-                                      version: bigint,
-                                      amount: bigint) {
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x3::token_transfers",
-      "offer_script",
-      [],
-      [
-        BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiver.hex())),
-        BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(creator.hex())),
-        BCS.bcsSerializeStr(collection_name),
-        BCS.bcsSerializeStr(token_name),
-        BCS.bcsSerializeUint64(version),
-        BCS.bcsSerializeUint64(amount),
-      ],
-    ),
-  );
+export function offerNFTTokenPayload(receiver: HexString,
+                                     creator: HexString,
+                                     collection_name: string,
+                                     token_name: string,
+                                     version: bigint,
+                                     amount: bigint) {
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x3::token_transfers",
+            "offer_script",
+            [],
+            [
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiver.hex())),
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(creator.hex())),
+                BCS.bcsSerializeStr(collection_name),
+                BCS.bcsSerializeStr(token_name),
+                BCS.bcsSerializeUint64(version),
+                BCS.bcsSerializeUint64(amount),
+            ],
+        ),
+    );
 }
 
-export function offerNFTTokenPayloadObject( nftObject: HexString,
-                                            receiver: HexString,
-                                      amount: bigint) {
+export function offerNFTTokenPayloadObject(nftObject: HexString,
+                                           receiver: HexString,
+                                           amount: bigint) {
     return new TxnBuilderTypes.TransactionPayloadEntryFunction(
         TxnBuilderTypes.EntryFunction.natural(
             "0x1::object",
@@ -295,98 +296,98 @@ export function claimNFTTokenPayload(sender: HexString,
                                      collection_name: string,
                                      token_name: string,
                                      version: bigint) {
-  return new TxnBuilderTypes.TransactionPayloadEntryFunction(
-    TxnBuilderTypes.EntryFunction.natural(
-      "0x3::token_transfers",
-      "claim_script",
-      [],
-      [
-        BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(sender.hex())),
-        BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(creator.hex())),
-        BCS.bcsSerializeStr(collection_name),
-        BCS.bcsSerializeStr(token_name),
-        BCS.bcsSerializeUint64(version),
-      ],
-    ),
-  );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x3::token_transfers",
+            "claim_script",
+            [],
+            [
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(sender.hex())),
+                BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(creator.hex())),
+                BCS.bcsSerializeStr(collection_name),
+                BCS.bcsSerializeStr(token_name),
+                BCS.bcsSerializeUint64(version),
+            ],
+        ),
+    );
 }
 
-  /** Generates a signed transaction that can be submitted to the chain for execution. */
+/** Generates a signed transaction that can be submitted to the chain for execution. */
 export function generateBCSTransaction(
-  accountFrom: AptosAccount,
-  rawTxn: TxnBuilderTypes.RawTransaction
+    accountFrom: AptosAccount,
+    rawTxn: TxnBuilderTypes.RawTransaction
 ): Uint8Array {
-  const txnBuilder = new TransactionBuilderEd25519(
-    (signingMessage: TxnBuilderTypes.SigningMessage) => {
-      const sigHexStr = accountFrom.signBuffer(Buffer.from(signingMessage));
-      return new TxnBuilderTypes.Ed25519Signature(sigHexStr.toUint8Array());
-    },
-    accountFrom.pubKey().toUint8Array()
-  );
-  return txnBuilder.sign(rawTxn);
+    const txnBuilder = new TransactionBuilderEd25519(
+        (signingMessage: TxnBuilderTypes.SigningMessage) => {
+            const sigHexStr = accountFrom.signBuffer(Buffer.from(signingMessage));
+            return new TxnBuilderTypes.Ed25519Signature(sigHexStr.toUint8Array());
+        },
+        accountFrom.pubKey().toUint8Array()
+    );
+    return txnBuilder.sign(rawTxn);
 }
 
 
 /** Generates a signed transaction that can be submitted to the chain for execution. */
 export function generateBCSSimulateTransaction(
-  accountFrom: AptosAccount,
-  rawTxn: TxnBuilderTypes.RawTransaction
+    accountFrom: AptosAccount,
+    rawTxn: TxnBuilderTypes.RawTransaction
 ): Uint8Array {
-  const txnBuilder = new TransactionBuilderEd25519(
-    (signingMessage: TxnBuilderTypes.SigningMessage) => {
-      const signature = new Uint8Array(64)
-      return new TxnBuilderTypes.Ed25519Signature(signature);
-    },
-    accountFrom.pubKey().toUint8Array()
-  );
-  return txnBuilder.sign(rawTxn);
+    const txnBuilder = new TransactionBuilderEd25519(
+        (signingMessage: TxnBuilderTypes.SigningMessage) => {
+            const signature = new Uint8Array(64)
+            return new TxnBuilderTypes.Ed25519Signature(signature);
+        },
+        accountFrom.pubKey().toUint8Array()
+    );
+    return txnBuilder.sign(rawTxn);
 }
 
 export function createRawTransactionByABI(sender: HexString,
-                                     sequenceNumber: Uint64,
-                                     chainId: Uint8,
-                                     maxGasAmount: Uint64,
-                                     gasUnitPrice: Uint64,
-                                     expirationTimestampSecs: Uint64,
-                                     callData: string,
-                                     moduleAbi: string) {
-  const builderConfig: ABIBuilderConfig =  {
-    sender: sender,
-    sequenceNumber: sequenceNumber,
-    gasUnitPrice: gasUnitPrice,
-    maxGasAmount: maxGasAmount,
-    expSecFromNow: expirationTimestampSecs.toString(),
-    chainId: chainId,
-  }
+                                          sequenceNumber: Uint64,
+                                          chainId: Uint8,
+                                          maxGasAmount: Uint64,
+                                          gasUnitPrice: Uint64,
+                                          expirationTimestampSecs: Uint64,
+                                          callData: string,
+                                          moduleAbi: string) {
+    const builderConfig: ABIBuilderConfig = {
+        sender: sender,
+        sequenceNumber: sequenceNumber,
+        gasUnitPrice: gasUnitPrice,
+        maxGasAmount: maxGasAmount,
+        expSecFromNow: expirationTimestampSecs.toString(),
+        chainId: chainId,
+    }
 
-  const data = JSON.parse(callData)
-  const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
-  return buildRawTransactionByABI(
-    modules,
-    builderConfig,
-    data.function,
-    data.type_arguments,
-    data.arguments
-  );
+    const data = JSON.parse(callData)
+    const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
+    return buildRawTransactionByABI(
+        modules,
+        builderConfig,
+        data.function,
+        data.type_arguments,
+        data.arguments
+    );
 }
 
 export async function signMessage(message: string, privateKey: string): Promise<string> {
-  const textEncoder = new TextEncoder();
-  const signingMessage = Buffer.from(textEncoder.encode(message))
-  const accountFrom = AptosAccount.fromPrivateKey(HexString.ensure(privateKey));
-  const sigHexStr = accountFrom.signBuffer(signingMessage);
-  return Promise.resolve(sigHexStr.hex())
+    const textEncoder = new TextEncoder();
+    const signingMessage = Buffer.from(textEncoder.encode(message))
+    const accountFrom = AptosAccount.fromPrivateKey(HexString.ensure(privateKey));
+    const sigHexStr = accountFrom.signBuffer(signingMessage);
+    return Promise.resolve(sigHexStr.hex())
 }
 
 export function validSignedTransaction(tx: string, skipCheckSig: boolean) {
-  const transaction = SignedTransaction.deserialize(new Deserializer(base.fromHex(tx)));
-  const auth = transaction.authenticator as TransactionAuthenticatorEd25519
-  const publicKey = auth.public_key.value
-  const signature = auth.signature.value
-  const hash = TransactionBuilder.getSigningMessage(transaction.raw_txn)
-  if(!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
-    throw Error("signature error")
-  }
-  return transaction;
+    const transaction = SignedTransaction.deserialize(new Deserializer(base.fromHex(tx)));
+    const auth = transaction.authenticator as TransactionAuthenticatorEd25519
+    const publicKey = auth.public_key.value
+    const signature = auth.signature.value
+    const hash = TransactionBuilder.getSigningMessage(transaction.raw_txn)
+    if (!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
+        throw Error("signature error")
+    }
+    return transaction;
 }
 

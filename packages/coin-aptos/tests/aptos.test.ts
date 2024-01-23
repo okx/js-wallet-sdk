@@ -259,8 +259,8 @@ describe("v2", () => {
         const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
         const aptosConfig = new AptosConfig({network: Network.MAINNET, moveModule: m});
         const transaction = new Transaction(aptosConfig);
-
-        const rawTx = await transaction.build.simple({
+        // let rawTx: any;
+        let res = transaction.build.simple({
             sender: from,
             withFeePayer: true,
             data: {
@@ -274,14 +274,28 @@ describe("v2", () => {
                 chainId: 1,
                 accountSequenceNumber: 1,
             },
+        }).then(rawTx => {
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
+            // Alice signs
+            const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
+            console.log("senderSignature :", senderSignature.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
+            return {
+                rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
+                senderSignature: senderSignature.bcsToHex().toString()
+            };
         });
-        // Alice signs
-        const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
-        console.log("senderSignature :", senderSignature.bcsToHex().toString());
-        console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
-        console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
-        console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
-        console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
+
+        res.then(raw => {
+            console.log(raw);
+        });
+
     });
 
     test("signAsFeePayer", async () => {
