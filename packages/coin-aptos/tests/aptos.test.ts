@@ -29,6 +29,7 @@ import {
     SimpleTransaction
 } from "../src/v2";
 import {hexToBytes} from "@noble/hashes/utils";
+import {Array} from "@okxweb3/coin-bitcoin";
 
 describe("aptos", () => {
     test("address", async () => {
@@ -298,7 +299,7 @@ describe("v2", () => {
 
     });
 
-    test("signAsFeePayer", async () => {
+    test("sign as fee payer", async () => {
         const sponsor = Account.generate();
         const sponsorAddress = sponsor.accountAddress;
         const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
@@ -321,4 +322,81 @@ describe("v2", () => {
         console.log("raw secondarySignerAddresses :", raw.secondarySignerAddresses);
         console.log("sponsorAddress :", sponsorAddress.toString());
     });
+
+    test("simulate sign for simple_sponsor_transaction", async () => {
+        const privateKey = "4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26";
+        const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
+        const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
+        expect(senderAccount.accountAddress.toString()).toBe("0x7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c19")
+        console.log("senderAccount :", senderAccount.accountAddress.toString());
+
+        const from = senderAccount.accountAddress;
+        const to = senderAccount.accountAddress;
+        const amount = 1000;
+        // get module from the full node and add into the config
+        const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
+        const aptosConfig = new AptosConfig({network: Network.MAINNET, moveModule: m});
+        const transaction = new Transaction(aptosConfig);
+        // let rawTx: any;
+        let res = transaction.build.simple({
+            sender: from,
+            withFeePayer: true,
+            data: {
+                function: "0x1::aptos_account::transfer",
+                functionArguments: [to, amount],
+            },
+            options: {
+                maxGasAmount: 10000,
+                gasUnitPrice: 100,
+                expireTimestamp: 1660131587,
+                chainId: 1,
+                accountSequenceNumber: 1,
+            },
+        }).then(rawTx => {
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
+            // Alice signs
+            const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
+            console.log("senderSignature :", senderSignature.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx :", rawTx.rawTransaction.bcsToHex().toString());
+            console.log("rawTx feePayerAddress :", rawTx.feePayerAddress?.toString());
+            console.log("rawTx secondarySignerAddresses :", rawTx.secondarySignerAddresses);
+            return {
+                rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
+                senderSignature: senderSignature.bcsToHex().toString()
+            };
+        });
+
+        let response = res.then(raw => {
+            console.log(raw);
+            const privateKey = "4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26";
+            const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
+            const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
+            const sponsor = Account.generate();
+            const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
+            const aptosConfig = new AptosConfig({network: Network.MAINNET, moveModule: m});
+            const transaction = new Transaction(aptosConfig);
+            const rawTransactionHex = raw.rawTransaction;
+            const deserializer = new Deserializer(base.fromHex(rawTransactionHex));
+            const rawTransaction = RawTransaction.deserialize(deserializer);
+            const rawTxn = {
+                rawTransaction: rawTransaction,
+                feePayerAddress: AccountAddress.ZERO,
+                secondarySignerAddresses: undefined
+            };
+            const responce = transaction.simulate.simple({
+                signerPublicKey: senderAccount.publicKey,
+                transaction: rawTxn,
+                feePayerPublicKey: sponsor.publicKey,
+            });
+            return responce;
+        });
+
+        const [r] = await response;
+        console.log(r.success);
+    });
+
 });
