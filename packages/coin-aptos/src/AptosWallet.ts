@@ -371,13 +371,10 @@ export class AptosWallet extends BaseWallet {
                         },
                     }).then(rawTx => {
                         const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
-                        // console.log("senderSignature :", senderSignature.bcsToHex().toString());
-
                         const raw = {
                             rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
                             senderSignature: senderSignature.bcsToHex().toString(),
                         };
-                        // return JSON.stringify(raw);
                         return raw;
                     });
                     return res;

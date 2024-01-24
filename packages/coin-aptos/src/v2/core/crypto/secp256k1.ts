@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { sha3_256 } from "@noble/hashes/sha3";
-import { secp256k1 } from '@noble/curves/secp256k1';
+// import { secp256k1 } from '@noble/curves/secp256k1';
+import { secp256k1 } from '@okxweb3/crypto-lib';
 import { PrivateKey, PublicKey, Signature } from "./asymmetricCrypto";
 import { Deserializer, Serializer } from "../../bcs";
 import { Hex } from "../hex";
@@ -145,8 +146,10 @@ export class Secp256k1PrivateKey extends PrivateKey {
   sign(message: HexInput): Secp256k1Signature {
     const msgHex = Hex.fromHexInput(message);
     const sha3Message = sha3_256(msgHex.toUint8Array());
-    const signature = secp256k1.sign(sha3Message, this.key.toUint8Array());
-    return new Secp256k1Signature(signature.toCompactRawBytes());
+    // const signature = secp256k1.sign(sha3Message, this.key.toUint8Array());
+    // return new Secp256k1Signature(signature.toCompactRawBytes());
+    const signature = secp256k1.signSync(sha3Message, this.key.toUint8Array());
+    return new Secp256k1Signature(signature);
   }
 
   serialize(serializer: Serializer): void {
