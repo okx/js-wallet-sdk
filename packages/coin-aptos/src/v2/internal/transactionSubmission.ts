@@ -223,20 +223,6 @@ export async function simulateTransaction(
         feePayerPublicKey,
         options,
     });
-
-    // const { data } = await postAptosFullNode<Uint8Array, Array<UserTransactionResponse>>({
-    //   aptosConfig,
-    //   body: signedTransaction,
-    //   path: "transactions/simulate",
-    //   params: {
-    //     estimate_gas_unit_price: args.options?.estimateGasUnitPrice ?? false,
-    //     estimate_max_gas_amount: args.options?.estimateMaxGasAmount ?? false,
-    //     estimate_prioritized_gas_unit_price: args.options?.estimatePrioritizedGasUnitPrice ?? false,
-    //   },
-    //   originMethod: "simulateTransaction",
-    //   contentType: MimeType.BCS_SIGNED_TRANSACTION,
-    // });
-    // return data;
     return signedTransaction
 }
 
