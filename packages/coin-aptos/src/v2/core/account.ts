@@ -189,60 +189,6 @@ export class Account {
   }
 
   /**
-   * Instantiates an account given a private key and a specified account address.
-   * This is primarily used to instantiate an `Account` that has had its authentication key rotated.
-   *
-   * @param args.privateKey PrivateKey - the underlying private key for the account
-   * @param args.address AccountAddress - The account address the `Account` will sign for
-   * @param args.legacy optional. If set to false, the keypair generated is a Unified keypair. Defaults
-   * to generating a Legacy Ed25519 keypair
-   *
-   * @returns Account
-   */
-  static fromPrivateKeyAndAddress(args: {
-    privateKey: PrivateKey;
-    address: AccountAddress;
-    legacy?: boolean;
-  }): Account {
-    const { privateKey, address, legacy } = args;
-    return new Account({ privateKey, address, legacy });
-  }
-
-  /**
-   * Derives an account with bip44 path and mnemonics,
-   *
-   * @param args.scheme The signing scheme to derive with
-   * @param args.path the BIP44 derive hardened path (e.g. m/44'/637'/0'/0'/0') for Ed25519,
-   * or non-hardened path (e.g. m/44'/637'/0'/0/0) for secp256k1
-   * Detailed description: {@link https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki}
-   * @param args.mnemonic the mnemonic seed phrase of the account
-   * @param args.legacy optional. If set to false, the keypair generated is a Unified keypair. Defaults
-   * to generating a Legacy Ed25519 keypair
-   *
-   * @returns Account
-   */
-  static fromDerivationPath(args: {
-    scheme: SigningSchemeInput;
-    path: string;
-    mnemonic: string;
-    legacy?: boolean;
-  }): Account {
-    const { path, mnemonic, scheme, legacy } = args;
-    let privateKey: PrivateKey;
-    switch (scheme) {
-      case SigningSchemeInput.Secp256k1Ecdsa:
-        privateKey = Secp256k1PrivateKey.fromDerivationPath(path, mnemonic);
-        break;
-      case SigningSchemeInput.Ed25519:
-        privateKey = Ed25519PrivateKey.fromDerivationPath(path, mnemonic);
-        break;
-      default:
-        throw new Error(`Unsupported scheme ${scheme}`);
-    }
-    return Account.fromPrivateKey({ privateKey, legacy });
-  }
-
-  /**
    * This key enables account owners to rotate their private key(s)
    * associated with the account without changing the address that hosts their account.
    * See here for more info: {@link https://aptos.dev/concepts/accounts#single-signer-authentication}

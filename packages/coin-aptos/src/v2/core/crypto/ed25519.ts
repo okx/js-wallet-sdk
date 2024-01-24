@@ -7,7 +7,6 @@ import { Deserializer } from "../../bcs/deserializer";
 import { Serializer } from "../../bcs/serializer";
 import { Hex } from "../hex";
 import { HexInput } from "../../types";
-import { CKDPriv, deriveKey, HARDENED_OFFSET, isValidHardenedPath, mnemonicToSeed, splitPath } from "./hdKey";
 
 /**
  * Represents the public key of an Ed25519 key pair.
@@ -190,46 +189,6 @@ export class Ed25519PrivateKey extends PrivateKey {
   publicKey(): Ed25519PublicKey {
     const bytes = this.signingKeyPair.publicKey;
     return new Ed25519PublicKey(bytes);
-  }
-
-  /**
-   * Derives a private key from a mnemonic seed phrase.
-   *
-   * To derive multiple keys from the same phrase, change the path
-   *
-   * IMPORTANT: Ed25519 supports hardened derivation only (since it lacks a key homomorphism,
-   * so non-hardened derivation cannot work)
-   *
-   * @param path the BIP44 path
-   * @param mnemonics the mnemonic seed phrase
-   */
-  static fromDerivationPath(path: string, mnemonics: string): Ed25519PrivateKey {
-    if (!isValidHardenedPath(path)) {
-      throw new Error(`Invalid derivation path ${path}`);
-    }
-    return Ed25519PrivateKey.fromDerivationPathInner(path, mnemonicToSeed(mnemonics));
-  }
-
-  /**
-   * A private inner function so we can separate from the main fromDerivationPath() method
-   * to add tests to verify we create the keys correctly.
-   *
-   * @param path the BIP44 path
-   * @param seed the seed phrase created by the mnemonics
-   * @param offset the offset used for key derivation, defaults to 0x80000000
-   * @returns
-   */
-  private static fromDerivationPathInner(path: string, seed: Uint8Array, offset = HARDENED_OFFSET): Ed25519PrivateKey {
-    const { key, chainCode } = deriveKey(Ed25519PrivateKey.SLIP_0010_SEED, seed);
-
-    const segments = splitPath(path).map((el) => parseInt(el, 10));
-
-    // Derive the child key based on the path
-    const { key: privateKey } = segments.reduce((parentKeys, segment) => CKDPriv(parentKeys, segment + offset), {
-      key,
-      chainCode,
-    });
-    return new Ed25519PrivateKey(privateKey);
   }
 
   static isPrivateKey(privateKey: PrivateKey): privateKey is Ed25519PrivateKey {

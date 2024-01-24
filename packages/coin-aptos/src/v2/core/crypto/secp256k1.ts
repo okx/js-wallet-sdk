@@ -3,12 +3,10 @@
 
 import { sha3_256 } from "@noble/hashes/sha3";
 import { secp256k1 } from '@noble/curves/secp256k1';
-import { HDKey } from "@scure/bip32";
 import { PrivateKey, PublicKey, Signature } from "./asymmetricCrypto";
 import { Deserializer, Serializer } from "../../bcs";
 import { Hex } from "../hex";
 import { HexInput } from "../../types";
-import { isValidBIP44Path, mnemonicToSeed } from "./hdKey";
 
 /**
  * Represents the Secp256k1 ecdsa public key
@@ -188,12 +186,12 @@ export class Secp256k1PrivateKey extends PrivateKey {
    *
    * @returns The generated key
    */
-  static fromDerivationPath(path: string, mnemonics: string): Secp256k1PrivateKey {
-    if (!isValidBIP44Path(path)) {
-      throw new Error(`Invalid derivation path ${path}`);
-    }
-    return Secp256k1PrivateKey.fromDerivationPathInner(path, mnemonicToSeed(mnemonics));
-  }
+  // static fromDerivationPath(path: string, mnemonics: string): Secp256k1PrivateKey {
+  //   if (!isValidBIP44Path(path)) {
+  //     throw new Error(`Invalid derivation path ${path}`);
+  //   }
+  //   return Secp256k1PrivateKey.fromDerivationPathInner(path, mnemonicToSeed(mnemonics));
+  // }
 
   /**
    * A private inner function so we can separate from the main fromDerivationPath() method
@@ -204,15 +202,15 @@ export class Secp256k1PrivateKey extends PrivateKey {
    *
    * @returns The generated key
    */
-  private static fromDerivationPathInner(path: string, seed: Uint8Array): Secp256k1PrivateKey {
-    const { privateKey } = HDKey.fromMasterSeed(seed).derive(path);
-    // library returns privateKey as Uint8Array | null
-    if (privateKey === null) {
-      throw new Error("Invalid key");
-    }
-
-    return new Secp256k1PrivateKey(privateKey);
-  }
+  // private static fromDerivationPathInner(path: string, seed: Uint8Array): Secp256k1PrivateKey {
+  //   const { privateKey } = HDKey.fromMasterSeed(seed).derive(path);
+  //   // library returns privateKey as Uint8Array | null
+  //   if (privateKey === null) {
+  //     throw new Error("Invalid key");
+  //   }
+  //
+  //   return new Secp256k1PrivateKey(privateKey);
+  // }
 
   static isPrivateKey(privateKey: PrivateKey): privateKey is Secp256k1PrivateKey {
     return privateKey instanceof Secp256k1PrivateKey;

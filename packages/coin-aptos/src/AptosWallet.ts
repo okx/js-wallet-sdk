@@ -218,7 +218,8 @@ export class AptosWallet extends BaseWallet {
             }
             // compatible v2
             const privateKey = HexString.ensure(param.privateKey).toString();
-            const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(0, 64));
+
+            const ed25519PrivateKey = new Ed25519PrivateKey(privateKey.slice(2, 66));
             const senderAccount = Account.fromPrivateKey({privateKey: ed25519PrivateKey});
             const senderAddress = senderAccount.accountAddress;
 
@@ -326,7 +327,9 @@ export class AptosWallet extends BaseWallet {
                     const data = ap.data as AptosSimpleTransactionParam;
 
                     const network = baseParam.chainId == 1 ? Network.MAINNET : Network.TESTNET;
-                    const aptosConfig = new AptosConfig({network: network, moveModule: data.moveModule});
+                    const m = "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}"
+                    const moveModule = data.moveModule == undefined ? m : data.moveModule;
+                    const aptosConfig = new AptosConfig({network: network, moveModule: moveModule});
                     const transaction = new Transaction(aptosConfig);
 
                     if (data.signAsFeePayer) {
@@ -338,26 +341,26 @@ export class AptosWallet extends BaseWallet {
                             feePayerAddress: AccountAddress.ZERO,
                             secondarySignerAddresses: undefined
                         };
-                        // Sponsor signs
+                        // sponsor signs
                         const sponsorSignature = transaction.signAsFeePayer({
                             signer: senderAccount,
                             transaction: rawTx
                         });
 
                         const raw = {
-                            rawTransaction: rawTx.rawTransaction.bcsToHex(),
-                            sponsorSignature: sponsorSignature.bcsToHex(),
+                            rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
+                            sponsorSignature: sponsorSignature.bcsToHex().toString(),
                         };
-                        return Promise.resolve(JSON.stringify(raw));
+                        return Promise.resolve(raw);
                     }
-
+                    const functionArguments = data.functionArguments === undefined ? [data.recipientAddress, data.amount] : data.functionArguments;
                     const res = transaction.build.simple({
                         sender: senderAddress,
                         withFeePayer: data.withFeePayer,
                         data: {
                             function: data.function,
                             typeArguments: data.tyArg,
-                            functionArguments: [data.recipientAddress, data.amount],
+                            functionArguments: functionArguments,
                         },
                         options: {
                             maxGasAmount: Number(baseParam.maxGasAmount),
@@ -368,13 +371,14 @@ export class AptosWallet extends BaseWallet {
                         },
                     }).then(rawTx => {
                         const senderSignature = transaction.sign({signer: senderAccount, transaction: rawTx});
-                        console.log("senderSignature :", senderSignature.bcsToHex().toString());
+                        // console.log("senderSignature :", senderSignature.bcsToHex().toString());
 
                         const raw = {
-                            rawTransaction: rawTx.rawTransaction.bcsToHex(),
-                            senderSignature: senderSignature.bcsToHex(),
+                            rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
+                            senderSignature: senderSignature.bcsToHex().toString(),
                         };
-                        return JSON.stringify(raw);
+                        // return JSON.stringify(raw);
+                        return raw;
                     });
                     return res;
                 }

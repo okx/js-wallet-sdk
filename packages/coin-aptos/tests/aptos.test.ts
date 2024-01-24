@@ -243,6 +243,72 @@ describe("aptos", () => {
         // const expected = "8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc010000000000000002000000000000000000000000000000000000000000000000000000000000000104636f696e087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010a6170746f735f636f696e094170746f73436f696e0002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f36200000000200020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40974a2ad3312540a3b15b911e50263e50d90206563a680d455d6bc922bb9906d354a38970358ca12e5081e73d0e703227e11c8254564762abce412e5002999008"
         // expect(tx).toBe(expected)
     });
+
+    test("simple transaction sign by sender", async () => {
+        let wallet = new AptosWallet()
+        // sender
+        const param: AptosParam = {
+            type: "simple_transaction",
+            base: {
+                sequenceNumber: "1",
+                chainId: 2, // testnet
+                maxGasAmount: "10000",
+                gasUnitPrice: "100",
+                expirationTimestampSecs: "1660131587",
+            },
+            data: {
+                function: "0x1::aptos_account::transfer",
+                recipientAddress: "0x0163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd01",
+                amount: 1000,
+                withFeePayer: true,
+                // get from api, default is for 0x1::aptos_account::transfer
+                moveModule: "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}",
+                // default is [recipientAddress, amount]
+                functionArguments: ["0x0163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd01", 1000],
+            }
+        }
+        let signParams: SignTxParams = {
+            privateKey: "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc",
+            data: param
+        };
+        let tx = await wallet.signTransaction(signParams);
+        console.log(tx)
+    });
+
+    test("simple transaction sign by sponsor", async () => {
+        let wallet = new AptosWallet()
+        // sender
+        const param: AptosParam = {
+            type: "simple_transaction",
+            base: {
+                sequenceNumber: "1",
+                chainId: 2, // testnet
+                maxGasAmount: "10000",
+                gasUnitPrice: "100",
+                expirationTimestampSecs: "1660131587",
+            },
+            data: {
+                signAsFeePayer: true,
+                // get from api, default is for 0x1::aptos_account::transfer
+                moveModule: "{\"abi\":{\"address\":\"0x1\",\"name\":\"aptos_account\",\"friends\":[\"0x1::genesis\",\"0x1::resource_account\"],\"exposed_functions\":[{\"name\":\"assert_account_exists\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"assert_account_is_registered_for_apt\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"batch_transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"batch_transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"vector<address>\",\"vector<u64>\"],\"return\":[]},{\"name\":\"can_receive_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":true,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[\"bool\"]},{\"name\":\"create_account\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"address\"],\"return\":[]},{\"name\":\"deposit_coins\",\"visibility\":\"public\",\"is_entry\":false,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"address\",\"0x1::coin::Coin<T0>\"],\"return\":[]},{\"name\":\"set_allow_direct_coin_transfers\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"bool\"],\"return\":[]},{\"name\":\"transfer\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]},{\"name\":\"transfer_coins\",\"visibility\":\"public\",\"is_entry\":true,\"is_view\":false,\"generic_type_params\":[{\"constraints\":[]}],\"params\":[\"&signer\",\"address\",\"u64\"],\"return\":[]}],\"structs\":[{\"name\":\"DirectCoinTransferConfigUpdatedEvent\",\"is_native\":false,\"abilities\":[\"drop\",\"store\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"new_allow_direct_transfers\",\"type\":\"bool\"}]},{\"name\":\"DirectTransferConfig\",\"is_native\":false,\"abilities\":[\"key\"],\"generic_type_params\":[],\"fields\":[{\"name\":\"allow_arbitrary_coin_transfers\",\"type\":\"bool\"},{\"name\":\"update_coin_transfer_events\",\"type\":\"0x1::event::EventHandle<0x1::aptos_account::DirectCoinTransferConfigUpdatedEvent>\"}]}]}}",
+                // get this after sender signed
+                rawTransaction: "0x8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc01000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f3620000000002",
+            }
+        }
+        let signParams: SignTxParams = {
+            privateKey: "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc",
+            data: param
+        };
+        let tx = await wallet.signTransaction(signParams);
+        // rawTransaction: 0x8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc01000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f3620000000002
+        // sponsorSignature: 0x0020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40e2a8e2eac7d4850cd0e92800e3e86a939ae9a65c4df95c8e66ef78752475da147127eed4b5d528be2d1dc7f93b289e0b7b937ab9a01614404b844caa3c12560d
+        console.log(tx)
+
+        // tx to submit as follows
+        // rawTransaction: 0x8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc01000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd0108e803000000000000102700000000000064000000000000000399f3620000000002
+        // sponsorSignature: 0x0020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40e2a8e2eac7d4850cd0e92800e3e86a939ae9a65c4df95c8e66ef78752475da147127eed4b5d528be2d1dc7f93b289e0b7b937ab9a01614404b844caa3c12560d
+        // senderSignature: 0x0020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc408835f524faf4d4c66d114e83cf018dbbfbbc82b62ddc555faaec156a7c638c4e5bd7e7c96fc9c5754a981f8574940b6ecdac5a7ccaffb6203cf7b5ef8af9d108
+    });
 });
 
 describe("v2", () => {
