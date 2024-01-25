@@ -128,7 +128,9 @@ export class SolWallet extends BaseWallet {
                 return Promise.reject(SignTxError);
             }
             if (!param.privateKey) {
-                return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures: false})));
+                // return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures: false})));
+                const rawTx = rawTransaction._compile().serialize();
+                return Promise.resolve(base.toHex(rawTx));
             }
             const result = await api.signTransaction(rawTransaction, param.privateKey)
             return Promise.resolve(result);
