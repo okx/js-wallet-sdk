@@ -42,6 +42,7 @@ export enum Currency {
     Kaspa = 111111,
     TON = 607,
     Venom = 1000000,
+    NostrAssets = 1237,
 }
 
 export enum segwitType {
@@ -83,7 +84,6 @@ export const CoinCurveMap = new Map<Currency, string>([
     [Currency.Stargaze, secp256k1],
     [Currency.Terra, secp256k1],
     [Currency.SEI, secp256k1],
-    [Currency.INJ, secp256k1],
     [Currency.Celestia, secp256k1],
     [Currency.DYDX, secp256k1],
 

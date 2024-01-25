@@ -7,112 +7,120 @@ export type AccountName = string
 export type Asset = string
 
 export type CommonParam = {
-  chainId?: string
-  privateKey?: string[]
-  compression: boolean
-  refBlockNumber: number
-  refBlockId: string
-  refBlockTimestamp: string
-  expireSeconds: number
+    chainId?: string
+    privateKey?: string[]
+    compression: boolean
+    refBlockNumber: number
+    refBlockId: string
+    refBlockTimestamp: string
+    expireSeconds: number
 }
 
 export type CreateAccountParam = {
-  common: CommonParam,
-  creator: AccountName
-  newAccount: AccountName
-  pubKey: string
-  buyRam: BuyRAMParam
-  delegate: DelegateParam
+    common: CommonParam,
+    creator: AccountName
+    newAccount: AccountName
+    pubKey: string
+    buyRam: BuyRAMParam
+    delegate: DelegateParam
 }
 
 export type BuyRAMParam = {
-  payer: AccountName
-  receiver: AccountName
-  quantity: Asset
+    payer: AccountName
+    receiver: AccountName
+    quantity: Asset
 }
 
 export type DelegateParam = {
-  from: AccountName
-  receiver: AccountName
-  stakeNet: Asset
-  stakeCPU: Asset
-  transfer: boolean
+    from: AccountName
+    receiver: AccountName
+    stakeNet: Asset
+    stakeCPU: Asset
+    transfer: boolean
 }
 
 export type TransferParam = {
-  from: string
-  to: string
-  amount: string
-  memo: string
-  common: CommonParam
+    from: string
+    to: string
+    amount: string
+    memo: string
+    common: CommonParam
+    contract?: string
 }
 
 export function toAssetString(amount: number, precision: number, symbol: string) {
-  return (amount / Math.pow(10, precision)).toFixed(precision) + " " + symbol
+    return (amount / Math.pow(10, precision)).toFixed(precision) + " " + symbol
 }
 
 export function NewAccountAction(creator: AccountName, newAccount: AccountName, pubKey: string) {
-  const auth = {
-    threshold: 1,
-    keys: [{
-      key: pubKey,
-      weight: 1
-    }],
-    accounts: [],
-    waits: []
-  }
-
-  return {
-    account: 'eosio',
-    name: 'newaccount',
-    authorization: [{ actor: creator, permission: 'active' }],
-    data: {
-      creator: creator,
-      name: newAccount,
-      owner: auth,
-      active: auth,
+    const auth = {
+        threshold: 1,
+        keys: [{
+            key: pubKey,
+            weight: 1
+        }],
+        accounts: [],
+        waits: []
     }
-  }
+
+    return {
+        account: 'eosio',
+        name: 'newaccount',
+        authorization: [{actor: creator, permission: 'active'}],
+        data: {
+            creator: creator,
+            name: newAccount,
+            owner: auth,
+            active: auth,
+        }
+    }
 }
 
 export function delegateAction(param: DelegateParam) {
-  return {
-    account: 'eosio',
-    name: 'delegatebw',
-    authorization: [{ actor: param.from, permission: 'active' }],
-    data: {
-      from: param.from,
-      receiver: param.receiver,
-      stake_net_quantity: param.stakeNet,
-      stake_cpu_quantity: param.stakeCPU,
-      transfer: param.transfer
+    return {
+        account: 'eosio',
+        name: 'delegatebw',
+        authorization: [{actor: param.from, permission: 'active'}],
+        data: {
+            from: param.from,
+            receiver: param.receiver,
+            stake_net_quantity: param.stakeNet,
+            stake_cpu_quantity: param.stakeCPU,
+            transfer: param.transfer
+        }
     }
-  }
 }
 
 export function buyRamAction(param: BuyRAMParam) {
-  return {
-    account: 'eosio',
-    name: 'buyram',
-    authorization: [{ actor: param.payer, permission: 'active' }],
-    data: {
-      payer: param.payer,
-      receiver: param.receiver,
-      quant: param.quantity
+    return {
+        account: 'eosio',
+        name: 'buyram',
+        authorization: [{actor: param.payer, permission: 'active'}],
+        data: {
+            payer: param.payer,
+            receiver: param.receiver,
+            quant: param.quantity
+        }
     }
-  }
 }
 
 export function transferAction(param: TransferParam) {
-  return {
-    account: 'eosio.token',
-    name: 'transfer',
-    authorization: [{ actor: param.from, permission: 'active' }],
-    data: {
-      from: param.from,
-      to: param.to,
-      quantity: param.amount,
-      memo: param.memo,
-    },
-  }
+    let account: string = 'eosio.token';
+    if (param.contract) {
+        account = param.contract;
+    } else {
+        account = 'eosio.token';
+    }
+    return {
+        //account: 'eosio.token',
+        account: account,
+        name: 'transfer',
+        authorization: [{actor: param.from, permission: 'active'}],
+        data: {
+            from: param.from,
+            to: param.to,
+            quantity: param.amount,
+            memo: param.memo,
+        },
+    }
 }

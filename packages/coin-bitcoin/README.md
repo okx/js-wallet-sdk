@@ -93,11 +93,12 @@ import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
 let wallet = new BtcWallet()
 let params5 = {
-  privateKey: "L22jGDH5pKE4WHb2m9r2MdiWTtGarDhTYRqMrntsjD5uCq5z9ahY",
-  addressType: "segwit_taproot",
+    publicKey: "03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045",
+    addressType: "segwit_taproot",
 }
 let address5 = await wallet.getAddressByPublicKey(params5);
 ```
+
 
 ### Sign Transaction
 sign transaction
@@ -169,6 +170,76 @@ let signParams: SignTxParams = {
   data: btcTxParams
 };
 let tx = await wallet.signTransaction(signParams);
+```
+
+Doginals inscribe
+```typescript
+import { DogeWallet } from "@okxweb3/coin-bitcoin";
+
+let wallet = new DogeWallet()
+let privateKey = "QV3XGHS28fExYMnEsoXrzRr7bjQbCH1qRPfPCMLBKhniWF4uFEcs"
+const commitTxPrevOutputList: PrevOutput[] = [];
+commitTxPrevOutputList.push({
+    txId: "adc5edd2a536c92fed35b3d75cbdbc9f11212fe3aa6b55c0ac88c289ba7c4fae",
+    vOut: 2,
+    amount: 317250000,
+    address: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+    privateKey: privateKey,
+});
+const inscriptionData: InscriptionData = {
+    contentType: "text/plain;charset=utf8",
+    body: base.fromHex(base.toHex(Buffer.from('{"p":"drc-20","op":"mint","tick":"tril","amt":"100"}'))),
+    revealAddr: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+};
+
+const request = {
+    type: 1,
+    commitTxPrevOutputList,
+    commitFeeRate: 100000,
+    revealFeeRate: 100000,
+    revealOutValue: 100000,
+    inscriptionData,
+    changeAddress: "DFuDR3Vn22KMnrnVCxh6YavMAJP8TCPeA2",
+};
+let result = await wallet.signTransaction({privateKey: privateKey, data: request})
+console.log(result);
+```
+
+SRC20 inscribe
+
+    you need replace TBtcWallet with BtcWallet when you run on mainnet not testnet.
+```typescript
+import { TBtcWallet } from "@okxweb3/coin-bitcoin";
+ let wallet = new TBtcWallet()
+
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+
+        const commitTxPrevOutputList: PrevOutput[] = [];
+        commitTxPrevOutputList.push({
+            txId: "c865cd4dc206ccdaf1cff0fad4f0272f2075af5c975c670debbf8d56045391ad",
+            vOut: 3,
+            amount: 202000,
+            address: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+            privateKey: privateKey,
+        });
+        const inscriptionData: InscriptionData = {
+            contentType: "stamp:",
+            body: '{"p":"src-20","op":"deploy","tick":"coder","max":"21000000","lim":"1000","dec":"8"}',
+            revealAddr: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+        }
+
+        const request = {
+            commitTxPrevOutputList,
+            commitFeeRate: 100,
+            revealOutValue: 790,
+            inscriptionData,
+            changeAddress: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+            type: 101,
+        };
+
+        const txs: InscribeTxs =await wallet.signTransaction({privateKey: privateKey, data: request});
+        console.log(JSON.stringify(txs));
 ```
 
 ## License: MIT

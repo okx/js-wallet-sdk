@@ -1,17 +1,28 @@
-import { base, BN } from '@okxweb3/crypto-lib';
+import {base, BN} from '@okxweb3/crypto-lib';
 import {
+    addressFromPrivate,
     assetTransfer,
+    signMessage,
+    signMessage2,
     toHexAddress,
     tokenTransfer,
     transfer,
+    TrxWallet,
     validateAddress,
-    addressFromPrivate,
-    signMessage,
-    signMessage2,
 } from '../src';
+import {NewAddressParams, SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
 
 describe("address", () => {
     test("getNewAddress", async () => {
+        let wallet = new TrxWallet()
+        let privateKey = await wallet.getRandomPrivateKey();
+        let params: NewAddressParams = {
+            privateKey: privateKey
+        };
+        let address = await wallet.getNewAddress(params);
+        console.info("address", address)
+
+
         const p = addressFromPrivate("bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a");
         console.info(p)
 
@@ -45,8 +56,8 @@ describe("address", () => {
         const timeStamp = Date.parse(new Date().toString())
         const t = transfer({
             fromAddress: "TGXQHj3fXhEtCmooRgGemCZyHBEQAv6ct8",
-            refBlockBytes: base.toHex(refBlockBytes.slice(6,8)),
-            refBlockHash: base.toHex(latestBlockHash.slice(8,16)),
+            refBlockBytes: base.toHex(refBlockBytes.slice(6, 8)),
+            refBlockHash: base.toHex(latestBlockHash.slice(8, 16)),
             expiration: timeStamp + 3600 * 1000,
             timeStamp: timeStamp,
             toAddress: "TTczxNWoJJ8mZjj9w2eegiSZqTCTfhjd4g",
@@ -64,8 +75,8 @@ describe("address", () => {
         const timeStamp = Date.parse(new Date().toString())
         const t = assetTransfer({
             fromAddress: "TGXQHj3fXhEtCmooRgGemCZyHBEQAv6ct8",
-            refBlockBytes: base.toHex(refBlockBytes.slice(6,8)),
-            refBlockHash: base.toHex(latestBlockHash.slice(8,16)),
+            refBlockBytes: base.toHex(refBlockBytes.slice(6, 8)),
+            refBlockHash: base.toHex(latestBlockHash.slice(8, 16)),
             expiration: timeStamp + 3600 * 1000,
             timeStamp: timeStamp,
             feeLimit: 0,
@@ -84,8 +95,8 @@ describe("address", () => {
         const timeStamp = Date.parse(new Date().toString())
         const t = tokenTransfer({
             fromAddress: "TGXQHj3fXhEtCmooRgGemCZyHBEQAv6ct8",
-            refBlockBytes: base.toHex(refBlockBytes.slice(6,8)),
-            refBlockHash: base.toHex(latestBlockHash.slice(8,16)),
+            refBlockBytes: base.toHex(refBlockBytes.slice(6, 8)),
+            refBlockHash: base.toHex(latestBlockHash.slice(8, 16)),
             expiration: timeStamp + 3600 * 1000,
             timeStamp: timeStamp,
             // This must be specified, otherwise the energy is not enough error
@@ -112,29 +123,29 @@ describe("address", () => {
         console.info(t3)
 
         const message2 = "{\n" +
-          "    \"visible\": false,\n" +
-          "    \"txID\": \"85382e27667e7ce5d0b193796df4309744ffed4c2d74ffef8c83002b1765bd67\",\n" +
-          "    \"raw_data\": {\n" +
-          "        \"contract\": [\n" +
-          "            {\n" +
-          "                \"parameter\": {\n" +
-          "                    \"value\": {\n" +
-          "                        \"owner_address\": \"41e0a8eda2daea867c1d783faf73c8a1ed66cf8150\",\n" +
-          "                        \"contract_address\": \"41955abb8287358c929c7d371a8d034c51426743b8\",\n" +
-          "                        \"call_value\": 10000000\n" +
-          "                    },\n" +
-          "                    \"type_url\": \"type.googleapis.com/protocol.TriggerSmartContract\"\n" +
-          "                },\n" +
-          "                \"type\": \"TriggerSmartContract\"\n" +
-          "            }\n" +
-          "        ],\n" +
-          "        \"ref_block_bytes\": \"c5cf\",\n" +
-          "        \"ref_block_hash\": \"3d4eff77c6899365\",\n" +
-          "        \"expiration\": 1667376162000,\n" +
-          "        \"timestamp\": 1667376104546\n" +
-          "    },\n" +
-          "    \"raw_data_hex\": \"0a02c5cf22083d4eff77c689936540d0c9f4bac3305a6c081f12680a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412330a1541e0a8eda2daea867c1d783faf73c8a1ed66cf8150121541955abb8287358c929c7d371a8d034c51426743b81880ade20470e288f1bac330\"\n" +
-          "}"
+            "    \"visible\": false,\n" +
+            "    \"txID\": \"85382e27667e7ce5d0b193796df4309744ffed4c2d74ffef8c83002b1765bd67\",\n" +
+            "    \"raw_data\": {\n" +
+            "        \"contract\": [\n" +
+            "            {\n" +
+            "                \"parameter\": {\n" +
+            "                    \"value\": {\n" +
+            "                        \"owner_address\": \"41e0a8eda2daea867c1d783faf73c8a1ed66cf8150\",\n" +
+            "                        \"contract_address\": \"41955abb8287358c929c7d371a8d034c51426743b8\",\n" +
+            "                        \"call_value\": 10000000\n" +
+            "                    },\n" +
+            "                    \"type_url\": \"type.googleapis.com/protocol.TriggerSmartContract\"\n" +
+            "                },\n" +
+            "                \"type\": \"TriggerSmartContract\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"ref_block_bytes\": \"c5cf\",\n" +
+            "        \"ref_block_hash\": \"3d4eff77c6899365\",\n" +
+            "        \"expiration\": 1667376162000,\n" +
+            "        \"timestamp\": 1667376104546\n" +
+            "    },\n" +
+            "    \"raw_data_hex\": \"0a02c5cf22083d4eff77c689936540d0c9f4bac3305a6c081f12680a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412330a1541e0a8eda2daea867c1d783faf73c8a1ed66cf8150121541955abb8287358c929c7d371a8d034c51426743b81880ade20470e288f1bac330\"\n" +
+            "}"
         const t2 = signMessage("legacy", message2, priKey)
 
         // {
@@ -169,4 +180,38 @@ describe("address", () => {
         const t4 = signMessage2(message2, priKey)
         console.info(t4)
     });
+})
+
+
+describe("sign message", () => {
+
+    test("sign hex message test ", async () => {
+        let wallet = new TrxWallet()
+        let privateKey = await wallet.getRandomPrivateKey();
+        let params: NewAddressParams = {
+            privateKey: privateKey
+        };
+        let address = await wallet.getNewAddress(params);
+
+        let data = {
+            type: "hex",
+            message: "0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0"
+        };
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: data
+        };
+        let result = await wallet.signMessage(signParams);
+        console.info(result)
+
+        let verifyMessageParams: VerifyMessageParams = {
+            signature: result,
+            data: data,
+            address: address.address
+        };
+        let verify = await wallet.verifyMessage(verifyMessageParams);
+        console.info(verify)
+    })
+
+
 })

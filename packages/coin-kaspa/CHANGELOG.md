@@ -15,3 +15,8 @@ All notable changes to this project will be documented in this file.
 
 - **coin-kaspa:** fix address validate ([26](https://github.com/okx/js-wallet-sdk/pull/26))
 
+# [1.0.3](https://github.com/okx/js-wallet-sdk) (2023-12-05)
+
+### Feature
+
+- **coin-kaspa:** add transfer, sign message ([40](https://github.com/okx/js-wallet-sdk/pull/40))
