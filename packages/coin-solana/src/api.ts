@@ -10,6 +10,7 @@ import {
     Transaction,
 } from './sdk/web3';
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "./sdk/metaplex";
+import {base58} from "@okxweb3/crypto-lib/dist/base";
 
 export function getNewAddress(privateKey: string): string {
     const publicKey = signUtil.ed25519.publicKeyCreate(base.fromBase58(privateKey))
@@ -48,17 +49,17 @@ export async function signTransaction(rawTransaction: web3.Transaction, ...priva
 export async function appendTransferInstruction(transaction: web3.Transaction, fromAddress: string, toAddress: string, amount: number) {
     transaction.add(
         web3.SystemProgram.transfer({
-        fromPubkey: new web3.PublicKey(fromAddress),
-        toPubkey: new web3.PublicKey(toAddress),
-        lamports: amount,
-    }))
+            fromPubkey: new web3.PublicKey(fromAddress),
+            toPubkey: new web3.PublicKey(toAddress),
+            lamports: amount,
+        }))
 }
 
 export async function appendTokenTransferInstruction(transaction: web3.Transaction, fromAddress: string, toAddress: string, mintAddress: string, amount: number, createAssociatedAddress: boolean) {
     const fromAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mintAddress), new web3.PublicKey(fromAddress))
     const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mintAddress), new web3.PublicKey(toAddress))
 
-    if(createAssociatedAddress){
+    if (createAssociatedAddress) {
         transaction.add(
             spl.createAssociatedTokenAccountInstruction(
                 new web3.PublicKey(fromAddress),
@@ -193,12 +194,12 @@ export async function signMplTransaction(payer: string, from: string, to: string
 }
 
 export function validSignedTransaction(tx: string, version: boolean, skipCheckSig: boolean) {
-    if(version) {
+    if (version) {
         const transaction = VersionedTransaction.deserialize(base.fromBase58(tx))
         const signature = transaction.signature!
         const hash = transaction.message.serialize()
         const publicKey = transaction.message.getAccountKeys().get(0)?.toBytes()!
-        if(!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
+        if (!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
             throw Error("signature error")
         }
         return transaction;
@@ -208,13 +209,16 @@ export function validSignedTransaction(tx: string, version: boolean, skipCheckSi
     const signature = transaction.signature!
     const hash = transaction.serializeMessage()
     const publicKey = transaction.feePayer!.toBytes()
-    if(!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
-         throw Error("signature error")
+    if (!skipCheckSig && !signUtil.ed25519.verify(hash, signature, publicKey)) {
+        throw Error("signature error")
     }
     return transaction;
 }
 
 export function getMPCTransaction(raw: string, sig: string, publicKey: string): Promise<string> {
+    if (base.isHexString("0x" + publicKey)) {
+        publicKey = base58.encode(base.fromHex(publicKey));
+    }
     let tx = web3.Transaction.from(base.fromHex(raw))
     tx.addSignature(new PublicKey(publicKey), base.fromHex(sig))
     return Promise.resolve(base.toBase58(tx.serialize()))

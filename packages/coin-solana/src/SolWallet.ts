@@ -128,9 +128,9 @@ export class SolWallet extends BaseWallet {
                 return Promise.reject(SignTxError);
             }
             if (!param.privateKey) {
-                // return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures: false})));
-                const rawTx = rawTransaction._compile().serialize();
-                return Promise.resolve(base.toHex(rawTx));
+                const raw = base.toHex(rawTransaction.serialize({verifySignatures: false}));
+                const hash = base.toHex(rawTransaction.serializeMessage());
+                return Promise.resolve({raw: raw, hash: hash});
             }
             const result = await api.signTransaction(rawTransaction, param.privateKey)
             return Promise.resolve(result);
@@ -173,8 +173,8 @@ export class SolWallet extends BaseWallet {
 
     async getMPCRawTransaction(param: MpcRawTransactionParam): Promise<any> {
         try {
-            const rawTransaction = await this.signTransaction(param as SignTxParams);
-            return Promise.resolve({raw: rawTransaction, hash: rawTransaction});
+            const {raw, hash} = await this.signTransaction(param as SignTxParams);
+            return Promise.resolve({raw: raw, hash: hash});
         } catch (e) {
             return Promise.reject(e);
         }
