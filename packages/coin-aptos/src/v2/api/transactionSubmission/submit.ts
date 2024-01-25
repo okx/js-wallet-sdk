@@ -3,7 +3,6 @@
 
 import {submitTransaction} from "../../internal/transactionSubmission";
 import {AccountAuthenticator, AnyRawTransaction} from "../../transactions";
-import {PendingTransactionResponse} from "../../types";
 import {AptosConfig} from "../aptosConfig";
 import {ValidateFeePayerDataOnSubmission} from "./helpers";
 

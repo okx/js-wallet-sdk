@@ -383,6 +383,12 @@ describe("v2", () => {
         console.log("raw feePayerAddress :", raw.feePayerAddress?.toString());
         console.log("raw secondarySignerAddresses :", raw.secondarySignerAddresses);
         console.log("sponsorAddress :", sponsorAddress.toString());
+        const signedTx = await transaction.submit.simple({
+            transaction: raw,
+            senderAuthenticator: sponsorSignature,
+            feePayerAuthenticator: sponsorSignature
+        });
+        console.log("signedTx :", base.toHex(signedTx));
     });
 
     test("simulate sign for simple_sponsor_transaction", async () => {

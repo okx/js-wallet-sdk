@@ -18,6 +18,7 @@ import {
 import {Account, PrivateKey} from "../core";
 import {Build} from "./transactionSubmission/build";
 import {Simulate} from "./transactionSubmission/simulate";
+import {Submit} from "./transactionSubmission/submit";
 
 export class Transaction {
     readonly config: AptosConfig;
@@ -26,11 +27,13 @@ export class Transaction {
 
     readonly simulate: Simulate;
 
+    readonly submit: Submit;
 
     constructor(config: AptosConfig) {
         this.config = config;
         this.build = new Build(this.config);
         this.simulate = new Simulate(this.config);
+        this.submit = new Submit(this.config);
     }
 
     /**
