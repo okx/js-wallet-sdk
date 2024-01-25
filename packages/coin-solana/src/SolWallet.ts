@@ -23,7 +23,7 @@ import {
     SignTxError,
     validSignedTransactionError, GetAddressParams,
 } from '@okxweb3/coin-base';
-import { base } from '@okxweb3/crypto-lib';
+import {base} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
 
 export type TransactionType = "transfer" | "tokenTransfer" | "mplTransfer"
@@ -47,7 +47,7 @@ export class SolWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-           return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
+            return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -69,7 +69,7 @@ export class SolWallet extends BaseWallet {
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            if(!this.checkPrivateKey(param.privateKey)) {
+            if (!this.checkPrivateKey(param.privateKey)) {
                 return Promise.reject(NewAddressError)
             }
             const address = api.getNewAddress(param.privateKey)
@@ -127,8 +127,8 @@ export class SolWallet extends BaseWallet {
             } else {
                 return Promise.reject(SignTxError);
             }
-            if(!param.privateKey) {
-                return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures:false})));
+            if (!param.privateKey) {
+                return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures: false})));
             }
             const result = await api.signTransaction(rawTransaction, param.privateKey)
             return Promise.resolve(result);
@@ -171,10 +171,8 @@ export class SolWallet extends BaseWallet {
 
     async getMPCRawTransaction(param: MpcRawTransactionParam): Promise<any> {
         try {
-            const mpcRaw = await this.signTransaction(param as SignTxParams);
-            // return Promise.resolve({ hash: mpcRaw });
-            // return Promise.resolve({ mpcRaw });
-            return Promise.resolve({ hash: mpcRaw });
+            const rawTransaction = await this.signTransaction(param as SignTxParams);
+            return Promise.resolve({raw: rawTransaction, hash: rawTransaction});
         } catch (e) {
             return Promise.reject(e);
         }
@@ -208,11 +206,11 @@ export class SolWallet extends BaseWallet {
 
     async validSignedTransaction(param: ValidSignedTransactionParams): Promise<any> {
         try {
-            const version = param.data? param.data.version : undefined
+            const version = param.data ? param.data.version : undefined
             const skipCheckSign = param.data ? param.data.skipCheckSign : undefined
             const ret = api.validSignedTransaction(param.tx, version || false, skipCheckSign || false)
             return Promise.resolve(jsonStringifyUniform(ret));
-        }  catch (e) {
+        } catch (e) {
             return Promise.reject(validSignedTransactionError);
         }
     }
