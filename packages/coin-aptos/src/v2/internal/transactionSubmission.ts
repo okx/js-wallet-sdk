@@ -317,3 +317,20 @@ export async function rotateAuthKey(args: {
     });
     return pendingTxn;
 }
+
+/**
+ * Submit transaction to chain
+ *
+ * @param args.transaction A aptos transaction type
+ * @param args.senderAuthenticator The account authenticator of the transaction sender
+ * @param args.secondarySignerAuthenticators optional. For when the transaction is a multi signers transaction
+ *
+ * @return PendingTransactionResponse
+ */
+export async function submitTransaction(
+    args: {
+        aptosConfig: AptosConfig;
+    } & InputSubmitTransactionData,
+): Promise<any> {
+    return generateSignedTransaction({...args});
+}
