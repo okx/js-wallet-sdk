@@ -10,10 +10,15 @@ To obtain the latest version, simply require the project using npm :
 ```shell
 npm install @okxweb3/coin-ton
 ```
+## What Can Ton SDK Do
+```typescript
+- getNewAddress
+- validAddress
+- getDerivedPrivateKey 
+- signTransaction
+```
 
-## Usage
-
-### TON
+## Usage TON SDK
 
 #### Generate address
 
