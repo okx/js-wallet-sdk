@@ -11,7 +11,8 @@ import {
     ValidateBitcashP2PkHAddress,
     ValidSignedTransaction,
     message,
-    DogeWallet
+    DogeWallet,
+    LtcWallet
 } from '../src';
 
 import {base} from "@okxweb3/crypto-lib";
@@ -31,7 +32,7 @@ describe("bitcoin", () => {
         let signParams: SignTxParams = {
             privateKey: "KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",
             data: {
-                type:0,
+                type: 0,
                 address: "bc1pgj0j68yvfn2mpzdxmm05u6768gndx67fw04kdvzsu62a9e2rglassppdj9",
                 message: "hello world!",
             }
@@ -43,7 +44,7 @@ describe("bitcoin", () => {
             signature: res,
             data: {
                 message: "hello world!",
-                type:0,
+                type: 0,
                 publicKey: '03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045',
             }
         };
@@ -295,6 +296,32 @@ describe("Doge wallet", () => {
             data: {
                 message: "hello world!",
                 publicKey: '020834928459fa93692af94c290d2a6c9e8ac0f63ddda8cdf982efa1483e9bcebd',
+            }
+        };
+        let veryfied = await wallet.verifyMessage(veryParams)
+        console.log(veryfied)
+        expect(veryfied).toBe(true)
+    })
+})
+
+describe("Ltc wallet", () => {
+    test("signMessage", async () => {
+        let wallet = new LtcWallet()
+        let signParams: SignTxParams = {
+            privateKey: "T5hYkW3UzvxDNRmkp4sjLaCpkKwASgJLAEwzPLAxWpuHqBKfpirB",
+            data: {
+                "address": "LaB7HeTLsyQ6kxM5RsEx9tk8XHQs3GkWDr",
+                message: "hello world!",
+            }
+        };
+        let res = await wallet.signMessage(signParams)
+        console.log(res)
+        expect(res).toEqual('IHd+MKPXIAR5iyrU+66gYY6f9y2vbKoNAJXA8UDiJItbQ2l2xJ18AjtyjfMcFMQezGoH/D3sPHQSvwyd1S1Gejk=')
+        let veryParams: VerifyMessageParams = {
+            signature: res,
+            data: {
+                message: "hello world!",
+                publicKey: '03314664db7b06040c0be46a2c7bd3a197e3c55aa4ad95ae1684e3f8bf3abfa3d6',
             }
         };
         let veryfied = await wallet.verifyMessage(veryParams)
