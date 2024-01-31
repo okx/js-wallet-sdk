@@ -1,27 +1,27 @@
-import { TonWallet, VenomWallet } from "../src";
+import {TonWallet, VenomWallet} from "../src";
 
 const tonWallet = new TonWallet();
 const venomWallet = new VenomWallet();
 
 describe("toncoin venom", () => {
     test("derive seed", async () => {
-        let mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
-        let param = {
+        const mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
+        const param = {
             mnemonic: mnemonic,
-            hdPath: await tonWallet.getDerivedPath({index:100})
+            hdPath: await tonWallet.getDerivedPath({index: 100})
         };
-        let privateKey = await tonWallet.getDerivedPrivateKey(param);
-        console.info(privateKey);
+        const privateKey = await tonWallet.getDerivedPrivateKey(param);
+        expect(privateKey).toBe("4571b321d46b0900d010072a8c450abe8ddcfc04a55e556d56b152d2d9c0d2df");
     });
 
     test("ton getNewAddress", async () => {
         const seed = "fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8";
-        const result = await tonWallet.getNewAddress({ privateKey: seed });
+        const result = await tonWallet.getNewAddress({privateKey: seed});
         expect(result.address).toBe("EQA3_JIJKDC0qauDUEQe2KjQj1iLwQRtrEREzmfDxbCKw9Kr");
     });
 
     test("ton validateAddress", async () => {
-        const result = await tonWallet.validAddress({ address: "EQA3_JIJKDC0qauDUEQe2KjQj1iLwQRtrEREzmfDxbCKw9Kr" });
+        const result = await tonWallet.validAddress({address: "EQA3_JIJKDC0qauDUEQe2KjQj1iLwQRtrEREzmfDxbCKw9Kr"});
         expect(result.isValid).toBe(true);
     });
 
@@ -42,12 +42,12 @@ describe("toncoin venom", () => {
 
     test("venom getNewAddress", async () => {
         const seed = "fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8";
-        const result = await venomWallet.getNewAddress({ privateKey: seed });
+        const result = await venomWallet.getNewAddress({privateKey: seed});
         expect(result.address).toBe("0:6bef7d76e46fd1f308f0bf0b59f1ca6318aa6d950ea00aecc7d162218acaaa36");
     });
 
     test("venom validateAddress", async () => {
-        const result = await venomWallet.validAddress({ address: "0:6bef7d76e46fd1f308f0bf0b59f1ca6318aa6d950ea00aecc7d162218acaaa36" });
+        const result = await venomWallet.validAddress({address: "0:6bef7d76e46fd1f308f0bf0b59f1ca6318aa6d950ea00aecc7d162218acaaa36"});
         expect(result.isValid).toBe(true);
     });
 
