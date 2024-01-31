@@ -5,11 +5,13 @@ const venomWallet = new VenomWallet();
 
 describe("toncoin venom", () => {
     test("derive seed", async () => {
-        const seed = await tonWallet.getDerivedPrivateKey({
-            mnemonic: "",
-            hdPath: "m/44'/607'/0'/0'/0'",
-        });
-        console.log(seed);
+        let mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
+        let param = {
+            mnemonic: mnemonic,
+            hdPath: await tonWallet.getDerivedPath({index:100})
+        };
+        let privateKey = await tonWallet.getDerivedPrivateKey(param);
+        console.info(privateKey);
     });
 
     test("ton getNewAddress", async () => {

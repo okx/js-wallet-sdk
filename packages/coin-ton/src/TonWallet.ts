@@ -10,7 +10,7 @@ import {
     ValidAddressParams,
     ValidAddressData,
     SignTxParams,
-    SignTxError,
+    SignTxError, GetDerivedPathParam,
 } from "@okxweb3/coin-base";
 import {
     getAddressBySeed,
@@ -21,6 +21,10 @@ import {
 import { TxData, transfer, venomTransfer } from "./transaction";
 
 export class TonWallet extends BaseWallet {
+
+    async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
+        return `m/44'/605'/0'/0'/${param.index}'`;
+    }
     async getRandomPrivateKey(): Promise<any> {
         try {
             return Promise.resolve(ed25519_getRandomPrivateKey(false, "hex"));
