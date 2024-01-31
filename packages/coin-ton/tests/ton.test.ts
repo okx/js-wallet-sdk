@@ -4,7 +4,7 @@ const tonWallet = new TonWallet();
 const venomWallet = new VenomWallet();
 
 describe("toncoin venom", () => {
-    test("derive seed", async () => {
+    test("derive private key", async () => {
         const mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
         const param = {
             mnemonic: mnemonic,
