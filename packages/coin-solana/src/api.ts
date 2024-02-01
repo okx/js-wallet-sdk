@@ -88,12 +88,12 @@ export async function signMessage(message: string, privateKey: string): Promise<
             return base.toHex(signData!);
         }
     }
-    const signature = signUtil.ed25519.sign(signData!, base.fromBase58(privateKey))
-    return Promise.resolve(base.toBase58(signature))
+    const signature = signUtil.ed25519.sign(signData!, base.fromBase58(privateKey));
+    return Promise.resolve(base.toBase58(signature));
 }
 
-export function verifyMessageSignature(publicKey: string, message: string, signature: string): boolean {
-    return signUtil.ed25519.verify(Buffer.from(message), base.fromHex(signature), base.fromHex(publicKey));
+export function verifyMessageSignature(publicKey: string, messageHash: string, signature: string): boolean {
+    return signUtil.ed25519.verify(base.fromHex(messageHash), base.fromHex(signature), base.fromHex(publicKey));
 }
 
 export async function getHardwareTransaction(raw: string, pubKey: string, sig: string): Promise<string> {

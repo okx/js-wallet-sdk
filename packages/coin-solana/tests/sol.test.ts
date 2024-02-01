@@ -1,7 +1,7 @@
 import {web3, spl, api, SolWallet} from "../src"
 import {PublicKey} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
-import {base} from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import {ed25519_getRandomPrivateKey} from "@okxweb3/coin-base";
 import assert from "assert";
 
@@ -160,16 +160,28 @@ describe("address", () => {
         expect(sig).toBe("3tAYphHJVGnmTqUmnhLqJmZ1XMqksf3kc5RfqxyADzqYHmknaPW6QmDLhhkWfM1XsxW7DJchxCYXz4p3kbatWqE");
     });
 
-    test("verifyMessage", async () => {
-        let wallet = new SolWallet()
+    test("signMessage", async () => {
+        const wallet = new SolWallet()
+        const privateKey = "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc";
+        const publicKey = signUtil.ed25519.publicKeyCreate(base.fromBase58(privateKey));
         let param = {
+            privateKey: "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc",
+            data: 'JxF12TrwUP45BMd' // base58 of 'Hello World'
+        }
+        const sig = await wallet.signMessage(param);
+        expect(sig).toBe("4CH19t4BQsWpKQEF1aGr4Bndgz8B2m2btaKh9Sy63oA9auSrRx9haHK9Ax9EfnB7PUbWwX9sZS9nsw1Ui1Aj191k");
+    });
+
+    test("verifyMessage", async () => {
+        const wallet = new SolWallet()
+        const param = {
             data: {
-                message: "010001030383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b85ea35151687d4d7f5d0ab49e180f20e41fbd14dbe42b85fd32b02a478733f7de0000000000000000000000000000000000000000000000000000000000000000575bff0f588c71a59fbf405077fb760eefa2a53e0a045cdf981fad4151b698da01020200010c0200000000e1f50500000000",
-                publicKey: "0383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b8",
+                message: "48656c6c6f20576f726c64", // hex of message hash, note that hex of message as its hash
+                publicKey: "5d619f7d5d1c1c18484f711bf305fd041fc15fd89a21f058ea957de162589883",
             },
-            signature: '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09',
+            signature: '9fc6607d95e85fbed30e3ce5998f9050ba6f2d684ade0dee7c6863da51824197653f15e459de6b335ba70615fdc6950daf66728c178eb52f9fd84f7bdd3b720b',
         }
         const ok = await wallet.verifyMessage(param);
-        console.log(ok);
+        expect(ok).toBe(true);
     });
 })
