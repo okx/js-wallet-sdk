@@ -146,7 +146,7 @@ describe("address", () => {
             data: 'Hello World'
         }
         const messageHash = await wallet.getMPCRawMessage(param);
-        expect(messageHash).toBe("48656c6c6f20576f726c64");
+        expect(messageHash.hash).toBe("48656c6c6f20576f726c64");
     });
 
     test('getMPCSignedMessage', async () => {
