@@ -139,4 +139,23 @@ describe("address", () => {
         let signedTx = await api.getMPCTransaction(rawDataHex, sig, publicKey)
         assert.strictEqual(signedTx, "3oBZBLSotPE16sEZTxz3Hkhy9kXG6a9qabGYcQ2n3UG4fvLuVPdiqPFfqnR1PUxXWez6s6Zt19VwMhN9HPtkGmUPpEZrmWpVmEB25ZgRtFP4nUEHYzWtJ9xjT6tys8CEJeQzWg2dHCmoBMNjoLrawmUKk1HzEZiseLuFRt5zXavrR8gVThKrVgpjjVH228raXbndAVZeYBc7vyxew1nZpoEXxBLBPg3f1ZdGgDJ93BwFqqDUp2Z1sYSycv2ghHbDYppNNVYnSqmaShtsjfb3k7eXXrS6nkwrYMSHm")
     });
+
+    test('getMPCRawMessage', async () => {
+        let wallet = new SolWallet()
+        let param = {
+            data: 'Hello World'
+        }
+        let messageHash = await wallet.getMPCRawMessage(param);
+        console.log(messageHash);
+    });
+
+    test('getMPCSignedMessage', async () => {
+        let wallet = new SolWallet()
+        let param = {
+            hash: "",
+            sigs: '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09',
+        }
+        let messageHash = await wallet.getMPCSignedMessage(param);
+        console.log(messageHash);
+    });
 })
