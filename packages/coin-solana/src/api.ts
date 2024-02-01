@@ -79,9 +79,21 @@ export async function appendTokenTransferInstruction(transaction: web3.Transacti
 }
 
 export async function signMessage(message: string, privateKey: string): Promise<string> {
-    const signData = base.fromBase58(message)
-    const signature = signUtil.ed25519.sign(signData, base.fromBase58(privateKey))
+    let signData: Uint8Array;
+    try {
+        signData = base.fromBase58(message);
+    } catch (e) {
+        signData = Buffer.from(message);
+        if (!privateKey) {
+            return base.toHex(signData!);
+        }
+    }
+    const signature = signUtil.ed25519.sign(signData!, base.fromBase58(privateKey))
     return Promise.resolve(base.toBase58(signature))
+}
+
+export function verifyMessageSignature(publicKey: string, message: string, signature: string): boolean {
+    return signUtil.ed25519.verify(Buffer.from(message), base.fromHex(signature), base.fromHex(publicKey));
 }
 
 export async function getHardwareTransaction(raw: string, pubKey: string, sig: string): Promise<string> {
@@ -222,4 +234,9 @@ export function getMPCTransaction(raw: string, sig: string, publicKey: string): 
     let tx = web3.Transaction.from(base.fromHex(raw))
     tx.addSignature(new PublicKey(publicKey), base.fromHex(sig))
     return Promise.resolve(base.toBase58(tx.serialize()))
+}
+
+export function getMPCSignedMessage(signature: string) {
+    const s = base.fromHex(signature);
+    return base.toBase58(s);
 }

@@ -21,7 +21,12 @@ import {
     GetHardwareSignedTransactionError,
     NewAddressError,
     SignTxError,
-    validSignedTransactionError, GetAddressParams,
+    validSignedTransactionError,
+    GetAddressParams,
+    GetMpcRawTransactionError,
+    MpcMessageParam,
+    GetMpcTransactionError,
+    VerifyMessageParams, TypedMessage, SignMsgError,
 } from '@okxweb3/coin-base';
 import {base} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
@@ -149,6 +154,16 @@ export class SolWallet extends BaseWallet {
         }
     }
 
+    async verifyMessage(param: VerifyMessageParams): Promise<boolean> {
+        try {
+            const typedMessage = param.data as TypedMessage;
+            const ret = api.verifyMessageSignature(typedMessage.publicKey!, typedMessage.message, param.signature);
+            return Promise.resolve(ret);
+        } catch (e) {
+            return Promise.reject(SignMsgError);
+        }
+    }
+
     async calcTxHash(param: CalcTxHashParams): Promise<string> {
         try {
             const signedTx = base.fromBase58(param.data as string);
@@ -186,6 +201,23 @@ export class SolWallet extends BaseWallet {
             return Promise.resolve(signedTx);
         } catch (e) {
             return Promise.reject(e);
+        }
+    }
+
+    async getMPCRawMessage(param: MpcRawTransactionParam): Promise<any> {
+        try {
+            const msgHash = await this.signMessage(param as SignTxParams);
+            return Promise.resolve({hash: msgHash});
+        } catch (e) {
+            return Promise.reject(GetMpcRawTransactionError);
+        }
+    }
+
+    async getMPCSignedMessage(param: MpcMessageParam): Promise<any> {
+        try {
+            return Promise.resolve(api.getMPCSignedMessage(param.sigs as string));
+        } catch (e) {
+            return Promise.reject(GetMpcTransactionError);
         }
     }
 
