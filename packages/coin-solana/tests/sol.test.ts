@@ -175,7 +175,7 @@ describe("address", () => {
         const wallet = new SolWallet()
         const param = {
             data: {
-                message: "48656c6c6f20576f726c64", // hex of message hash, note that hex of message as its hash
+                message: "Hello World",
                 publicKey: "5d619f7d5d1c1c18484f711bf305fd041fc15fd89a21f058ea957de162589883",
             },
             signature: '9fc6607d95e85fbed30e3ce5998f9050ba6f2d684ade0dee7c6863da51824197653f15e459de6b335ba70615fdc6950daf66728c178eb52f9fd84f7bdd3b720b',
