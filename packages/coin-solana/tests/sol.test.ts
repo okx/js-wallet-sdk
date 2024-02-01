@@ -115,8 +115,8 @@ describe("address", () => {
     });
 
     test('getMPCRawTransaction', async () => {
-        let wallet = new SolWallet()
-        let params = {
+        const wallet = new SolWallet()
+        const params = {
             data: {
                 type: "transfer",
                 payer: "Eis45zihS2Wa7dgcmrjvSiqW9ZBCbVZtBBgu6chNWHV",
@@ -136,27 +136,26 @@ describe("address", () => {
         const sig = '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09'
         const publicKey = "0383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b8"
         // const publicKey = "Eis45zihS2Wa7dgcmrjvSiqW9ZBCbVZtBBgu6chNWHV"
-        let signedTx = await api.getMPCTransaction(rawDataHex, sig, publicKey)
+        const signedTx = await api.getMPCTransaction(rawDataHex, sig, publicKey)
         assert.strictEqual(signedTx, "3oBZBLSotPE16sEZTxz3Hkhy9kXG6a9qabGYcQ2n3UG4fvLuVPdiqPFfqnR1PUxXWez6s6Zt19VwMhN9HPtkGmUPpEZrmWpVmEB25ZgRtFP4nUEHYzWtJ9xjT6tys8CEJeQzWg2dHCmoBMNjoLrawmUKk1HzEZiseLuFRt5zXavrR8gVThKrVgpjjVH228raXbndAVZeYBc7vyxew1nZpoEXxBLBPg3f1ZdGgDJ93BwFqqDUp2Z1sYSycv2ghHbDYppNNVYnSqmaShtsjfb3k7eXXrS6nkwrYMSHm")
     });
 
     test('getMPCRawMessage', async () => {
-        let wallet = new SolWallet()
-        let param = {
+        const wallet = new SolWallet()
+        const param = {
             data: 'Hello World'
         }
-        let messageHash = await wallet.getMPCRawMessage(param);
-        console.log(messageHash);
+        const messageHash = await wallet.getMPCRawMessage(param);
         expect(messageHash).toBe("48656c6c6f20576f726c64");
     });
 
     test('getMPCSignedMessage', async () => {
-        let wallet = new SolWallet()
-        let param = {
+        const wallet = new SolWallet()
+        const param = {
             hash: "010001030383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b85ea35151687d4d7f5d0ab49e180f20e41fbd14dbe42b85fd32b02a478733f7de0000000000000000000000000000000000000000000000000000000000000000575bff0f588c71a59fbf405077fb760eefa2a53e0a045cdf981fad4151b698da01020200010c0200000000e1f50500000000",
             sigs: '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09',
         }
-        let sig = await wallet.getMPCSignedMessage(param);
+        const sig = await wallet.getMPCSignedMessage(param);
         expect(sig).toBe("3tAYphHJVGnmTqUmnhLqJmZ1XMqksf3kc5RfqxyADzqYHmknaPW6QmDLhhkWfM1XsxW7DJchxCYXz4p3kbatWqE");
     });
 
@@ -164,7 +163,7 @@ describe("address", () => {
         const wallet = new SolWallet()
         const privateKey = "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc";
         const publicKey = signUtil.ed25519.publicKeyCreate(base.fromBase58(privateKey));
-        let param = {
+        const param = {
             privateKey: "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc",
             data: 'JxF12TrwUP45BMd' // base58 of 'Hello World'
         }
