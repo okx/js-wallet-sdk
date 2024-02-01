@@ -94,7 +94,13 @@ export async function signMessage(message: string, privateKey: string): Promise<
 
 export function verifyMessageSignature(publicKey: string, message: string, signature: string): boolean {
     const messageHash = Buffer.from(message);
-    return signUtil.ed25519.verify(messageHash, base.fromHex(signature), base.fromHex(publicKey));
+    let sig: Uint8Array;
+    try {
+        sig = base.fromBase58(signature);
+    } catch (e) {
+        sig = base.fromHex(signature);
+    }
+    return signUtil.ed25519.verify(messageHash, sig, base.fromHex(publicKey));
 }
 
 export async function getHardwareTransaction(raw: string, pubKey: string, sig: string): Promise<string> {
