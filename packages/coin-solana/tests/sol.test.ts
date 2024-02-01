@@ -147,15 +147,29 @@ describe("address", () => {
         }
         let messageHash = await wallet.getMPCRawMessage(param);
         console.log(messageHash);
+        expect(messageHash).toBe("48656c6c6f20576f726c64");
     });
 
     test('getMPCSignedMessage', async () => {
         let wallet = new SolWallet()
         let param = {
-            hash: "",
+            hash: "010001030383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b85ea35151687d4d7f5d0ab49e180f20e41fbd14dbe42b85fd32b02a478733f7de0000000000000000000000000000000000000000000000000000000000000000575bff0f588c71a59fbf405077fb760eefa2a53e0a045cdf981fad4151b698da01020200010c0200000000e1f50500000000",
             sigs: '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09',
         }
-        let messageHash = await wallet.getMPCSignedMessage(param);
-        console.log(messageHash);
+        let sig = await wallet.getMPCSignedMessage(param);
+        expect(sig).toBe("3tAYphHJVGnmTqUmnhLqJmZ1XMqksf3kc5RfqxyADzqYHmknaPW6QmDLhhkWfM1XsxW7DJchxCYXz4p3kbatWqE");
+    });
+
+    test("verifyMessage", async () => {
+        let wallet = new SolWallet()
+        let param = {
+            data: {
+                message: "010001030383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b85ea35151687d4d7f5d0ab49e180f20e41fbd14dbe42b85fd32b02a478733f7de0000000000000000000000000000000000000000000000000000000000000000575bff0f588c71a59fbf405077fb760eefa2a53e0a045cdf981fad4151b698da01020200010c0200000000e1f50500000000",
+                publicKey: "0383e29907d1f47f8892d6632721c2f9c762be01735cba74a27f329b7abaf1b8",
+            },
+            signature: '027c46d3ec9b1133bf2f022498f0421424196902ab7de8cf6e4961d8016e01a3608deb09dd9d0cf2396a9b18e1ed1106e72c3380ab902314a8f36c10f1a34f09',
+        }
+        const ok = await wallet.verifyMessage(param);
+        console.log(ok);
     });
 })
