@@ -50,6 +50,7 @@ import {
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {signature as bitcoinSignature} from './script';
 import {taprootTweakPubkey} from '../taproot';
+import * as buffer from "buffer";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -833,6 +834,20 @@ export class Psbt {
                 sighashTypes,
             );
         throw new Error(`Input #${inputIndex} is not of type Taproot.`);
+    }
+
+    getHashAndSighashType(inputIndex: number,
+                          publicKey: Buffer,
+                          sighashTypes: number[] = [Transaction.SIGHASH_ALL]) {
+
+        const {hash, sighashType} = getHashAndSighashType(
+            this.data.inputs,
+            inputIndex,
+            publicKey,
+            this.__CACHE,
+            sighashTypes,
+        );
+        return {hash, sighashType};
     }
 
     private _signInput(
@@ -1645,7 +1660,7 @@ function prepareFinalScripts(
     };
 }
 
-function getHashAndSighashType(
+export function getHashAndSighashType(
     inputs: PsbtInput[],
     inputIndex: number,
     pubkey: Buffer,

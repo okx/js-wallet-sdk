@@ -106,6 +106,15 @@ type BuyingData = {
     sellerPsbts: string[]
 }
 
+type toSignInputs = {
+    index: number,
+    address: string,
+    publicKey: string,
+    sighashTypes: number[],
+    disableTweakSigner: boolean
+}
+
+
 type toSignInput = {
     index: number,
     address: string,
