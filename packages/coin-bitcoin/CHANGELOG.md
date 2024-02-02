@@ -50,3 +50,9 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** add for psbt and change autofinalize into true  ([70](https://github.com/okx/js-wallet-sdk/pull/70))
+
+# [1.0.9](https://github.com/okx/js-wallet-sdk) (2024-02-02)
+
+### Feature
+
+- **coin-bitcoin:** add for mpc to support brc20 psbt ([91](https://github.com/okx/js-wallet-sdk/pull/91))

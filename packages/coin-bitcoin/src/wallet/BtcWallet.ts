@@ -157,6 +157,42 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
+        } else if (type ===  bitcoin.BtcXrcTypes.PSBT_MPC_UNSIGNED_LIST) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedListingPSBT(param.data.psbt, param.data.publicKey, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type ===  bitcoin.BtcXrcTypes.PSBT_MPC_SIGNED_LIST) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedListingPSBT(param.data.psbt, param.data.publicKey, param.data.signature, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_MPC_UNSIGNED_BUY) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedBuyingPSBT(param.data.psbt, param.data.publicKey, this.network(), param.data.batchSize));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_MPC_SIGNED_BUY) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedBuyingTx(param.data.psbt, param.data.publicKey, param.data.signatureList, this.network(), param.data.batchSize));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_MPC_UNSIGNED) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCUnsignedPSBT(param.data.psbt, param.data.publicKey, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_MPC_SIGNED) {
+            try {
+                return Promise.resolve(bitcoin.generateMPCSignedPSBT(param.data.psbt, param.data.publicKey, param.data.signatureList, this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
         } else if (type === bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH) { // psbt key-path and script-path spend
             try {
                 return Promise.resolve(bitcoin.signPsbtWithKeyPathAndScriptPath(param.data.psbt, param.privateKey, this.network(), {
