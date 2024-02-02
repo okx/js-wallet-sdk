@@ -55,4 +55,4 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-bitcoin:** add for mpc to support brc20 psbt ([80](https://github.com/okx/js-wallet-sdk/pull/80))
+- **coin-bitcoin:** add for mpc to support brc20 psbt ([90](https://github.com/okx/js-wallet-sdk/pull/90))
