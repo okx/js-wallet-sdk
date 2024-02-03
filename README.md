@@ -1,3 +1,15 @@
+# DRC-20 Index update for Doginals
+
+Please consider the updated DRC-20, Doginals index as well that is provided by the DPal wallet who provided the first inscription wallet services in DRC-20 doginals back in early last year. In the updated DRC-20 index it has handled the issues with security vulnerability, Sybil attack, witch nodes and double spending that were not taken care during initial DRC-20 Doginals index.
+Public GitHub for the updated DRC-20, Doginals index as below 👇
+
+https://github.com/dogexme/dogim-indexer
+
+Please note that $dogim has killed the witch nodes of $dogi inscription/token from DRC-20, doginals.
+
+
+
+
 # js-wallet-sdk
 
 This is a typescript/javascript language wallet solution that supports offline transactions. We currently support various mainstream public
