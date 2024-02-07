@@ -11,7 +11,7 @@ export const ADDRESS_PREFIX = "41";
 const TRX_MESSAGE_HEADER = "\x19TRON Signed Message:\n32";
 const ETH_MESSAGE_HEADER = "\x19Ethereum Signed Message:\n32";
 
-export type MessageType = "hex" | "legacy" | "protobuf";
+export type MessageType = "hex" | "legacy" | "protobuf" | "v2";
 
 export function getPubKeyFromPriKey(priKeyBytes: Buffer) {
   return signUtil.secp256k1.publicKeyCreate(priKeyBytes,false)
@@ -252,7 +252,20 @@ function isHexString(value: string) {
 
 // sign message, compatible with eth
 export function signMessage(type: MessageType, message: string, priKey: string, useTronHeader = true): string {
-  if(type === "hex") {
+  if (type === "v2") {
+    const msg = Buffer.from(
+        `\x19TRON Signed Message:\n${message.length.toString()}${message}`,
+        'utf-8'
+    )
+
+    const messageDigest = base.keccak256(msg);
+    if(!priKey) {
+      return base.toHex(messageDigest);
+    }
+    let priKeyBytes = Buffer.from((base.fromHex(priKey)));
+    const {v, r, s} = eth.ecdsaSign(eth.toBuffer(messageDigest), priKeyBytes);
+    return eth.makeSignature(v, r, s);
+  }else if(type === "hex") {
     let msg = Buffer.from(base.fromHex(message));
     let header = Buffer.from(useTronHeader ? TRX_MESSAGE_HEADER : ETH_MESSAGE_HEADER)
 
@@ -320,6 +333,22 @@ export function verifySignature(message: string, signature: string, useTronHeade
   let messageBytes = Buffer.concat([header, msg], header.length + msg.length)
 
   const messageDigest = base.keccak256(messageBytes);
+  const recoveryParam = base.stripHexPrefix(signature).substring(128, 130) == "1c" ? 1 : 0
+  const publicKey = signUtil.secp256k1.recover(signatureBytes, recoveryParam, messageDigest, false);
+  if(publicKey == null) {
+    return null
+  }
+  let addressBytes = computeAddress(publicKey);
+  return base.toBase58Check(addressBytes);
+}
+
+export function verifySignatureV2(message: string, signature: string, useTronHeader = true): string | null {
+  const msg = Buffer.from(
+      `\x19TRON Signed Message:\n${message.length.toString()}${message}`,
+      'utf-8'
+  )
+  const messageDigest = base.keccak256(msg);
+  let signatureBytes = base.fromHex(signature);
   const recoveryParam = base.stripHexPrefix(signature).substring(128, 130) == "1c" ? 1 : 0
   const publicKey = signUtil.secp256k1.recover(signatureBytes, recoveryParam, messageDigest, false);
   if(publicKey == null) {

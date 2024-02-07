@@ -8,9 +8,10 @@ import {
     tokenTransfer,
     transfer,
     TrxWallet,
-    validateAddress,
+    validateAddress, verifySignatureV2,
 } from '../src';
 import {NewAddressParams, SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
+import Assert from "assert";
 
 describe("address", () => {
     test("getNewAddress", async () => {
@@ -213,5 +214,15 @@ describe("sign message", () => {
         console.info(verify)
     })
 
+    test('sign v2 message test', async () => {
+        const message = "hello world"
+        const priKey = "0000000000000000000000000000000000000000000000000000000000000001"
+        const t = signMessage("v2", message, priKey)
+        console.info(t)
+        Assert.strictEqual(t, "0x0dc0b53d525e0103a6013061cf18e60cf158809149f2b8994a545af65a7004cb1eeaff560e801ab51b28df5d42549aa024c2aa7e9d34de1e01294b9afb5e6c7e1c")
 
+        const address = verifySignatureV2(message, t);
+        console.log(address)
+        Assert.strictEqual(address, "TMVQGm1qAQYVdetCeGRRkTWYYrLXuHK2HC")
+    })
 })
