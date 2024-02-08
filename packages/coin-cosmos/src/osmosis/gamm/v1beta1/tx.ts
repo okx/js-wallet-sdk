@@ -1,14 +1,15 @@
 /**
  * The following methods are based on `osmojs-beta-testing`, thanks for their work
- * https://github.com/pyramation/osmojs-beta-testing
+ * https://github.com/osmosis-labs/osmosis-frontend
  */
+
 /**
  * ===================== MsgJoinPool
  * This is really MsgJoinPoolNoSwap
  */
-import { _m0, Long } from '@okxweb3/crypto-lib';
-import { Coin } from '../../../types/cosmos/base/v1beta1/coin';
-import { isSet, DeepPartial } from '../../../types/cosmos/tx/v1beta1/tx';
+import { _m0, Long } from "@okxweb3/crypto-lib";
+import { Coin } from "../../../types/cosmos/base/v1beta1/coin";
+import { isSet, DeepPartial } from "../../../types/cosmos/tx/v1beta1/tx";
 
 export interface MsgJoinPool {
   sender: string;
@@ -116,12 +117,15 @@ function createBaseMsgJoinPool(): MsgJoinPool {
     sender: "",
     poolId: Long.UZERO,
     shareOutAmount: "",
-    tokenInMaxs: []
+    tokenInMaxs: [],
   };
 }
 
 export const MsgJoinPool = {
-  encode(message: MsgJoinPool, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgJoinPool,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -155,7 +159,7 @@ export const MsgJoinPool = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -178,20 +182,30 @@ export const MsgJoinPool = {
   fromJSON(object: any): MsgJoinPool {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      shareOutAmount: isSet(object.shareOutAmount) ? String(object.shareOutAmount) : "",
-      tokenInMaxs: Array.isArray(object?.tokenInMaxs) ? object.tokenInMaxs.map((e: any) => Coin.fromJSON(e)) : []
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      shareOutAmount: isSet(object.shareOutAmount)
+        ? String(object.shareOutAmount)
+        : "",
+      tokenInMaxs: Array.isArray(object?.tokenInMaxs)
+        ? object.tokenInMaxs.map((e: any) => Coin.fromJSON(e))
+        : [],
     };
   },
 
   toJSON(message: MsgJoinPool): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.shareOutAmount !== undefined && (obj.shareOutAmount = message.shareOutAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.shareOutAmount !== undefined &&
+      (obj.shareOutAmount = message.shareOutAmount);
 
     if (message.tokenInMaxs) {
-      obj.tokenInMaxs = message.tokenInMaxs.map(e => e ? Coin.toJSON(e) : undefined);
+      obj.tokenInMaxs = message.tokenInMaxs.map((e) =>
+        e ? Coin.toJSON(e) : undefined
+      );
     } else {
       obj.tokenInMaxs = [];
     }
@@ -202,12 +216,15 @@ export const MsgJoinPool = {
   fromPartial(object: DeepPartial<MsgJoinPool>): MsgJoinPool {
     const message = createBaseMsgJoinPool();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.shareOutAmount = object.shareOutAmount ?? "";
-    message.tokenInMaxs = object.tokenInMaxs?.map(e => Coin.fromPartial(e)) || [];
+    message.tokenInMaxs =
+      object.tokenInMaxs?.map((e) => Coin.fromPartial(e)) || [];
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgJoinPoolResponse(): MsgJoinPoolResponse {
@@ -215,7 +232,10 @@ function createBaseMsgJoinPoolResponse(): MsgJoinPoolResponse {
 }
 
 export const MsgJoinPoolResponse = {
-  encode(_: MsgJoinPoolResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    _: MsgJoinPoolResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     return writer;
   },
 
@@ -249,8 +269,7 @@ export const MsgJoinPoolResponse = {
   fromPartial(_: DeepPartial<MsgJoinPoolResponse>): MsgJoinPoolResponse {
     const message = createBaseMsgJoinPoolResponse();
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitPool(): MsgExitPool {
@@ -258,12 +277,15 @@ function createBaseMsgExitPool(): MsgExitPool {
     sender: "",
     poolId: Long.UZERO,
     shareInAmount: "",
-    tokenOutMins: []
+    tokenOutMins: [],
   };
 }
 
 export const MsgExitPool = {
-  encode(message: MsgExitPool, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgExitPool,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -297,7 +319,7 @@ export const MsgExitPool = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -320,20 +342,30 @@ export const MsgExitPool = {
   fromJSON(object: any): MsgExitPool {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      shareInAmount: isSet(object.shareInAmount) ? String(object.shareInAmount) : "",
-      tokenOutMins: Array.isArray(object?.tokenOutMins) ? object.tokenOutMins.map((e: any) => Coin.fromJSON(e)) : []
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      shareInAmount: isSet(object.shareInAmount)
+        ? String(object.shareInAmount)
+        : "",
+      tokenOutMins: Array.isArray(object?.tokenOutMins)
+        ? object.tokenOutMins.map((e: any) => Coin.fromJSON(e))
+        : [],
     };
   },
 
   toJSON(message: MsgExitPool): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.shareInAmount !== undefined && (obj.shareInAmount = message.shareInAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.shareInAmount !== undefined &&
+      (obj.shareInAmount = message.shareInAmount);
 
     if (message.tokenOutMins) {
-      obj.tokenOutMins = message.tokenOutMins.map(e => e ? Coin.toJSON(e) : undefined);
+      obj.tokenOutMins = message.tokenOutMins.map((e) =>
+        e ? Coin.toJSON(e) : undefined
+      );
     } else {
       obj.tokenOutMins = [];
     }
@@ -344,12 +376,15 @@ export const MsgExitPool = {
   fromPartial(object: DeepPartial<MsgExitPool>): MsgExitPool {
     const message = createBaseMsgExitPool();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.shareInAmount = object.shareInAmount ?? "";
-    message.tokenOutMins = object.tokenOutMins?.map(e => Coin.fromPartial(e)) || [];
+    message.tokenOutMins =
+      object.tokenOutMins?.map((e) => Coin.fromPartial(e)) || [];
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitPoolResponse(): MsgExitPoolResponse {
@@ -357,7 +392,10 @@ function createBaseMsgExitPoolResponse(): MsgExitPoolResponse {
 }
 
 export const MsgExitPoolResponse = {
-  encode(_: MsgExitPoolResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    _: MsgExitPoolResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     return writer;
   },
 
@@ -391,19 +429,21 @@ export const MsgExitPoolResponse = {
   fromPartial(_: DeepPartial<MsgExitPoolResponse>): MsgExitPoolResponse {
     const message = createBaseMsgExitPoolResponse();
     return message;
-  }
-
+  },
 };
 
 function createBaseSwapAmountInRoute(): SwapAmountInRoute {
   return {
     poolId: Long.UZERO,
-    tokenOutDenom: ""
+    tokenOutDenom: "",
   };
 }
 
 export const SwapAmountInRoute = {
-  encode(message: SwapAmountInRoute, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: SwapAmountInRoute,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (!message.poolId.isZero()) {
       writer.uint32(8).uint64(message.poolId);
     }
@@ -425,7 +465,7 @@ export const SwapAmountInRoute = {
 
       switch (tag >>> 3) {
         case 1:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 2:
@@ -443,25 +483,33 @@ export const SwapAmountInRoute = {
 
   fromJSON(object: any): SwapAmountInRoute {
     return {
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenOutDenom: isSet(object.tokenOutDenom) ? String(object.tokenOutDenom) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenOutDenom: isSet(object.tokenOutDenom)
+        ? String(object.tokenOutDenom)
+        : "",
     };
   },
 
   toJSON(message: SwapAmountInRoute): unknown {
     const obj: any = {};
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenOutDenom !== undefined && (obj.tokenOutDenom = message.tokenOutDenom);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenOutDenom !== undefined &&
+      (obj.tokenOutDenom = message.tokenOutDenom);
     return obj;
   },
 
   fromPartial(object: DeepPartial<SwapAmountInRoute>): SwapAmountInRoute {
     const message = createBaseSwapAmountInRoute();
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.tokenOutDenom = object.tokenOutDenom ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgSwapExactAmountIn(): MsgSwapExactAmountIn {
@@ -469,12 +517,15 @@ function createBaseMsgSwapExactAmountIn(): MsgSwapExactAmountIn {
     sender: "",
     routes: [],
     tokenIn: undefined,
-    tokenOutMinAmount: ""
+    tokenOutMinAmount: "",
   };
 }
 
 export const MsgSwapExactAmountIn = {
-  encode(message: MsgSwapExactAmountIn, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgSwapExactAmountIn,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -494,7 +545,10 @@ export const MsgSwapExactAmountIn = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSwapExactAmountIn {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgSwapExactAmountIn {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSwapExactAmountIn();
@@ -508,7 +562,9 @@ export const MsgSwapExactAmountIn = {
           break;
 
         case 2:
-          message.routes.push(SwapAmountInRoute.decode(reader, reader.uint32()));
+          message.routes.push(
+            SwapAmountInRoute.decode(reader, reader.uint32())
+          );
           break;
 
         case 3:
@@ -531,9 +587,15 @@ export const MsgSwapExactAmountIn = {
   fromJSON(object: any): MsgSwapExactAmountIn {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      routes: Array.isArray(object?.routes) ? object.routes.map((e: any) => SwapAmountInRoute.fromJSON(e)) : [],
-      tokenIn: isSet(object.tokenIn) ? Coin.fromJSON(object.tokenIn) : undefined,
-      tokenOutMinAmount: isSet(object.tokenOutMinAmount) ? String(object.tokenOutMinAmount) : ""
+      routes: Array.isArray(object?.routes)
+        ? object.routes.map((e: any) => SwapAmountInRoute.fromJSON(e))
+        : [],
+      tokenIn: isSet(object.tokenIn)
+        ? Coin.fromJSON(object.tokenIn)
+        : undefined,
+      tokenOutMinAmount: isSet(object.tokenOutMinAmount)
+        ? String(object.tokenOutMinAmount)
+        : "",
     };
   },
 
@@ -542,35 +604,47 @@ export const MsgSwapExactAmountIn = {
     message.sender !== undefined && (obj.sender = message.sender);
 
     if (message.routes) {
-      obj.routes = message.routes.map(e => e ? SwapAmountInRoute.toJSON(e) : undefined);
+      obj.routes = message.routes.map((e) =>
+        e ? SwapAmountInRoute.toJSON(e) : undefined
+      );
     } else {
       obj.routes = [];
     }
 
-    message.tokenIn !== undefined && (obj.tokenIn = message.tokenIn ? Coin.toJSON(message.tokenIn) : undefined);
-    message.tokenOutMinAmount !== undefined && (obj.tokenOutMinAmount = message.tokenOutMinAmount);
+    message.tokenIn !== undefined &&
+      (obj.tokenIn = message.tokenIn
+        ? Coin.toJSON(message.tokenIn)
+        : undefined);
+    message.tokenOutMinAmount !== undefined &&
+      (obj.tokenOutMinAmount = message.tokenOutMinAmount);
     return obj;
   },
 
   fromPartial(object: DeepPartial<MsgSwapExactAmountIn>): MsgSwapExactAmountIn {
     const message = createBaseMsgSwapExactAmountIn();
     message.sender = object.sender ?? "";
-    message.routes = object.routes?.map(e => SwapAmountInRoute.fromPartial(e)) || [];
-    message.tokenIn = object.tokenIn !== undefined && object.tokenIn !== null ? Coin.fromPartial(object.tokenIn) : undefined;
+    message.routes =
+      object.routes?.map((e) => SwapAmountInRoute.fromPartial(e)) || [];
+    message.tokenIn =
+      object.tokenIn !== undefined && object.tokenIn !== null
+        ? Coin.fromPartial(object.tokenIn)
+        : undefined;
     message.tokenOutMinAmount = object.tokenOutMinAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgSwapExactAmountInResponse(): MsgSwapExactAmountInResponse {
   return {
-    tokenOutAmount: ""
+    tokenOutAmount: "",
   };
 }
 
 export const MsgSwapExactAmountInResponse = {
-  encode(message: MsgSwapExactAmountInResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgSwapExactAmountInResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.tokenOutAmount !== "") {
       writer.uint32(10).string(message.tokenOutAmount);
     }
@@ -578,7 +652,10 @@ export const MsgSwapExactAmountInResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSwapExactAmountInResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgSwapExactAmountInResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSwapExactAmountInResponse();
@@ -602,33 +679,40 @@ export const MsgSwapExactAmountInResponse = {
 
   fromJSON(object: any): MsgSwapExactAmountInResponse {
     return {
-      tokenOutAmount: isSet(object.tokenOutAmount) ? String(object.tokenOutAmount) : ""
+      tokenOutAmount: isSet(object.tokenOutAmount)
+        ? String(object.tokenOutAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgSwapExactAmountInResponse): unknown {
     const obj: any = {};
-    message.tokenOutAmount !== undefined && (obj.tokenOutAmount = message.tokenOutAmount);
+    message.tokenOutAmount !== undefined &&
+      (obj.tokenOutAmount = message.tokenOutAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgSwapExactAmountInResponse>): MsgSwapExactAmountInResponse {
+  fromPartial(
+    object: DeepPartial<MsgSwapExactAmountInResponse>
+  ): MsgSwapExactAmountInResponse {
     const message = createBaseMsgSwapExactAmountInResponse();
     message.tokenOutAmount = object.tokenOutAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseSwapAmountOutRoute(): SwapAmountOutRoute {
   return {
     poolId: Long.UZERO,
-    tokenInDenom: ""
+    tokenInDenom: "",
   };
 }
 
 export const SwapAmountOutRoute = {
-  encode(message: SwapAmountOutRoute, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: SwapAmountOutRoute,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (!message.poolId.isZero()) {
       writer.uint32(8).uint64(message.poolId);
     }
@@ -650,7 +734,7 @@ export const SwapAmountOutRoute = {
 
       switch (tag >>> 3) {
         case 1:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 2:
@@ -668,25 +752,33 @@ export const SwapAmountOutRoute = {
 
   fromJSON(object: any): SwapAmountOutRoute {
     return {
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenInDenom: isSet(object.tokenInDenom) ? String(object.tokenInDenom) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenInDenom: isSet(object.tokenInDenom)
+        ? String(object.tokenInDenom)
+        : "",
     };
   },
 
   toJSON(message: SwapAmountOutRoute): unknown {
     const obj: any = {};
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenInDenom !== undefined && (obj.tokenInDenom = message.tokenInDenom);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenInDenom !== undefined &&
+      (obj.tokenInDenom = message.tokenInDenom);
     return obj;
   },
 
   fromPartial(object: DeepPartial<SwapAmountOutRoute>): SwapAmountOutRoute {
     const message = createBaseSwapAmountOutRoute();
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.tokenInDenom = object.tokenInDenom ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgSwapExactAmountOut(): MsgSwapExactAmountOut {
@@ -694,12 +786,15 @@ function createBaseMsgSwapExactAmountOut(): MsgSwapExactAmountOut {
     sender: "",
     routes: [],
     tokenInMaxAmount: "",
-    tokenOut: undefined
+    tokenOut: undefined,
   };
 }
 
 export const MsgSwapExactAmountOut = {
-  encode(message: MsgSwapExactAmountOut, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgSwapExactAmountOut,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -719,7 +814,10 @@ export const MsgSwapExactAmountOut = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSwapExactAmountOut {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgSwapExactAmountOut {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSwapExactAmountOut();
@@ -733,7 +831,9 @@ export const MsgSwapExactAmountOut = {
           break;
 
         case 2:
-          message.routes.push(SwapAmountOutRoute.decode(reader, reader.uint32()));
+          message.routes.push(
+            SwapAmountOutRoute.decode(reader, reader.uint32())
+          );
           break;
 
         case 3:
@@ -756,9 +856,15 @@ export const MsgSwapExactAmountOut = {
   fromJSON(object: any): MsgSwapExactAmountOut {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      routes: Array.isArray(object?.routes) ? object.routes.map((e: any) => SwapAmountOutRoute.fromJSON(e)) : [],
-      tokenInMaxAmount: isSet(object.tokenInMaxAmount) ? String(object.tokenInMaxAmount) : "",
-      tokenOut: isSet(object.tokenOut) ? Coin.fromJSON(object.tokenOut) : undefined
+      routes: Array.isArray(object?.routes)
+        ? object.routes.map((e: any) => SwapAmountOutRoute.fromJSON(e))
+        : [],
+      tokenInMaxAmount: isSet(object.tokenInMaxAmount)
+        ? String(object.tokenInMaxAmount)
+        : "",
+      tokenOut: isSet(object.tokenOut)
+        ? Coin.fromJSON(object.tokenOut)
+        : undefined,
     };
   },
 
@@ -767,35 +873,49 @@ export const MsgSwapExactAmountOut = {
     message.sender !== undefined && (obj.sender = message.sender);
 
     if (message.routes) {
-      obj.routes = message.routes.map(e => e ? SwapAmountOutRoute.toJSON(e) : undefined);
+      obj.routes = message.routes.map((e) =>
+        e ? SwapAmountOutRoute.toJSON(e) : undefined
+      );
     } else {
       obj.routes = [];
     }
 
-    message.tokenInMaxAmount !== undefined && (obj.tokenInMaxAmount = message.tokenInMaxAmount);
-    message.tokenOut !== undefined && (obj.tokenOut = message.tokenOut ? Coin.toJSON(message.tokenOut) : undefined);
+    message.tokenInMaxAmount !== undefined &&
+      (obj.tokenInMaxAmount = message.tokenInMaxAmount);
+    message.tokenOut !== undefined &&
+      (obj.tokenOut = message.tokenOut
+        ? Coin.toJSON(message.tokenOut)
+        : undefined);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgSwapExactAmountOut>): MsgSwapExactAmountOut {
+  fromPartial(
+    object: DeepPartial<MsgSwapExactAmountOut>
+  ): MsgSwapExactAmountOut {
     const message = createBaseMsgSwapExactAmountOut();
     message.sender = object.sender ?? "";
-    message.routes = object.routes?.map(e => SwapAmountOutRoute.fromPartial(e)) || [];
+    message.routes =
+      object.routes?.map((e) => SwapAmountOutRoute.fromPartial(e)) || [];
     message.tokenInMaxAmount = object.tokenInMaxAmount ?? "";
-    message.tokenOut = object.tokenOut !== undefined && object.tokenOut !== null ? Coin.fromPartial(object.tokenOut) : undefined;
+    message.tokenOut =
+      object.tokenOut !== undefined && object.tokenOut !== null
+        ? Coin.fromPartial(object.tokenOut)
+        : undefined;
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgSwapExactAmountOutResponse(): MsgSwapExactAmountOutResponse {
   return {
-    tokenInAmount: ""
+    tokenInAmount: "",
   };
 }
 
 export const MsgSwapExactAmountOutResponse = {
-  encode(message: MsgSwapExactAmountOutResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgSwapExactAmountOutResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.tokenInAmount !== "") {
       writer.uint32(10).string(message.tokenInAmount);
     }
@@ -803,7 +923,10 @@ export const MsgSwapExactAmountOutResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgSwapExactAmountOutResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgSwapExactAmountOutResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgSwapExactAmountOutResponse();
@@ -827,22 +950,26 @@ export const MsgSwapExactAmountOutResponse = {
 
   fromJSON(object: any): MsgSwapExactAmountOutResponse {
     return {
-      tokenInAmount: isSet(object.tokenInAmount) ? String(object.tokenInAmount) : ""
+      tokenInAmount: isSet(object.tokenInAmount)
+        ? String(object.tokenInAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgSwapExactAmountOutResponse): unknown {
     const obj: any = {};
-    message.tokenInAmount !== undefined && (obj.tokenInAmount = message.tokenInAmount);
+    message.tokenInAmount !== undefined &&
+      (obj.tokenInAmount = message.tokenInAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgSwapExactAmountOutResponse>): MsgSwapExactAmountOutResponse {
+  fromPartial(
+    object: DeepPartial<MsgSwapExactAmountOutResponse>
+  ): MsgSwapExactAmountOutResponse {
     const message = createBaseMsgSwapExactAmountOutResponse();
     message.tokenInAmount = object.tokenInAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgJoinSwapExternAmountIn(): MsgJoinSwapExternAmountIn {
@@ -850,12 +977,15 @@ function createBaseMsgJoinSwapExternAmountIn(): MsgJoinSwapExternAmountIn {
     sender: "",
     poolId: Long.UZERO,
     tokenIn: undefined,
-    shareOutMinAmount: ""
+    shareOutMinAmount: "",
   };
 }
 
 export const MsgJoinSwapExternAmountIn = {
-  encode(message: MsgJoinSwapExternAmountIn, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgJoinSwapExternAmountIn,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -875,7 +1005,10 @@ export const MsgJoinSwapExternAmountIn = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgJoinSwapExternAmountIn {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgJoinSwapExternAmountIn {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgJoinSwapExternAmountIn();
@@ -889,7 +1022,7 @@ export const MsgJoinSwapExternAmountIn = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -912,40 +1045,61 @@ export const MsgJoinSwapExternAmountIn = {
   fromJSON(object: any): MsgJoinSwapExternAmountIn {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenIn: isSet(object.tokenIn) ? Coin.fromJSON(object.tokenIn) : undefined,
-      shareOutMinAmount: isSet(object.shareOutMinAmount) ? String(object.shareOutMinAmount) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenIn: isSet(object.tokenIn)
+        ? Coin.fromJSON(object.tokenIn)
+        : undefined,
+      shareOutMinAmount: isSet(object.shareOutMinAmount)
+        ? String(object.shareOutMinAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgJoinSwapExternAmountIn): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenIn !== undefined && (obj.tokenIn = message.tokenIn ? Coin.toJSON(message.tokenIn) : undefined);
-    message.shareOutMinAmount !== undefined && (obj.shareOutMinAmount = message.shareOutMinAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenIn !== undefined &&
+      (obj.tokenIn = message.tokenIn
+        ? Coin.toJSON(message.tokenIn)
+        : undefined);
+    message.shareOutMinAmount !== undefined &&
+      (obj.shareOutMinAmount = message.shareOutMinAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgJoinSwapExternAmountIn>): MsgJoinSwapExternAmountIn {
+  fromPartial(
+    object: DeepPartial<MsgJoinSwapExternAmountIn>
+  ): MsgJoinSwapExternAmountIn {
     const message = createBaseMsgJoinSwapExternAmountIn();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
-    message.tokenIn = object.tokenIn !== undefined && object.tokenIn !== null ? Coin.fromPartial(object.tokenIn) : undefined;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
+    message.tokenIn =
+      object.tokenIn !== undefined && object.tokenIn !== null
+        ? Coin.fromPartial(object.tokenIn)
+        : undefined;
     message.shareOutMinAmount = object.shareOutMinAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgJoinSwapExternAmountInResponse(): MsgJoinSwapExternAmountInResponse {
   return {
-    shareOutAmount: ""
+    shareOutAmount: "",
   };
 }
 
 export const MsgJoinSwapExternAmountInResponse = {
-  encode(message: MsgJoinSwapExternAmountInResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgJoinSwapExternAmountInResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.shareOutAmount !== "") {
       writer.uint32(10).string(message.shareOutAmount);
     }
@@ -953,7 +1107,10 @@ export const MsgJoinSwapExternAmountInResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgJoinSwapExternAmountInResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgJoinSwapExternAmountInResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgJoinSwapExternAmountInResponse();
@@ -977,22 +1134,26 @@ export const MsgJoinSwapExternAmountInResponse = {
 
   fromJSON(object: any): MsgJoinSwapExternAmountInResponse {
     return {
-      shareOutAmount: isSet(object.shareOutAmount) ? String(object.shareOutAmount) : ""
+      shareOutAmount: isSet(object.shareOutAmount)
+        ? String(object.shareOutAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgJoinSwapExternAmountInResponse): unknown {
     const obj: any = {};
-    message.shareOutAmount !== undefined && (obj.shareOutAmount = message.shareOutAmount);
+    message.shareOutAmount !== undefined &&
+      (obj.shareOutAmount = message.shareOutAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgJoinSwapExternAmountInResponse>): MsgJoinSwapExternAmountInResponse {
+  fromPartial(
+    object: DeepPartial<MsgJoinSwapExternAmountInResponse>
+  ): MsgJoinSwapExternAmountInResponse {
     const message = createBaseMsgJoinSwapExternAmountInResponse();
     message.shareOutAmount = object.shareOutAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgJoinSwapShareAmountOut(): MsgJoinSwapShareAmountOut {
@@ -1001,12 +1162,15 @@ function createBaseMsgJoinSwapShareAmountOut(): MsgJoinSwapShareAmountOut {
     poolId: Long.UZERO,
     tokenInDenom: "",
     shareOutAmount: "",
-    tokenInMaxAmount: ""
+    tokenInMaxAmount: "",
   };
 }
 
 export const MsgJoinSwapShareAmountOut = {
-  encode(message: MsgJoinSwapShareAmountOut, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgJoinSwapShareAmountOut,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -1030,7 +1194,10 @@ export const MsgJoinSwapShareAmountOut = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgJoinSwapShareAmountOut {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgJoinSwapShareAmountOut {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgJoinSwapShareAmountOut();
@@ -1044,7 +1211,7 @@ export const MsgJoinSwapShareAmountOut = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -1071,43 +1238,62 @@ export const MsgJoinSwapShareAmountOut = {
   fromJSON(object: any): MsgJoinSwapShareAmountOut {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenInDenom: isSet(object.tokenInDenom) ? String(object.tokenInDenom) : "",
-      shareOutAmount: isSet(object.shareOutAmount) ? String(object.shareOutAmount) : "",
-      tokenInMaxAmount: isSet(object.tokenInMaxAmount) ? String(object.tokenInMaxAmount) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenInDenom: isSet(object.tokenInDenom)
+        ? String(object.tokenInDenom)
+        : "",
+      shareOutAmount: isSet(object.shareOutAmount)
+        ? String(object.shareOutAmount)
+        : "",
+      tokenInMaxAmount: isSet(object.tokenInMaxAmount)
+        ? String(object.tokenInMaxAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgJoinSwapShareAmountOut): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenInDenom !== undefined && (obj.tokenInDenom = message.tokenInDenom);
-    message.shareOutAmount !== undefined && (obj.shareOutAmount = message.shareOutAmount);
-    message.tokenInMaxAmount !== undefined && (obj.tokenInMaxAmount = message.tokenInMaxAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenInDenom !== undefined &&
+      (obj.tokenInDenom = message.tokenInDenom);
+    message.shareOutAmount !== undefined &&
+      (obj.shareOutAmount = message.shareOutAmount);
+    message.tokenInMaxAmount !== undefined &&
+      (obj.tokenInMaxAmount = message.tokenInMaxAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgJoinSwapShareAmountOut>): MsgJoinSwapShareAmountOut {
+  fromPartial(
+    object: DeepPartial<MsgJoinSwapShareAmountOut>
+  ): MsgJoinSwapShareAmountOut {
     const message = createBaseMsgJoinSwapShareAmountOut();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.tokenInDenom = object.tokenInDenom ?? "";
     message.shareOutAmount = object.shareOutAmount ?? "";
     message.tokenInMaxAmount = object.tokenInMaxAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgJoinSwapShareAmountOutResponse(): MsgJoinSwapShareAmountOutResponse {
   return {
-    tokenInAmount: ""
+    tokenInAmount: "",
   };
 }
 
 export const MsgJoinSwapShareAmountOutResponse = {
-  encode(message: MsgJoinSwapShareAmountOutResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgJoinSwapShareAmountOutResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.tokenInAmount !== "") {
       writer.uint32(10).string(message.tokenInAmount);
     }
@@ -1115,7 +1301,10 @@ export const MsgJoinSwapShareAmountOutResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgJoinSwapShareAmountOutResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgJoinSwapShareAmountOutResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgJoinSwapShareAmountOutResponse();
@@ -1139,22 +1328,26 @@ export const MsgJoinSwapShareAmountOutResponse = {
 
   fromJSON(object: any): MsgJoinSwapShareAmountOutResponse {
     return {
-      tokenInAmount: isSet(object.tokenInAmount) ? String(object.tokenInAmount) : ""
+      tokenInAmount: isSet(object.tokenInAmount)
+        ? String(object.tokenInAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgJoinSwapShareAmountOutResponse): unknown {
     const obj: any = {};
-    message.tokenInAmount !== undefined && (obj.tokenInAmount = message.tokenInAmount);
+    message.tokenInAmount !== undefined &&
+      (obj.tokenInAmount = message.tokenInAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgJoinSwapShareAmountOutResponse>): MsgJoinSwapShareAmountOutResponse {
+  fromPartial(
+    object: DeepPartial<MsgJoinSwapShareAmountOutResponse>
+  ): MsgJoinSwapShareAmountOutResponse {
     const message = createBaseMsgJoinSwapShareAmountOutResponse();
     message.tokenInAmount = object.tokenInAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitSwapShareAmountIn(): MsgExitSwapShareAmountIn {
@@ -1163,12 +1356,15 @@ function createBaseMsgExitSwapShareAmountIn(): MsgExitSwapShareAmountIn {
     poolId: Long.UZERO,
     tokenOutDenom: "",
     shareInAmount: "",
-    tokenOutMinAmount: ""
+    tokenOutMinAmount: "",
   };
 }
 
 export const MsgExitSwapShareAmountIn = {
-  encode(message: MsgExitSwapShareAmountIn, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgExitSwapShareAmountIn,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -1192,7 +1388,10 @@ export const MsgExitSwapShareAmountIn = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgExitSwapShareAmountIn {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgExitSwapShareAmountIn {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgExitSwapShareAmountIn();
@@ -1206,7 +1405,7 @@ export const MsgExitSwapShareAmountIn = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -1233,43 +1432,62 @@ export const MsgExitSwapShareAmountIn = {
   fromJSON(object: any): MsgExitSwapShareAmountIn {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenOutDenom: isSet(object.tokenOutDenom) ? String(object.tokenOutDenom) : "",
-      shareInAmount: isSet(object.shareInAmount) ? String(object.shareInAmount) : "",
-      tokenOutMinAmount: isSet(object.tokenOutMinAmount) ? String(object.tokenOutMinAmount) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenOutDenom: isSet(object.tokenOutDenom)
+        ? String(object.tokenOutDenom)
+        : "",
+      shareInAmount: isSet(object.shareInAmount)
+        ? String(object.shareInAmount)
+        : "",
+      tokenOutMinAmount: isSet(object.tokenOutMinAmount)
+        ? String(object.tokenOutMinAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgExitSwapShareAmountIn): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenOutDenom !== undefined && (obj.tokenOutDenom = message.tokenOutDenom);
-    message.shareInAmount !== undefined && (obj.shareInAmount = message.shareInAmount);
-    message.tokenOutMinAmount !== undefined && (obj.tokenOutMinAmount = message.tokenOutMinAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenOutDenom !== undefined &&
+      (obj.tokenOutDenom = message.tokenOutDenom);
+    message.shareInAmount !== undefined &&
+      (obj.shareInAmount = message.shareInAmount);
+    message.tokenOutMinAmount !== undefined &&
+      (obj.tokenOutMinAmount = message.tokenOutMinAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgExitSwapShareAmountIn>): MsgExitSwapShareAmountIn {
+  fromPartial(
+    object: DeepPartial<MsgExitSwapShareAmountIn>
+  ): MsgExitSwapShareAmountIn {
     const message = createBaseMsgExitSwapShareAmountIn();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
     message.tokenOutDenom = object.tokenOutDenom ?? "";
     message.shareInAmount = object.shareInAmount ?? "";
     message.tokenOutMinAmount = object.tokenOutMinAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitSwapShareAmountInResponse(): MsgExitSwapShareAmountInResponse {
   return {
-    tokenOutAmount: ""
+    tokenOutAmount: "",
   };
 }
 
 export const MsgExitSwapShareAmountInResponse = {
-  encode(message: MsgExitSwapShareAmountInResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgExitSwapShareAmountInResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.tokenOutAmount !== "") {
       writer.uint32(10).string(message.tokenOutAmount);
     }
@@ -1277,7 +1495,10 @@ export const MsgExitSwapShareAmountInResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgExitSwapShareAmountInResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgExitSwapShareAmountInResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgExitSwapShareAmountInResponse();
@@ -1301,22 +1522,26 @@ export const MsgExitSwapShareAmountInResponse = {
 
   fromJSON(object: any): MsgExitSwapShareAmountInResponse {
     return {
-      tokenOutAmount: isSet(object.tokenOutAmount) ? String(object.tokenOutAmount) : ""
+      tokenOutAmount: isSet(object.tokenOutAmount)
+        ? String(object.tokenOutAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgExitSwapShareAmountInResponse): unknown {
     const obj: any = {};
-    message.tokenOutAmount !== undefined && (obj.tokenOutAmount = message.tokenOutAmount);
+    message.tokenOutAmount !== undefined &&
+      (obj.tokenOutAmount = message.tokenOutAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgExitSwapShareAmountInResponse>): MsgExitSwapShareAmountInResponse {
+  fromPartial(
+    object: DeepPartial<MsgExitSwapShareAmountInResponse>
+  ): MsgExitSwapShareAmountInResponse {
     const message = createBaseMsgExitSwapShareAmountInResponse();
     message.tokenOutAmount = object.tokenOutAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitSwapExternAmountOut(): MsgExitSwapExternAmountOut {
@@ -1324,12 +1549,15 @@ function createBaseMsgExitSwapExternAmountOut(): MsgExitSwapExternAmountOut {
     sender: "",
     poolId: Long.UZERO,
     tokenOut: undefined,
-    shareInMaxAmount: ""
+    shareInMaxAmount: "",
   };
 }
 
 export const MsgExitSwapExternAmountOut = {
-  encode(message: MsgExitSwapExternAmountOut, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgExitSwapExternAmountOut,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.sender !== "") {
       writer.uint32(10).string(message.sender);
     }
@@ -1349,7 +1577,10 @@ export const MsgExitSwapExternAmountOut = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgExitSwapExternAmountOut {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgExitSwapExternAmountOut {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgExitSwapExternAmountOut();
@@ -1363,7 +1594,7 @@ export const MsgExitSwapExternAmountOut = {
           break;
 
         case 2:
-          message.poolId = (reader.uint64() as Long);
+          message.poolId = reader.uint64() as Long;
           break;
 
         case 3:
@@ -1386,40 +1617,61 @@ export const MsgExitSwapExternAmountOut = {
   fromJSON(object: any): MsgExitSwapExternAmountOut {
     return {
       sender: isSet(object.sender) ? String(object.sender) : "",
-      poolId: isSet(object.poolId) ? Long.fromString(object.poolId) : Long.UZERO,
-      tokenOut: isSet(object.tokenOut) ? Coin.fromJSON(object.tokenOut) : undefined,
-      shareInMaxAmount: isSet(object.shareInMaxAmount) ? String(object.shareInMaxAmount) : ""
+      poolId: isSet(object.poolId)
+        ? Long.fromString(object.poolId)
+        : Long.UZERO,
+      tokenOut: isSet(object.tokenOut)
+        ? Coin.fromJSON(object.tokenOut)
+        : undefined,
+      shareInMaxAmount: isSet(object.shareInMaxAmount)
+        ? String(object.shareInMaxAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgExitSwapExternAmountOut): unknown {
     const obj: any = {};
     message.sender !== undefined && (obj.sender = message.sender);
-    message.poolId !== undefined && (obj.poolId = (message.poolId || Long.UZERO).toString());
-    message.tokenOut !== undefined && (obj.tokenOut = message.tokenOut ? Coin.toJSON(message.tokenOut) : undefined);
-    message.shareInMaxAmount !== undefined && (obj.shareInMaxAmount = message.shareInMaxAmount);
+    message.poolId !== undefined &&
+      (obj.poolId = (message.poolId || Long.UZERO).toString());
+    message.tokenOut !== undefined &&
+      (obj.tokenOut = message.tokenOut
+        ? Coin.toJSON(message.tokenOut)
+        : undefined);
+    message.shareInMaxAmount !== undefined &&
+      (obj.shareInMaxAmount = message.shareInMaxAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgExitSwapExternAmountOut>): MsgExitSwapExternAmountOut {
+  fromPartial(
+    object: DeepPartial<MsgExitSwapExternAmountOut>
+  ): MsgExitSwapExternAmountOut {
     const message = createBaseMsgExitSwapExternAmountOut();
     message.sender = object.sender ?? "";
-    message.poolId = object.poolId !== undefined && object.poolId !== null ? Long.fromValue(object.poolId) : Long.UZERO;
-    message.tokenOut = object.tokenOut !== undefined && object.tokenOut !== null ? Coin.fromPartial(object.tokenOut) : undefined;
+    message.poolId =
+      object.poolId !== undefined && object.poolId !== null
+        ? Long.fromValue(object.poolId)
+        : Long.UZERO;
+    message.tokenOut =
+      object.tokenOut !== undefined && object.tokenOut !== null
+        ? Coin.fromPartial(object.tokenOut)
+        : undefined;
     message.shareInMaxAmount = object.shareInMaxAmount ?? "";
     return message;
-  }
-
+  },
 };
 
 function createBaseMsgExitSwapExternAmountOutResponse(): MsgExitSwapExternAmountOutResponse {
   return {
-    shareInAmount: ""
+    shareInAmount: "",
   };
 }
 
 export const MsgExitSwapExternAmountOutResponse = {
-  encode(message: MsgExitSwapExternAmountOutResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+  encode(
+    message: MsgExitSwapExternAmountOutResponse,
+    writer: _m0.Writer = _m0.Writer.create()
+  ): _m0.Writer {
     if (message.shareInAmount !== "") {
       writer.uint32(10).string(message.shareInAmount);
     }
@@ -1427,7 +1679,10 @@ export const MsgExitSwapExternAmountOutResponse = {
     return writer;
   },
 
-  decode(input: _m0.Reader | Uint8Array, length?: number): MsgExitSwapExternAmountOutResponse {
+  decode(
+    input: _m0.Reader | Uint8Array,
+    length?: number
+  ): MsgExitSwapExternAmountOutResponse {
     const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgExitSwapExternAmountOutResponse();
@@ -1451,20 +1706,24 @@ export const MsgExitSwapExternAmountOutResponse = {
 
   fromJSON(object: any): MsgExitSwapExternAmountOutResponse {
     return {
-      shareInAmount: isSet(object.shareInAmount) ? String(object.shareInAmount) : ""
+      shareInAmount: isSet(object.shareInAmount)
+        ? String(object.shareInAmount)
+        : "",
     };
   },
 
   toJSON(message: MsgExitSwapExternAmountOutResponse): unknown {
     const obj: any = {};
-    message.shareInAmount !== undefined && (obj.shareInAmount = message.shareInAmount);
+    message.shareInAmount !== undefined &&
+      (obj.shareInAmount = message.shareInAmount);
     return obj;
   },
 
-  fromPartial(object: DeepPartial<MsgExitSwapExternAmountOutResponse>): MsgExitSwapExternAmountOutResponse {
+  fromPartial(
+    object: DeepPartial<MsgExitSwapExternAmountOutResponse>
+  ): MsgExitSwapExternAmountOutResponse {
     const message = createBaseMsgExitSwapExternAmountOutResponse();
     message.shareInAmount = object.shareInAmount ?? "";
     return message;
-  }
-
+  },
 };

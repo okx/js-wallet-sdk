@@ -6,10 +6,13 @@ import {
     CommonCosmosWallet,
     GammAminoConverters,
     GammRegistry,
+    PoolAminoConverters,
+    PoolRegistry,
     getNewAddress,
     InjectiveWallet,
     SeiWallet,
     sendAminoMessage,
+    simulateTx,
     sendIBCToken,
     sendMessages,
     sendToken,
@@ -91,7 +94,14 @@ describe("luna", () => {
         const prefix = "osmo"
         const  tt = await sendAminoMessage(privateKey, prefix, data, GammAminoConverters, GammRegistry)
         console.info(tt)
-    });   
+    });
+
+    test("osmosis-json simulate", async () => {
+        const data = '{"chain_id":"osmosis-1","account_number":"705712","sequence":"22","fee":{"gas":"0","amount":[{"amount":"0","denom":"uosmo"}]},"msgs":[{"type":"osmosis/poolmanager/swap-exact-amount-in","value":{"sender":"osmo1c28f2dluj9ejwtyhdu26nx3vgrkc8yc5f62wwm","routes":[{"pool_id":"1265","token_out_denom":"uosmo"}],"token_in":{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"100"},"token_out_min_amount":"574"}}],"memo":"","timeout_height":"13682627"}'
+        const prefix = "osmo"
+        const  txBytes = await simulateTx(prefix, data, PoolAminoConverters, PoolRegistry)
+        console.info(txBytes)
+    });    
 });
 
 describe("evmos", () => {

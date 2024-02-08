@@ -1,9 +1,12 @@
 import {base, Long, signUtil} from "@okxweb3/crypto-lib";
 import {Coin} from "./types/cosmos/base/v1beta1/coin";
 import {GeneratedType, registerExtraTypes, registry} from './registry';
-import {GammAminoConverters, GammRegistry} from "./osmosis"
+import {GammAminoConverters} from "./osmosis/gamm/v1beta1/amino"
+import {GammRegistry} from "./osmosis/gamm/v1beta1/registry"
+import {PoolAminoConverters} from "./osmosis/poolmanager/v1beta1/amino"
+import {PoolRegistry} from "./osmosis/poolmanager/v1beta1/registry"
 
-import {doSign, makeSignBytes, makeSignDoc, signTx} from './tx';
+import {doSign, makeSignBytes, makeSignDoc, signSimulateTx, signTx} from './tx';
 
 import {Height, MsgTransfer} from './types/ibc/applications/transfer/v1/tx';
 import {EncodeObject, encodeSecp256k1Signature, StdFee} from './encoding';
@@ -272,6 +275,30 @@ export async function sendAminoMessage(privateKey: Uint8Array,
     return Promise.resolve(base.toBase64(result))
 }
 
+export async function simulateTx(
+                                prefix: string,
+                                // json
+                                data: string,
+                                extraConverters?: AminoConverters,
+                                extraTypes?: ReadonlyArray<[string, GeneratedType]>,
+                                useEthSecp256k1?: boolean) {
+    registerExtraTypes(extraTypes)
+    const m: AminoMsgData = JSON.parse(data)
+    let converters = createDefaultAminoConverters(prefix)
+    if (extraConverters) {
+        converters = {...converters, ...extraConverters}
+    }
+    const aminoTypes = new AminoTypes(converters)
+    const messages = m.msgs.map(it => aminoTypes.fromAmino(it))
+    const result = await signSimulateTx(messages, m.fee, m.memo, Long.fromNumber(0), {
+        accountNumber: Number(m.account_number),
+        sequence: Number(m.sequence),
+        chainId: m.chain_id,
+        useEthSecp256k1: useEthSecp256k1 || false,
+    })
+    return Promise.resolve(result)
+}
+
 export function amount2Coins(demon: string, amount: number): Coin[] {
     return [{denom: demon, amount: amount.toString()}]
 }
@@ -351,7 +378,9 @@ export {
     AminoConverters,
     AminoConverter,
     GammAminoConverters,
-    GammRegistry
+    GammRegistry,
+    PoolAminoConverters,
+    PoolRegistry,
 }
 export * from "./CosmosWallet"
 

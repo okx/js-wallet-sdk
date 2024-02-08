@@ -97,6 +97,20 @@ export const Coin = {
     message.amount = object.amount ?? "";
     return message;
   },
+
+  fromAmino(object: Coin): Coin {
+    return {
+      denom: object.denom,
+      amount: object.amount,
+    };
+  },
+
+  toAmino(message: Coin): Coin {
+    const obj: any = {};
+    obj.denom = message.denom;
+    obj.amount = message.amount;
+    return obj;
+  },
 };
 
 function createBaseDecCoin(): DecCoin {

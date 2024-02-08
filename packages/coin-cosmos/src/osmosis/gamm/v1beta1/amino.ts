@@ -1,8 +1,9 @@
 /**
  * The following methods are based on `osmojs-beta-testing`, thanks for their work
- * https://github.com/pyramation/osmojs-beta-testing
+ * https://github.com/osmosis-labs/osmosis-frontend
  */
-import { AminoMsg } from "../amino/aminotypes";
+
+import { AminoMsg } from "../../../amino/aminotypes";
 import {
   MsgExitPool,
   MsgExitSwapExternAmountOut,
@@ -12,7 +13,7 @@ import {
   MsgJoinSwapShareAmountOut,
   MsgSwapExactAmountIn,
   MsgSwapExactAmountOut,
-} from "./gamm/v1beta1/tx";
+} from "./tx";
 import { Long } from "@okxweb3/crypto-lib";
 
 export interface AminoMsgJoinPool extends AminoMsg {

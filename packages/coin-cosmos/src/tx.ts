@@ -30,12 +30,12 @@ export interface SignerData {
  * This implementation does not support different signing modes for the different signers.
  */
 function makeSignerInfos(
-  signers: ReadonlyArray<{ readonly pubkey: Any; readonly sequence: number }>,
+  signers: ReadonlyArray<{ readonly pubkey?: Any; readonly sequence: number }>,
   signMode: SignMode,
 ): SignerInfo[] {
     return signers.map(
       ({ pubkey, sequence }): SignerInfo => ({
-          publicKey: pubkey,
+          publicKey: pubkey || undefined,
           modeInfo: {
               single: { mode: signMode },
           },
@@ -50,7 +50,7 @@ function makeSignerInfos(
  * This implementation does not support different signing modes for the different signers.
  */
 export function makeAuthInfoBytes(
-  signers: ReadonlyArray<{ readonly pubkey: Any; readonly sequence: number }>,
+  signers: ReadonlyArray<{ readonly pubkey?: Any; readonly sequence: number }>,
   feeAmount: readonly Coin[],
   gasLimit: number,
   signMode = SignMode.SIGN_MODE_DIRECT,
@@ -89,6 +89,31 @@ export function makeSignBytes({ accountNumber, authInfoBytes, bodyBytes, chainId
     return SignDoc.encode(signDoc).finish();
 }
 
+export async function signSimulateTx(
+    messages: EncodeObject[],
+    fee: StdFee,
+    memo = "",
+    timeoutHeight: Long = Long.fromNumber(0),
+    { accountNumber, sequence, chainId }: Omit<SignerData, 'privateKey'>,
+  ): Promise<any> {
+    const txBodyEncodeObject: TxBodyEncodeObject = {
+        typeUrl: "/cosmos.tx.v1beta1.TxBody",
+        value: {
+            messages: messages,
+            memo: memo,
+            timeoutHeight: timeoutHeight,
+        },
+    };
+    const txBodyBytes = registry.encode(txBodyEncodeObject);
+    const gasLimit = math.Int53.fromString(fee.gas).toNumber();
+    const authInfoBytes = makeAuthInfoBytes([{pubkey: undefined, sequence}], fee.amount, gasLimit, SignMode.SIGN_MODE_LEGACY_AMINO_JSON);
+    const signDoc = makeSignDoc(txBodyBytes, authInfoBytes, chainId, accountNumber);
+    return base.toBase64(TxRaw.encode(TxRaw.fromPartial({
+        bodyBytes: signDoc.bodyBytes,
+        authInfoBytes: signDoc.authInfoBytes,
+        signatures: [new Uint8Array(64)],
+    })).finish())
+  }
 
 export async function signTx(
   messages: EncodeObject[],
