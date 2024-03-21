@@ -437,7 +437,7 @@ export function inscribeForMPCUnsigned(request: InscriptionRequest, network: bit
     const sigHashList = calculateSigHash(commitTx, request.commitTxPrevOutputList, network);
 
     // sign reveal tx
-    // TODO commitTx计算txid，在legacy地址的情况下需要签名数据
+    // TODO Signed data is required in the case of legacy addresses
     let commitTxHash = commitTx.getHash();
     if (signedCommitTxHash) {
         commitTxHash = signedCommitTxHash

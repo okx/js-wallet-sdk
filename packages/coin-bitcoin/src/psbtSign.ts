@@ -184,6 +184,9 @@ export function signPsbtWithKeyPathAndScriptPathImpl(psbt: Psbt, privateKey: str
         signer.psbtIndex = i;
         const input = psbt.data.inputs[i];
         if (isTaprootInput(input)) {
+            if (!input.tapInternalKey) {
+                input.tapInternalKey = toXOnly(wif2Public(privateKey, network));
+            }
             // default key path spend
             signer.needTweak = true;
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
@@ -258,6 +261,10 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
 
     for (let i = 0; i < psbt.inputCount; i++) {
         if (isTaprootInput(psbt.data.inputs[i])) {
+            const input = psbt.data.inputs[i];
+            if (!input.tapInternalKey) {
+                input.tapInternalKey = toXOnly(wif2Public(privateKey, network));
+            }
             signer.publicKey = Buffer.from(taproot.taprootTweakPubkey(toXOnly(wif2Public(privateKey, network)))[0]);
         } else {
             signer.publicKey = wif2Public(privateKey, network);

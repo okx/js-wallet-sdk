@@ -9,11 +9,14 @@ import {
     TBtcWallet,
     utxoTx,
     ValidateBitcashP2PkHAddress,
-    ValidSignedTransaction
+    ValidSignedTransaction,
+    message,
+    DogeWallet,
+    LtcWallet
 } from '../src';
 
 import {base} from "@okxweb3/crypto-lib";
-import {SignTxParams} from "@okxweb3/coin-base";
+import {SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
 
 describe("bitcoin", () => {
 
@@ -21,6 +24,34 @@ describe("bitcoin", () => {
         let wallet = new BtcWallet()
         let key = await wallet.getRandomPrivateKey()
         console.log(key)
+    })
+
+
+    test("signMessage", async () => {
+        let wallet = new TBtcWallet()
+        let signParams: SignTxParams = {
+            privateKey: "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22",
+            data: {
+                type: 0,
+                address: "tb1qtsq9c4fje6qsmheql8gajwtrrdrs38kdzeersc",
+                message: "hello world!",
+            }
+        };
+
+        let res = await wallet.signMessage(signParams)
+        console.log(res)
+        expect(res).toEqual("IIqZYyaBMGtDMIztAYVqZ8ciaXkM1UuG8HK6bFDBGUkrThQwd2tSEZbCSq0H5yo2ASrrTJA0NPFAoDtonqQc9Mg=")
+        let veryParams: VerifyMessageParams = {
+            signature: res,
+            data: {
+                message: "hello world!",
+                type: 0,
+                publicKey: '0357bbb2d4a9cb8a2357633f201b9c518c2795ded682b7913c6beef3fe23bd6d2f',
+            }
+        };
+        let veryfied = await wallet.verifyMessage(veryParams)
+        console.log(veryfied)
+        expect(veryfied).toBe(true)
     })
 
     test("bitcoin address", async () => {
@@ -248,6 +279,57 @@ describe("bitcash", () => {
     });
 });
 
+describe("Doge wallet", () => {
+    test("signMessage", async () => {
+        let wallet = new DogeWallet()
+        let signParams: SignTxParams = {
+            privateKey: "QUKYRpo8QXbXNwKJGtAy8HX71XkejfE8Xs4kvN8s2ksvRMK72W4Y",
+            data: {
+                "address": "D9jYpWwNkcwifh9GR2BUPE4uMPPWtNZrLn",
+                message: "hello world!",
+            }
+        };
+        let res = await wallet.signMessage(signParams)
+        console.log(res)
+        expect(res).toEqual('H9zEVPRcS4hW2ZE/tCdxe0itAKtD/cn8GHcaQDobI5X0O3XwRY7ViBEG3EbkVA3lizaYwrQxvbWWpk1VSePPCs0=')
+        let veryParams: VerifyMessageParams = {
+            signature: res,
+            data: {
+                message: "hello world!",
+                publicKey: '020834928459fa93692af94c290d2a6c9e8ac0f63ddda8cdf982efa1483e9bcebd',
+            }
+        };
+        let veryfied = await wallet.verifyMessage(veryParams)
+        console.log(veryfied)
+        expect(veryfied).toBe(true)
+    })
+})
+
+describe("Ltc wallet", () => {
+    test("signMessage", async () => {
+        let wallet = new LtcWallet()
+        let signParams: SignTxParams = {
+            privateKey: "T5hYkW3UzvxDNRmkp4sjLaCpkKwASgJLAEwzPLAxWpuHqBKfpirB",
+            data: {
+                "address": "LaB7HeTLsyQ6kxM5RsEx9tk8XHQs3GkWDr",
+                message: "hello world!",
+            }
+        };
+        let res = await wallet.signMessage(signParams)
+        console.log(res)
+        expect(res).toEqual('IHd+MKPXIAR5iyrU+66gYY6f9y2vbKoNAJXA8UDiJItbQ2l2xJ18AjtyjfMcFMQezGoH/D3sPHQSvwyd1S1Gejk=')
+        let veryParams: VerifyMessageParams = {
+            signature: res,
+            data: {
+                message: "hello world!",
+                publicKey: '03314664db7b06040c0be46a2c7bd3a197e3c55aa4ad95ae1684e3f8bf3abfa3d6',
+            }
+        };
+        let veryfied = await wallet.verifyMessage(veryParams)
+        console.log(veryfied)
+        expect(veryfied).toBe(true)
+    })
+})
 
 describe("ValidSignedTransaction tx", () => {
 
@@ -344,11 +426,59 @@ describe('hardware wallet test', () => {
         console.log(JSON.stringify(unsignedTx));
     });
 
-    test("enum",async ()=>{
-       let type=1;
-       if (type===bitcoin.BtcXrcTypes.INSCRIBE){
-           console.log(1);
-       }
+    test("enum", async () => {
+        let type = 1;
+        if (type === bitcoin.BtcXrcTypes.INSCRIBE) {
+            console.log(1);
+        }
         console.log(bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH_BATCH)
     });
 })
+
+test("signMessage", () => {
+    const signedTx = "020000000001015d095d1782dae1437d061c1d7c4f9cfa6bd5b98fa06a892c5536d861797f8a7d0100000017160014c2cae8bae32260d75076b01a0b72c167908d9f88ffffffff02e80300000000000017a9145e5b9fb69808cbfec8724f20c9f4f8c1cb19667c879d7804000000000017a91425f4eba49c3d86397a71ec5158304e0d6a67dfb78702473044022008334369a490d1320a9d7046ce3c5cd6e016199f074397925283954da1e4f17502203e15add094386c11fe2d123d7f6ff194f5d2407f8a1fa8280e76d4722b05055301210252dab4b2433a2d14dd242af8de23ffbe9552db2567072b59cfd0c3ba855bfcf100000000"
+    const inputs = []
+    inputs.push({
+        address: "359iL1p3BuRhj2Sgx7FtNHbfwumguCR4js",
+        value: 295757
+    })
+    // "03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045"
+    const ret = ValidSignedTransaction(signedTx, inputs as []);
+    console.info(ret)
+});
+
+
+test("verifyMessageWithAddressBtc", async () => {
+    const msg = "Hello World";
+    const sig = "IDZqQayIajlTRxsnBtPhhFFnRdDlTah/Pp2yvo6aXFIwV+NkSNxVh/Wm9aBVpdnhzj7PeNhOiu6iXHbj+MoRQhg=";
+    const addr1 = "1Hgc1DnWHwfXFxruej4H5g3ThsCzUEwLdD";
+    const addr3 = "3LgZ6FNwTGobjyCWQek51p51SnQwaGNyCc";
+    const addrbc1q = "bc1qkmlhg65578kjxzhhezgmc69gmnz9hh60eh229d";
+
+    let valid = message.verifyWithAddress(addr1, msg, sig);
+    console.log(valid)
+
+    valid = message.verifyWithAddress(addr3, msg, sig);
+    console.log(valid)
+
+    valid = message.verifyWithAddress(addrbc1q, msg, sig);
+    console.log(valid)
+});
+
+test("verifyMessageWithAddressDoge", async () => {
+    const msg = "Hello World";
+    const sig = "H1cyL8YDwaMrVJHNaH89GpKGJujZJAgbzonye72NQ4fmaPXUgR30bkPF4Q7F+nE5qjrCXon6TP07ZDLO6edyTtI=";
+    const addr = "DTqrsRTF5LwLqMZkdTGRaKCUh94KQCgSSA";
+
+    const valid = message.verifyWithAddress(addr, msg, sig, 'Dogecoin Signed Message:\n');
+    console.log(valid)
+});
+
+test("verifyMessageWithAddressLtc", async () => {
+    const msg = "Hello World";
+    const sig = "H7+lu8OniP8X0bv0Hdc3pyrB2kXsPE5I51aVpMB8iRJILAZL/9mbQstUuQxUeGQhFb48vmg0gd43cqUlj4Zsg44=";
+    const addr = "MSthQ8nuQPf2YUUQWXjQqTKQmV1PYkS6UR";
+
+    const valid = message.verifyWithAddress(addr, msg, sig, 'Litecoin Signed Message:\n');
+    console.log(valid)
+});

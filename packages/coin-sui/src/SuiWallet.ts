@@ -23,7 +23,7 @@ import {
     RawSigner,
     getAddressFromPrivate,
     TransactionBlock,
-    TransactionBlockDataBuilder
+    TransactionBlockDataBuilder, encodeSuiPrivateKey, tryDecodeSuiPrivateKey
 } from './index';
 
 
@@ -44,6 +44,8 @@ export interface PaySuiTransaction {
 }
 
 
+export const SUI_PRIVATE_KEY_PREFIX = 'suiprivkey';
+
 export type SuiTransactionType =
     "raw"
     | "paySUI"
@@ -61,7 +63,7 @@ export class SuiWallet extends BaseWallet {
     async getRandomPrivateKey(): Promise<any> {
         try {
             const privateKeyHex = ed25519_getRandomPrivateKey(false, "hex")
-            return Promise.resolve('0x' + privateKeyHex)
+            return Promise.resolve(encodeSuiPrivateKey(privateKeyHex))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -70,7 +72,7 @@ export class SuiWallet extends BaseWallet {
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
             const privateKeyHex = await ed25519_getDerivedPrivateKey(param, false, "hex")
-            return Promise.resolve('0x' + privateKeyHex)
+            return Promise.resolve(encodeSuiPrivateKey(privateKeyHex))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -78,7 +80,7 @@ export class SuiWallet extends BaseWallet {
 
     getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            const address = getAddressFromPrivate(param.privateKey)
+            const address = getAddressFromPrivate(tryDecodeSuiPrivateKey(param.privateKey))
             let data: NewAddressData = {
                 address: address.address,
                 publicKey: address.publicKey
@@ -95,7 +97,7 @@ export class SuiWallet extends BaseWallet {
                 return Promise.reject(SignMsgError);
             }
             const message = param.data as Uint8Array
-            const keyPair = Ed25519Keypair.fromSeed(base.fromHex(param.privateKey));
+            const keyPair = Ed25519Keypair.fromSeed(base.fromHex(tryDecodeSuiPrivateKey(param.privateKey)));
             const signer = new RawSigner(keyPair);
             return Promise.resolve(signer.signMessage({message: message}));
         } catch (e) {
@@ -106,7 +108,7 @@ export class SuiWallet extends BaseWallet {
     signTransaction(param: SignTxParams): Promise<any> {
         try {
             const data: SuiSignData = param.data
-            const keyPair = Ed25519Keypair.fromSeed(base.fromHex(param.privateKey));
+            const keyPair = Ed25519Keypair.fromSeed(base.fromHex(tryDecodeSuiPrivateKey(param.privateKey)));
             const signer = new RawSigner(keyPair);
             if (data.type == 'raw') {
                 const s = data.data as string

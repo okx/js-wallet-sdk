@@ -56,3 +56,12 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** add for mpc to support brc20 psbt ([91](https://github.com/okx/js-wallet-sdk/pull/91))
+
+# [1.0.12] (2024-03-06)
+
+### Feature
+
+- **coin-bitcoin:** add default public key for signing psbt
+- **coin-bitcoin:** support src ,atomical,rune alpha assets
+- **coin-dogecoin:** support drc20 assets,and message sign
+- **coin-litecoin:** support  message sign
