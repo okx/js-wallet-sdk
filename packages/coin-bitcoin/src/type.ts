@@ -71,7 +71,7 @@ type RuneData = {
 
 type Edict = {
     id: number
-    amount: number
+    amount: bigint | string
     output: number
 }
 

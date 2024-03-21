@@ -242,4 +242,110 @@ import { TBtcWallet } from "@okxweb3/coin-bitcoin";
         console.log(JSON.stringify(txs));
 ```
 
+Rune alpha transfer
+
+    you need replace TBtcWallet with BtcWallet when you run on mainnet not testnet.
+```typescript
+import { TBtcWallet } from "@okxweb3/coin-bitcoin";
+ let wallet = new TBtcWallet()
+
+let runeTxParams = {
+    type: BtcXrcTypes.RUNE,
+    inputs: [
+        // rune token info
+        {
+            txId: "4f8a6cc528669278dc33e4d824bb047121505a5e2cc53d1a51e3575c60564b73",
+            vOut: 0,
+            amount: 546,
+            address: "tb1pnxu8mvv63dujgydwt0l5s0ly8lmgmef3355x4t7s2n568k5cryxqfk78kq",
+            data: [{"id": "26e4140001", "amount": "500"}] // maybe many rune token
+        },
+        // gas fee utxo
+        {
+            txId: "4f8a6cc528669278dc33e4d824bb047121505a5e2cc53d1a51e3575c60564b73",
+            vOut: 2,
+            amount: 97570,
+            address: "tb1pnxu8mvv63dujgydwt0l5s0ly8lmgmef3355x4t7s2n568k5cryxqfk78kq"
+        },
+    ],
+    outputs: [
+        { // rune send output
+            address: "tb1q05w9mglkhylwjcntp3n3x3jaf0yrx0n7463u2h",
+            amount: 546,
+            data: {"id": "26e4140001", "amount": "100"} // one output allow only one rune token
+        }
+    ],
+    address: "tb1pnxu8mvv63dujgydwt0l5s0ly8lmgmef3355x4t7s2n568k5cryxqfk78kq",
+    feePerB: 10,
+    runeData: {
+        "etching": null,
+        "burn": false
+    }
+};
+
+let signParams: SignTxParams = {
+    privateKey: "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS",
+    data: runeTxParams
+};
+let fee = await wallet.estimateFee(signParams)
+expect(fee).toEqual(2730)
+let tx = await wallet.signTransaction(signParams);
+console.info(tx)
+```
+
+Atomical transfer
+
+    you need replace AtomicalTestWallet with AtomicalWallet when you run on mainnet not testnet.
+```typescript
+let wallet = new AtomicalTestWallet()
+let atomicalTxParams = {
+    inputs: [
+        // atomical token info
+        {
+            txId: "2ff565d4b73b401d68eef5fb572c19f64b9c8705a79ec14f322528dbc34179e1",
+            vOut: 0,
+            amount: 1000,
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+            data: [
+                {"atomicalId": "9527efa43262636d8f5917fc763fbdd09333e4b387afd6d4ed7a905a127b27b4i0", "type": "FT"}
+            ] ,// maybe many atomical token
+        },
+        // gas fee utxo
+        {
+            txId: "1413c03a4d179d4d78d4ffb9e79b954bdc31716b0ba98fdc9288a676636464a0",
+            vOut: 1,
+            amount: 900842,
+            address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+        },
+    ],
+    outputs: [
+        { // atomical send output
+            address: "tb1pmye4w4txqsrddyguc5x6z2h5qkms0u38r6y90m8us53h4ndkwprst34fnw",
+            amount: 500,
+            data: [
+                {"atomicalId": "9527efa43262636d8f5917fc763fbdd09333e4b387afd6d4ed7a905a127b27b4i0", "type": "FT"}
+            ]
+        },
+        { // atomical send output
+            address: "tb1pmye4w4txqsrddyguc5x6z2h5qkms0u38r6y90m8us53h4ndkwprst34fnw",
+            amount: 500,
+            data: [
+                {"atomicalId": "9527efa43262636d8f5917fc763fbdd09333e4b387afd6d4ed7a905a127b27b4i0", "type": "FT"}
+            ]
+        },
+    ],
+    address: "tb1ppfc0mx9j3070zqleu257zt46ch2v9f9n9urkhlg7n7pswcmpqq0qt3pswx",
+    feePerB: 1,
+    dustSize : 100
+};
+
+let signParams: SignTxParams = {
+    privateKey: curPrivateKey,
+    data: atomicalTxParams
+};
+// let txfee = await wallet.estimateFee(signParams);
+// console.log("txfee:",txfee)
+let tx = await wallet.signTransaction(signParams);
+```
+
 ## License: MIT

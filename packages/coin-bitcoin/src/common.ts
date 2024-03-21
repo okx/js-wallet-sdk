@@ -9,4 +9,7 @@ export enum BtcXrcTypes {
     PSBT_MPC_SIGNED = 26,
     PSBT_KEY_SCRIPT_PATH = 3,
     PSBT_KEY_SCRIPT_PATH_BATCH = 4,
+    SRC20 = 101,
+    RUNE = 102,
+    ARC20 = 114,
 }
