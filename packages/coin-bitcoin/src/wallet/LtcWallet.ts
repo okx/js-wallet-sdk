@@ -1,10 +1,17 @@
-import {DerivePathError, GetDerivedPathParam, segwitType} from "@okxweb3/coin-base";
+import {
+    DerivePathError,
+    GetDerivedPathParam,
+    segwitType,
+    SignMsgError,
+    SignTxParams,
+    TypedMessage, VerifyMessageParams
+} from "@okxweb3/coin-base";
 import {BtcWallet} from "./BtcWallet";
 import * as bitcoin from "../index"
 
 
 export const litecoin: bitcoin.Network = {
-    messagePrefix: '\x19Litecoin Signed Message:\n',
+    messagePrefix: 'Litecoin Signed Message:\n',
     bech32: 'ltc',
     bip32: {
         public: 0x019da462,
@@ -36,4 +43,26 @@ export class LtcWallet extends BtcWallet {
             return Promise.reject(DerivePathError);
         }
     }
+
+
+    signMessage(param: SignTxParams): Promise<string> {
+        try {
+            const typedMessage = param.data as TypedMessage;
+            let signature = bitcoin.message.sign(param.privateKey, typedMessage.message, this.network(), litecoin.messagePrefix);
+            return Promise.resolve(signature);
+        } catch (e) {
+            return Promise.reject(SignMsgError);
+        }
+    }
+
+    async verifyMessage(param: VerifyMessageParams): Promise<boolean> {
+        try {
+            const typedMessage = param.data as TypedMessage;
+            const ret = bitcoin.message.verify(typedMessage.publicKey!, typedMessage.message, param.signature, litecoin.messagePrefix);
+            return Promise.resolve(ret);
+        } catch (e) {
+            return Promise.reject(SignMsgError);
+        }
+    }
+
 }

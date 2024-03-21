@@ -37,7 +37,7 @@ import {
 } from '@okxweb3/coin-base';
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 import * as bitcoin from "../index"
-import { networks} from "../index";
+import {AtomicalTestWallet, AtomicalWallet, networks, RuneTestWallet, RuneWallet} from "../index";
 
 
 export const BITCOIN_MESSAGE_ECDSA = 0
@@ -205,6 +205,32 @@ export class BtcWallet extends BaseWallet {
         } else if (type === bitcoin.BtcXrcTypes.PSBT_KEY_SCRIPT_PATH_BATCH) { // batch of psbt key-path and script-path spend
             try {
                 return Promise.resolve(bitcoin.signPsbtWithKeyPathAndScriptPathBatch(param.data.psbtHexs, param.privateKey, this.network(), param.data.options));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.SRC20) { // src20
+            try {
+                return Promise.resolve(bitcoin.srcInscribe(this.network(), param.data));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.RUNE) { // rune
+            try {
+                let wallet = new RuneWallet()
+                if (this.network() === networks.testnet) {
+                    wallet = new RuneTestWallet()
+                }
+                return Promise.resolve(wallet.signTransaction(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
+            try {
+                let wallet = new AtomicalWallet()
+                if (this.network() === networks.testnet) {
+                    wallet = new AtomicalTestWallet()
+                }
+                return Promise.resolve(wallet.signTransaction(param))
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
@@ -422,6 +448,26 @@ export class BtcWallet extends BaseWallet {
                 return Promise.reject(EstimateFeeError);
             } else if (type === bitcoin.BtcXrcTypes.PSBT) { // psbt
                 return Promise.reject(EstimateFeeError);
+            } else if (type === bitcoin.BtcXrcTypes.RUNE) { // rune
+                try {
+                    let wallet = new RuneWallet()
+                    if (this.network() === networks.testnet) {
+                        wallet = new RuneTestWallet()
+                    }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
+            } else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
+                try {
+                    let wallet = new AtomicalWallet()
+                    if (this.network() === networks.testnet) {
+                        wallet = new AtomicalTestWallet()
+                    }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
             } else {
                 const utxoTx = convert2UtxoTx(param.data);
                 const fee = bitcoin.estimateBtcFee(utxoTx, this.network());
