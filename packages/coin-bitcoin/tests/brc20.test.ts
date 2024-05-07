@@ -88,6 +88,7 @@ describe("brc20 test", () => {
 
         const txs: InscribeTxs = inscribe(network, request);
         console.log(txs);
+        expect(txs.commitTxFee).toEqual(1180)
     });
 
     test("inscribe", async () => {

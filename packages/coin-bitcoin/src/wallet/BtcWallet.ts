@@ -37,7 +37,16 @@ import {
 } from '@okxweb3/coin-base';
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 import * as bitcoin from "../index"
-import {AtomicalTestWallet, AtomicalWallet, networks, RuneTestWallet, RuneWallet} from "../index";
+import {
+    AtomicalTestWallet,
+    AtomicalWallet,
+    networks,
+    RuneTestWallet,
+    RuneWallet,
+    RuneMainWallet,
+    RuneMainTestWallet,
+    psbtDecode
+} from "../index";
 
 
 export const BITCOIN_MESSAGE_ECDSA = 0
@@ -157,6 +166,12 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_DEODE) { // psbt_decode
+            try {
+                return Promise.resolve(bitcoin.psbtDecode(param.data.psbt,this.network()));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
         } else if (type ===  bitcoin.BtcXrcTypes.PSBT_MPC_UNSIGNED_LIST) {
             try {
                 return Promise.resolve(bitcoin.generateMPCUnsignedListingPSBT(param.data.psbt, param.data.publicKey, this.network()));
@@ -224,7 +239,17 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        } else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
+        } else if (type === bitcoin.BtcXrcTypes.RUNEMAIN) { // rune
+            try {
+                let wallet = new RuneMainWallet()
+                if (this.network() === networks.testnet) {
+                    wallet = new RuneMainTestWallet()
+                }
+                return Promise.resolve(wallet.signTransaction(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        }else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
             try {
                 let wallet = new AtomicalWallet()
                 if (this.network() === networks.testnet) {
@@ -453,6 +478,16 @@ export class BtcWallet extends BaseWallet {
                     let wallet = new RuneWallet()
                     if (this.network() === networks.testnet) {
                         wallet = new RuneTestWallet()
+                    }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
+            } else if (type === bitcoin.BtcXrcTypes.RUNEMAIN) { // rune
+                try {
+                    let wallet = new RuneMainWallet()
+                    if (this.network() === networks.testnet) {
+                        wallet = new RuneMainTestWallet()
                     }
                     return Promise.resolve(wallet.estimateFee(param))
                 } catch (e) {

@@ -108,6 +108,29 @@ export function psbtSign(psbtBase64: string, privateKey: string, network?: Netwo
     return psbt.toBase64();
 }
 
+export function psbtDecode(psbtBase64: string, network?: Network, maximumFeeRate?: number) {
+
+    try {
+        const psbt = Psbt.fromHex(psbtBase64, {
+            network,
+            maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate
+        });
+        return psbt.txInputs ? psbt.txInputs.filter(a => !a.hash.equals(Buffer.alloc(32)))
+            .map((a => {
+                return {txId: base.toHex(base.reverseBuffer(a.hash)), vOut: a.index}
+            })) : []
+    } catch (e) {
+        const psbt = Psbt.fromBase64(psbtBase64, {
+            network,
+            maximumFeeRate: maximumFeeRate ? maximumFeeRate : defaultMaximumFeeRate
+        });
+        return psbt.txInputs ? psbt.txInputs.filter(a => !a.hash.equals(Buffer.alloc(32)))
+            .map((a => {
+                return {txId: base.toHex(base.reverseBuffer(a.hash)), vOut: a.index}
+            })) : []
+    }
+}
+
 export function signPsbtWithKeyPathAndScriptPathBatch(psbtHexs: string[], privateKey: string, network?: Network, opts?: signPsbtOptions []) {
     if (psbtHexs == undefined || psbtHexs.length == 0) {
         return [];

@@ -37,16 +37,6 @@ type omniOutput = {
 }
 
 type utxoTx = {
-    // inputs: []
-    // outputs: []
-    // address: string   // change address
-    // feePerB?: number  //  Sat/b
-    // decimal?: number  // precision: 8 bit
-    // fee?: number      // fixed fee  eg: 0.001 AVAX
-    // omni?: omniOutput
-    // dustSize?: number
-    // bip32Derivation?: Bip32Derivation[] // derivation info
-    // derivationPath?: string
     inputs: []
     outputs: []
     address: string   // change address
@@ -65,11 +55,16 @@ type utxoTx = {
 // rune
 type RuneData = {
     edicts: Edict[]
-    etching?: any,
+    etching?: any
+    useDefaultOutput?:boolean
+    defaultOutput?:number
     burn?: boolean
+    mint?: boolean
+    mintNum?: number
 }
 
 type Edict = {
+    block?:number
     id: number
     amount: bigint | string
     output: number

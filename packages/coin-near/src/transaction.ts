@@ -62,7 +62,7 @@ export function stringifyJsonOrBytes(args: any): Buffer {
  * @param stringify Convert input arguments into bytes array.
  * @param jsContract  Is contract from JS SDK, skips stringification of arguments.
  */
-export function functionCall(methodName: string, args: Uint8Array | object, gas: BN, deposit: BN, stringify = stringifyJsonOrBytes, jsContract = false): Action {
+export function functionCall(methodName: string, args: Uint8Array | object,  gas: BN = new BN(0), deposit: BN = new BN(0), stringify = stringifyJsonOrBytes, jsContract = false): Action {
   if(jsContract){
     return new Action({ functionCall: new FunctionCall({ methodName, args, gas, deposit }) });
   }
@@ -254,7 +254,7 @@ async function signTransactionObject(transaction: Transaction, privateKeyHex: st
 }
 
 export async function signTransaction(transaction: Transaction, privateKeyHex: string): Promise<[Uint8Array, SignedTransaction]>;
-export async function signTransaction(receiverId: string, nonce: number, actions: Action[], blockHash: Uint8Array, privateKeyHex: string): Promise<[Uint8Array, SignedTransaction]>;
+export async function signTransaction(receiverId: string, nonce: number, actions: Action[], blockHash: Uint8Array, privateKeyHex: string,accountId: string): Promise<[Uint8Array, SignedTransaction]>;
 export async function signTransaction(...args: any[]): Promise<[Uint8Array, SignedTransaction]> {
   if (args[0].constructor === Transaction) {
     const [ transaction, privateKeyHex] = args;

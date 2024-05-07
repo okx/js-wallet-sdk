@@ -7,4 +7,4 @@ All notable changes to this project will be documented in this file.
 
 ### Feature
 
-- **coin-tron:** support tron v2 signMessage and verifySignature 
+- **coin-tron:** support tron v2 signMessage and verifySignature ([6](https://github.com/coin-wallet/wallet-sdk-js/pull/6/files))
