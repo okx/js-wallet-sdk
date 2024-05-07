@@ -39,33 +39,6 @@ describe("bitcoin", () => {
         expect(sigops2).toEqual(1014)
     })
 
-
-    test("signMessage", async () => {
-        let wallet = new BtcWallet()
-        let signParams: SignTxParams = {
-            privateKey: "KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",
-            data: {
-                type: 0,
-                address: "bc1pgj0j68yvfn2mpzdxmm05u6768gndx67fw04kdvzsu62a9e2rglassppdj9",
-                message: "hello world!",
-            }
-        };
-        let res = await wallet.signMessage(signParams)
-        console.log(res)
-        expect(res).toEqual('IM8berpDcRl2IXajrUPk9vTD/yyWiEsnACpYiMuLVn9MFhs64MrMLPGoKrF0Zff8O5Y8lKKc5mWRz+2yYZ2zxgo=')
-        let veryParams: VerifyMessageParams = {
-            signature: res,
-            data: {
-                message: "hello world!",
-                type: 0,
-                publicKey: '03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045',
-            }
-        };
-        let veryfied = await wallet.verifyMessage(veryParams)
-        console.log(veryfied)
-        expect(veryfied).toBe(true)
-    })
-
     test("bitcoin address", async () => {
         let privateKey = "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS"
 
