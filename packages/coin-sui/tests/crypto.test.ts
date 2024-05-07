@@ -31,22 +31,23 @@ describe("cryptography", () => {
         })
         console.log(sign2)
         expect(sign1).toEqual(sign2)
+        expect('AGkeJ/OA1foA5BUWpJwa3dxopk/34qC0b3MwVAm38nngneS9mtHs8wSTzCN0ZFukHJ5V8VkGEeEIHuKGIi8DnAi8xcPyFlpe4w6DaHjUIF/RAjIloXaXfRqE1qQi6eJ9LQ==').toEqual(sign2)
     })
 
     test("getDerivedPrivateKey", async () => {
         let wallet = new sui.SuiWallet()
 
-        let mnemonic = "swift choose erupt agree fragile spider glare spawn suit they solid bus";
+        let mnemonic = "tumble hood curious hidden harvest palace elevator crisp manual anxiety recipe occur";
         let param = {
             mnemonic: mnemonic,
             hdPath: await wallet.getDerivedPath({index: 0})
         };
         let privateKey = await wallet.getDerivedPrivateKey(param);
         console.info(privateKey);
-        expect(privateKey).toEqual("suiprivkey1qqu6kvcrcywahj0rq25h96u8qxx3642rs6huffgmz5juu88wd22ps4m90rl")
+        expect(privateKey).toEqual('suiprivkey1qrjadfrsrmcrz2gt8qm7lv37h5jm6pre3was8aajvx4dvy6faytw7ff90jc')
         let addr = await wallet.getNewAddress({privateKey: privateKey})
         console.info(addr);
-        expect(addr.address).toEqual("0x22d681f6ea985220d0cc19b5a59b94368cc87341cd2f01e379ec4c0a7a6851e7")
+        expect(addr.address).toEqual('0x215d3a67d951ebd5b453b440497917b5fac2890fc7f18358322d372e2f13045d')
     });
 
     test("ed25519", async () => {
@@ -95,8 +96,8 @@ describe("cryptography", () => {
         );
         // 0x2::coin::Coin<0x2::sui::SUI>
         const signer = new sui.RawSigner(kp);
-        const sign = await signer.signMessage({message: Buffer.from('Hello world', "utf-8")})
+        const sign = await signer.signMessage({message: Buffer.from('ok', "utf-8")})
         console.log('sign', sign)
-        expect(sign).toEqual('ANN54RqE1vVDFQ/6hRFX+XcfwUzA2+XgQfRAAmYZbFQetk/3BMsim5FSTw3pD6p0K81n2MD/ZtngplbQBSrNqA0yrCj8SB1j5ijH8p/QbdjLv9bKPXc0KyHCsFTFZsMhNw==')
+        expect("AKjEhbXaV0LysntwUXPm4AeB+0ncPg+4kf4y0qXpHCQi0ppkdSMFpS7tDWMF6TafOeixO0utkLAqVyHcfJoqSg0yrCj8SB1j5ijH8p/QbdjLv9bKPXc0KyHCsFTFZsMhNw==").toEqual(sign)
     })
 })

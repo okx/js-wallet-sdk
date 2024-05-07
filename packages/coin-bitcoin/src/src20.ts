@@ -10,6 +10,7 @@ import {
 } from "./txBuild";
 import {InscriptionData, PrevOutput, TxOut} from "./inscribe";
 import {BufferWriter} from "./bitcoinjs-lib";
+import {countAdjustedVsize} from "./sigcost";
 
 const schnorr = signUtil.schnorr.secp256k1.schnorr
 
@@ -126,15 +127,16 @@ export class SrcInscriptionTool {
 
         const txForEstimate = tx.clone();
         signTx(txForEstimate, commitTxPrevOutputList, this.network);
-
-        const fee = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
+        const vsize = countAdjustedVsize(txForEstimate, commitTxPrevOutputList.map(a => a.address), network)
+        const fee = Math.floor(vsize * commitFeeRate);
         const changeAmount = totalSenderAmount - totalRevealPrevOutputValue - fee;
         if (changeAmount >= minChangeValue) {
             tx.outs[tx.outs.length - 1].value = changeAmount;
         } else {
             tx.outs = tx.outs.slice(0, tx.outs.length - 1);
             txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
-            const feeWithoutChange = Math.floor(txForEstimate.virtualSize() * commitFeeRate);
+            const vsizeWithoutChange = countAdjustedVsize(txForEstimate, commitTxPrevOutputList.map(a => a.address), network)
+            const feeWithoutChange = Math.floor(vsizeWithoutChange * commitFeeRate);
             if (totalSenderAmount - totalRevealPrevOutputValue - feeWithoutChange < 0) {
                 this.mustCommitTxFee = fee;
                 return true;

@@ -64,14 +64,16 @@ import {SolWallet} from "@okxweb3/coin-solana";
 
 let wallet = new SolWallet()
 let params = {
-    privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc', 
+    privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
     data: {
         type: "transfer",
         payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
         blockHash: "6t1qEvLH5uC9NMmMTPhaE9tAaWdk1qvBjqsKsKNPB7sX",
         from: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
         to: "7NRmECq1R4tCtXNvmvDAuXmii3vN1J9DRZWhMCuuUnkM",
-        amount: 100000000
+        amount: 100000000,
+        computeUnitLimit: 140000,
+        computeUnitPrice: 10
     }
 }
 let tx = await wallet.signTransaction(params);
@@ -89,7 +91,7 @@ import {SolWallet} from "@okxweb3/coin-solana";
 
 let wallet = new SolWallet()
 let param = {
-    privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc', 
+    privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
     data: {
         type: "tokenTransfer",
         payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
@@ -98,7 +100,11 @@ let param = {
         to: "7NRmECq1R4tCtXNvmvDAuXmii3vN1J9DRZWhMCuuUnkM",
         amount: 100000,
         mint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-        createAssociatedAddress: false
+        createAssociatedAddress: false,
+        token2022: false,
+        decimal: 9,
+        computeUnitLimit: 140000,
+        computeUnitPrice: 10
     }
 }
 let tx = await wallet.signTransaction(param);
@@ -123,6 +129,8 @@ let param = {
         from: "CS8ifB68oddKXdW87RAyrxFSoz1DMMcX9WsWeAgbYDCC",
         to: "9qinWp4oc3TvBocbwAvYZAZWfSswub2qM49Pn6rkCQ9q",
         mint: "DberpiNB1sttkWdd66amQV5hrnMGacBeDeMbcEFMVBiR",
+        computeUnitLimit: 140000,
+        computeUnitPrice: 10
     }
 }
 let tx = await wallet.signTransaction(param);
@@ -139,6 +147,19 @@ let param = {
 }
 let tx = await wallet.signMessage(param);
 ```
+
+deserialize message
+```typescript
+import {SolWallet} from "@okxweb3/coin-solana";
+
+let wallet = new SolWallet()
+let param = {
+    //privateKey: "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc", 
+    data: ['your message to deserialize']
+}
+let res = await wallet.deserializeMessages(param);
+```
+
 
 calculate tx hash
 ```typescript

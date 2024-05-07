@@ -21,8 +21,9 @@ import {
     SignTxError,
     validSignedTransactionError,
 } from '@okxweb3/coin-base';
-import { base } from '@okxweb3/crypto-lib';
+import {base} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
+import {ComputeBudgetProgram} from "./sdk/web3/programs/compute-budget";
 
 export type TransactionType = "transfer" | "tokenTransfer" | "mplTransfer"
 export type SolSignParam = {
@@ -36,7 +37,14 @@ export type SolSignParam = {
     createAssociatedAddress?: boolean
     version?: number
     tokenStandard?: number
+    token2022?: boolean
+    decimal?: number
+    computeUnitLimit?: number
+    computeUnitPrice?: number
 }
+export type deserializeMessagesParams = {
+    data: any[];
+};
 
 export class SolWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -45,7 +53,7 @@ export class SolWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-           return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
+            return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -67,7 +75,7 @@ export class SolWallet extends BaseWallet {
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            if(!this.checkPrivateKey(param.privateKey)) {
+            if (!this.checkPrivateKey(param.privateKey)) {
                 return Promise.reject(NewAddressError)
             }
             const address = api.getNewAddress(param.privateKey)
@@ -100,7 +108,17 @@ export class SolWallet extends BaseWallet {
     async signTransaction(param: SignTxParams): Promise<any> {
         try {
             const data: SolSignParam = param.data
-            const rawTransaction = api.createRawTransaction(data.payer, data.blockHash)
+            const rawTransaction = api.createRawTransaction(data.payer, data.blockHash);
+            if (data.computeUnitLimit && data.computeUnitPrice) {
+                const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+                    units: data.computeUnitLimit // default: 200000 =0.2 * 10^6
+                });
+
+                const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: data.computeUnitPrice // 1 = 1*10-6 lamport default: 0
+                });
+                rawTransaction.add(modifyComputeUnits).add(addPriorityFee);
+            }
             if (data.type === "transfer") {
                 if (data.from == null || data.to == null || data.amount == null) {
                     return Promise.reject(SignTxError);
@@ -116,17 +134,17 @@ export class SolWallet extends BaseWallet {
                 if (data.version === 0) {
                     return api.signTokenTransferVersionedTransaction(param.data, param.privateKey);
                 }
-                await api.appendTokenTransferInstruction(rawTransaction, data.from, data.to, data.mint, data.amount, data.createAssociatedAddress)
+                await api.appendTokenTransferInstruction(rawTransaction, data.from, data.to, data.mint, data.amount, data.createAssociatedAddress, data.token2022, data.decimal);
             } else if (data.type === "mplTransfer") {
                 if (data.from == null || data.to == null || data.mint == null) {
                     return Promise.reject(SignTxError);
                 }
-                return await api.signMplTransaction(data.payer, data.from, data.to, data.mint, data.blockHash, param.privateKey);
+                return await api.signMplTransaction(data.payer, data.from, data.to, data.mint, data.blockHash, param.privateKey, data.computeUnitLimit, data.computeUnitPrice);
             } else {
                 return Promise.reject(SignTxError);
             }
-            if(!param.privateKey) {
-                return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures:false})));
+            if (!param.privateKey) {
+                return Promise.resolve(base.toHex(rawTransaction.serialize({verifySignatures: false})));
             }
             const result = await api.signTransaction(rawTransaction, param.privateKey)
             return Promise.resolve(result);
@@ -142,6 +160,16 @@ export class SolWallet extends BaseWallet {
             return Promise.resolve(data);
         } catch (e) {
             return Promise.reject(SignTxError);
+        }
+    }
+
+
+    async deserializeMessages(param: deserializeMessagesParams): Promise<any> {
+        try {
+            const data = await api.deserializeMessages(param.data)
+            return Promise.resolve(data);
+        } catch (e) {
+            return Promise.reject("deserializeMessages error");
         }
     }
 
@@ -182,11 +210,11 @@ export class SolWallet extends BaseWallet {
 
     async validSignedTransaction(param: ValidSignedTransactionParams): Promise<any> {
         try {
-            const version = param.data? param.data.version : undefined
+            const version = param.data ? param.data.version : undefined
             const skipCheckSign = param.data ? param.data.skipCheckSign : undefined
             const ret = api.validSignedTransaction(param.tx, version || false, skipCheckSign || false)
             return Promise.resolve(jsonStringifyUniform(ret));
-        }  catch (e) {
+        } catch (e) {
             return Promise.reject(validSignedTransactionError);
         }
     }

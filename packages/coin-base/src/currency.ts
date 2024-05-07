@@ -41,6 +41,7 @@ export enum Currency {
     DYDX = 2897,
     Kaspa = 111111,
     NostrAssets = 1237,
+    Near = 397,
 }
 
 export enum segwitType {

@@ -62,6 +62,16 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** add default public key for signing psbt
-- **coin-bitcoin:** support src ,atomical,rune alpha assets
-- **coin-dogecoin:** support drc20 assets,and message sign
-- **coin-litecoin:** support  message sign
+
+
+# [1.0.14] (2024-03-27)
+
+### Feature
+
+- **coin-bitcoin:** support bitcoin adjusted vsize,and export function calculateTxSize .
+
+# [1.0.15] (2024-03-28)
+
+### Feature
+
+- **coin-bitcoin:** support analyze PSBT hex to utxo.
