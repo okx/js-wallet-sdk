@@ -137,11 +137,19 @@ function buildTransaction(param: CommonParam, actions: Action[], abiMap: Map<str
     return JSON.stringify(t)
 }
 
-export function signMessage(chainId: string, privateKey: string, serializedTransaction: string, serializedContextFreeData?: string) {
+export function signSerializedTransaction(chainId: string, privateKeys: string[], serializedTransaction: string, serializedContextFreeData?: string) {
     const builder = new TxBuilder(chainId);
     const serializedTransactionRaw = base.fromHex(serializedTransaction)
     const serializedContextFreeDataRaw = serializedContextFreeData ? base.fromHex(serializedContextFreeData) : undefined
-    return builder.sign([privateKey], serializedTransactionRaw, serializedContextFreeDataRaw)[0]
+    return builder.sign(privateKeys, serializedTransactionRaw, serializedContextFreeDataRaw)
+}
+
+export function signMessage(chainId: string, privateKey: string, serializedTransaction: string, serializedContextFreeData?: string) {
+    /*const builder = new TxBuilder(chainId);
+    const serializedTransactionRaw = base.fromHex(serializedTransaction)
+    const serializedContextFreeDataRaw = serializedContextFreeData ? base.fromHex(serializedContextFreeData) : undefined
+    return builder.sign([privateKey], serializedTransactionRaw, serializedContextFreeDataRaw)[0]*/
+    return signSerializedTransaction(chainId, [privateKey], serializedTransaction, serializedContextFreeData)[0]
 }
 
 export function verifySignature(chainId: string, signature: string, serializedTransaction: string, serializedContextFreeData?: string): string {

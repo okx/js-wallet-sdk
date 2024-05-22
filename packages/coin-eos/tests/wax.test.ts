@@ -11,7 +11,7 @@ import {
     publicKeyToString,
     publicKeyToLegacyString,
     signMessage,
-    verifySignature,
+    verifySignature, signSerializedTransaction,
 } from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 
@@ -188,5 +188,25 @@ describe("wax", () => {
             "0x1234")
         console.info(pub)
         expect(pub).toStrictEqual("EOS5uHXgWKzQExL2Lhu9y8716B4dkYL4T6oUq8J9FrY6EDB79naYF")
+    });
+
+    test("signSerializedTransaction", async () => {
+        const wallet = new WaxWallet()
+        const txParams = {
+            privateKey: "5KXHUFNZGMsNEFzzrCis1RJdtg5wjL941a1vAwAjmgHEektrZBj",
+            data: {
+                type: 2,
+                abis: [{
+                    abi: [],
+                    accountName: 'atomicmarket'
+                }],
+                chainId: '1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4',
+                requiredKeys: [],
+                serializedTransaction: '3d1e0d667dd828f0ae1600000000029015bc46222769360000f5fa4485a6410130c4a42e239de8ad00000000a8ed323208d6082b00000000009015bc4622276936000000dcdcd4b2e30130c4a42e239de8ad00000000a8ed32321830c4a42e239de8ad8096980000000000085741580000000000',
+            },
+        };
+        const res = await wallet.signTransaction(txParams);
+        console.log(res);
+        expect(res.signatures.toString()).toBe('SIG_K1_KemtyEN4bW5JFa3zq9aHUsuy9PXBMmBdgoAJ1XJq2j3p6mHzmyNb5y5kC3G1zPMVrw5zT4DqNh2cUpuad4M4g4kpHuyW3A');
     });
 });
