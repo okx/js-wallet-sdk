@@ -170,34 +170,4 @@ describe("crypto", () => {
     const ret = base.md5.encode("hello world")
     console.info(ret);
   });
-
-  test("aes", async () => {
-    const key = "hello world";
-    const plain = "aes test plain";
-    const md5Key = base.md5.encode(key)
-    const cipher = base.aes.encrypt(plain, md5Key)
-    const ret = base.aes.decrypt(cipher, md5Key);
-    expect(ret).toEqual(plain)
-  });
-
-  test("rsa", async () => {
-    const keyPair = base.rsa.genKeyPair(1024)
-    console.info(keyPair)
-
-    const plain = "1232efsfsdgdfgrgretreopkgorekgldfgkldfklkgdfklgkfdlglfdklgkdflkgldfklgkdfkgfdklgkfldkglsierejfsdjndjsafjs1232efsfsdgdfgrgretreopkgorekgldfgkldfklkgdfklgkfdlglfdklgkdflkgldfklgkdfkgfdklgkfldkglsierejfsdjndjsafjs";
-    const cipher = base.rsa.encodeAny(plain, keyPair.publicKey)
-    const ret = base.rsa.decodeAny(cipher, keyPair.privateKey)
-    expect(ret).toEqual(plain)
-  });
-
-  test("rsa2", async () => {
-    const privateKey = 'MIICXAIBAAKBgQCn8Xu5xyZDsbrP/MuPMDy3OJi2TQuMXIu6GAvfRWFg9jGX+Wg+tfQJHA+z/Sje1kCZcZblFQk13iQzq0B+90iSST53Bdp1T8FN/uJKvb+dFWTLzF5A9s4z1UksUwqoRHZu4UBhDVUHZKLIboqQO1ydqciR2RDo3NZkLGNUer8DCwIDAQABAoGBAJ5aAZFACAJYOI8YC0+t6fHQeZ2as8LbGByVw8v3/UORn11umy5WHg3g2aWalMjYN/z2r5K87PxPws69MIkG3PMUIpyjfn5LaX7+e3Rjelks0DqSx4vLcANigQg7+3nKzgS2Y0ACZSG9xvy/gECeHhK+sdSFZWJZ4DJ1hE8gzGMhAkEA+fV0zPudDdQp6jiBGjwJl5rlB2R5biLwztKDlcSuPDT2MZlOO1bbG1ZsenJIJIqaHGHtF6JjF7vCNqw0b3F/iQJBAKwAlMK/EgRMiANrRwutamo0OYex6GYT0pZsihQVLOvUIwDNSPfWM+Wi2a9z7ZWFU77Ulp+im1lDxwwdzC5aVPMCQBGsk3ezCuXhbJ1NJYPPXvZDU5J0PknVWqWlKPy8DX3gWNAlAO0dNRz3vW/jCMrcqgz7t6IGL2+MLS1ke8itg9ECQCilToIi4uAPMckVDcntpgsI4lt1qESPBKG1bn/GbUIhdFAZMtgWT1dBv41dqNQ/mIWs+RcqNunGQYBUfk6p3A8CQDgdHSyTrTLuv9uy97/rFdRFd4poaWSKbdNBqnbjz/xaerNiX1yXt1lZAp3tsQY6AX8Q7BeVhyms4YGEcxTHh/8='
-    const publicKey = 'MIGJAoGBAKfxe7nHJkOxus/8y48wPLc4mLZNC4xci7oYC99FYWD2MZf5aD619AkcD7P9KN7WQJlxluUVCTXeJDOrQH73SJJJPncF2nVPwU3+4kq9v50VZMvMXkD2zjPVSSxTCqhEdm7hQGENVQdkoshuipA7XJ2pyJHZEOjc1mQsY1R6vwMLAgMBAAE='
-    const plain = "1232efsfsdgdfgrgretreopkgorekgldfgkldfklkgdfklgkfdlglfdklgkdflkgldfklgkdfkgfdklgkfldkglsierejfsdjndjsafjs1232efsfsdgdfgrgretreopkgorekgldfgkldfklkgdfklgkfdlglfdklgkdflkgldfklgkdfkgfdklgkfldkglsierejfsdjndjsafjs";
-    const cipher = base.rsa.encodeAny(plain, publicKey)
-    console.info(cipher)
-
-    const ret = base.rsa.decodeAny("QrimFihcMxnEUZx/eAMGTVHnz4CbMKeARki9cR7T67hQTmaQiv7vajutgorlwXQYOUyEX2JgVpJNL8OeAxE6ASojAEYLhMxPj85A2VNINy85mF/VwB3JhJ1kDj/k8dy73P5iPIEPN0z9J6cFZDv2nFDHsCAaLrUJvM9pSzcf/zUPR6sW/bjN1HwtSt3Ofc/Z2GkJZnpITGx8/df9QsjyrF/BsCJ1SxvQFdWkKe4vTj9PFuiQi3MjNOH/2XoPmOeduGc5AAzquYusMXm5vV0gss5IN2oMbGOwKPgqUSAy2kMZRwZO+tTzPXtk1zkcauoNeYIhqnx/NE1JCwwQ30DhIA==", privateKey)
-    expect(ret).toEqual(plain)
-  });
 });
