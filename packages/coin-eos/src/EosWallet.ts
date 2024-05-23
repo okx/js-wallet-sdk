@@ -23,7 +23,7 @@ import {
     stringToPrivateKey,
     publicKeyToLegacyString,
     privateKeyToLegacyString,
-    transfer,
+    transfer, signSerializedTransaction,
 } from "./index";
 
 export class EosWallet extends BaseWallet {
@@ -101,6 +101,21 @@ export class EosWallet extends BaseWallet {
                 };
 
                 return Promise.resolve(createAccount(createAccountParam));
+            } else if (type === 2) {
+                let privateKeys: string[] = [];
+                if (param.data.requiredKeys) {
+                    for (let i = 0; i < param.data.requiredKeys.length; i++) {
+                        privateKeys.push(param.privateKey);
+                    }
+                }
+                if (privateKeys.length == 0) {
+                    privateKeys.push(param.privateKey);
+                }
+                const signatures = signSerializedTransaction(param.data.chainId, privateKeys, param.data.serializedTransaction);
+                return Promise.resolve({
+                    signatures: signatures,
+                    serializedTransaction: param.data.serializedTransaction
+                });
             } else { // transfer
                 const transferParam: TransferParam = {
                     from: param.data.from,

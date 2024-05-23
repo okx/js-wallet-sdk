@@ -35,10 +35,6 @@ export * as ed25519 from "@noble/ed25519"
 export * as secp256k1 from "@noble/secp256k1"
 export * from "bigint-conversion"
 export * from "bigint-crypto-utils"
-import * as cryptoJS from 'crypto-js';
-export { cryptoJS }
-import * as rsa from "jsrsasign"
-export { rsa }
 
 
 

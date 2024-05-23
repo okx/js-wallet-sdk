@@ -1,7 +1,9 @@
 import {base, Long, signUtil} from "@okxweb3/crypto-lib";
 import {Coin} from "./types/cosmos/base/v1beta1/coin";
 import {GeneratedType, registerExtraTypes, registry} from './registry';
-import {GammAminoConverters, GammRegistry} from "./osmosis"
+import {OsmosisAminoConverters, OsmosisRegistry} from "./osmosis";
+import {CosmWasmAminoConverter, CosmWasmRegistry} from "./cosmwasm";
+import {KavaAminoConverters, KavaRegistry} from "./kava";
 
 import {doSign, makeSignBytes, makeSignDoc, signTx} from './tx';
 
@@ -13,6 +15,8 @@ import {createDefaultAminoConverters} from './amino/aminoRegistry';
 import * as amino from "./amino/signDoc"
 import {AuthInfo, SignDoc, TxRaw} from './types/cosmos/tx/v1beta1/tx';
 import {PubKey} from './types/cosmos/crypto/secp256k1/keys';
+import {CosmosWallet} from "./CosmosWallet";
+import {jsonStringifyUniform} from "@okxweb3/coin-base";
 
 export function public2Address(publicKey: Uint8Array, useEthSecp256k1: boolean): Uint8Array {
     return useEthSecp256k1 ? base.keccak(publicKey.slice(1)).slice(-20) : base.hash160(publicKey)
@@ -177,6 +181,7 @@ export interface AminoMsgData {
     fee: StdFee
     msgs: AminoMsg[]
     memo: string
+    timeout_height?: string
 }
 
 export interface SignDocMessage {
@@ -200,6 +205,31 @@ export async function SignWithSignDocForINJ(privateKey: Uint8Array, message: str
     const {signature} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
+export async function SignWithSignDocForINJWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
+    const m: SignDocMessage = JSON.parse(message)
+    const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
+    if (!privateKey) {
+        const signDocBytes = makeSignBytes(signDoc);
+        const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const publicKey = private2Public(privateKey, true)
+    const signDocBytes = makeSignBytes(signDoc);
+    const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+    const {signature, recovery} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
+    const l = [Uint8Array.from(signature), Uint8Array.of(recovery)]
+    const signatureR1 = Buffer.concat(l);
+    const sig = encodeSecp256k1Signature(publicKey, signature, false)
+    const txRaw = TxRaw.fromPartial({
+        bodyBytes: signDoc.bodyBytes,
+        authInfoBytes: signDoc.authInfoBytes,
+        // signatures: [base.fromBase64(sig)],
+        signatures: [signatureR1],
+    });
+    const tx = base.toBase64(TxRaw.encode(txRaw).finish())
+    return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
+}
+
 
 export async function signWithStdSignDocForINJ(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
     const m: amino.StdSignDoc = JSON.parse(message)
@@ -212,7 +242,27 @@ export async function signWithStdSignDocForINJ(privateKey: Uint8Array, message: 
     const publicKey = private2Public(privateKey, true)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
+export async function signWithStdSignDocForINJWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, wallet: CosmosWallet ) {
+    const m: amino.StdSignDoc = JSON.parse(message)
+    const signDocBytes = amino.serializeSignDoc(m)
+    const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+    if (!privateKey) {
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const {signature} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
 
+    const tx = await sendAminoMessage(privateKey as Uint8Array,
+        wallet.getPrefix(),
+        message,
+        wallet.getAminoConverters(),
+        wallet.getExtraTypes(),
+        wallet.supportEthSign(),
+        wallet.pubKeyUrl()
+    )
+    const publicKey = private2Public(privateKey, true)
+    const sig = encodeSecp256k1Signature(publicKey, signature, false)
+    return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
+}
 export async function SignWithSignDoc(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
     const m: SignDocMessage = JSON.parse(message)
     const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
@@ -224,6 +274,25 @@ export async function SignWithSignDoc(privateKey: Uint8Array, message: string, u
     const publicKey = private2Public(privateKey, true)
     const signature = await doSign(signDoc, publicKey, privateKey, useEthSecp256k1);
     return Promise.resolve(signature)
+}
+
+export async function SignWithSignDocWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
+    const m: SignDocMessage = JSON.parse(message)
+    const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
+    if (!privateKey) {
+        const signDocBytes = makeSignBytes(signDoc);
+        const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const publicKey = private2Public(privateKey, true)
+    const signature = await doSign(signDoc, publicKey, privateKey, useEthSecp256k1);
+    const txRaw = TxRaw.fromPartial({
+        bodyBytes: signDoc.bodyBytes,
+        authInfoBytes: signDoc.authInfoBytes,
+        signatures: [base.fromBase64(signature)],
+    });
+    const tx = base.toBase64(TxRaw.encode(txRaw).finish())
+    return Promise.resolve(jsonStringifyUniform({signature: signature, tx: tx}))
 }
 
 export async function signWithStdSignDoc(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
@@ -244,7 +313,34 @@ export async function signWithStdSignDoc(privateKey: Uint8Array, message: string
         return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
     }
 }
+export async function signWithStdSignDocWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, prefix: string, wallet: CosmosWallet ) {
+    const m: amino.StdSignDoc = JSON.parse(message)
+    const signDocBytes = amino.serializeSignDoc(m)
+    const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
+    if (!privateKey) {
+        return Promise.resolve(base.toHex(messageHash));
+    }
+    const {signature, recovery} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
 
+    const tx = await sendAminoMessage(privateKey as Uint8Array,
+        prefix,
+        message,
+        wallet.getAminoConverters(),
+        wallet.getExtraTypes(),
+        wallet.supportEthSign(),
+        wallet.pubKeyUrl()
+    )
+    const publicKey = private2Public(privateKey, true)
+    if (useEthSecp256k1) {
+        const l = [Uint8Array.from(signature), Uint8Array.of(recovery)]
+        const signatureR1 = Buffer.concat(l);
+        const sig = encodeSecp256k1Signature(publicKey, signatureR1, true)
+        return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
+    } else {
+        const sig = encodeSecp256k1Signature(publicKey, signature, false)
+        return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
+    }
+}
 export async function sendAminoMessage(privateKey: Uint8Array,
                                        prefix: string,
                                        // json
@@ -261,13 +357,14 @@ export async function sendAminoMessage(privateKey: Uint8Array,
     }
     const aminoTypes = new AminoTypes(converters)
     const messages = m.msgs.map(it => aminoTypes.fromAmino(it))
-    const result = await signTx(messages, m.fee, m.memo, Long.fromNumber(0), {
+    const result = await signTx(messages, m.fee, m.memo, Long.fromString(m.timeout_height || "0"), {
         accountNumber: Number(m.account_number),
         sequence: Number(m.sequence),
         chainId: m.chain_id,
         privateKey: privateKey,
         useEthSecp256k1: useEthSecp256k1 || false,
         pubKeyUrl: pubKeyUrl
+
     })
     return Promise.resolve(base.toBase64(result))
 }
@@ -350,8 +447,12 @@ export {
     GeneratedType,
     AminoConverters,
     AminoConverter,
-    GammAminoConverters,
-    GammRegistry
+    OsmosisRegistry,
+    OsmosisAminoConverters,
+    KavaRegistry,
+    KavaAminoConverters,
+    CosmWasmRegistry,
+    CosmWasmAminoConverter,
 }
 export * from "./CosmosWallet"
 

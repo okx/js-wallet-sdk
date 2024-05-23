@@ -12,7 +12,7 @@ import {
     publicKeyToString,
     publicKeyToLegacyString,
     signMessage,
-    verifySignature,
+    verifySignature, signSerializedTransaction,
 } from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 
@@ -177,13 +177,24 @@ describe("eos", () => {
             "f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12",
             "5KXHUFNZGMsNEFzzrCis1RJdtg5wjL941a1vAwAjmgHEektrZBj",
             "0x1234")
-        console.info(sig)
-
         const pub = verifySignature(
             "f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12",
             sig,
             "0x1234")
-        console.info(pub)
         expect(pub).toStrictEqual("EOS5uHXgWKzQExL2Lhu9y8716B4dkYL4T6oUq8J9FrY6EDB79naYF")
+    });
+
+    test("signSerializedTransaction", async () => {
+        const sig = signSerializedTransaction(
+            "f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12",
+            ["5KXHUFNZGMsNEFzzrCis1RJdtg5wjL941a1vAwAjmgHEektrZBj"],
+            "0x1234");
+
+        const pub = verifySignature(
+            "f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12",
+            sig[0],
+            "0x1234")
+        console.info(pub);
+        expect(pub).toStrictEqual("EOS5uHXgWKzQExL2Lhu9y8716B4dkYL4T6oUq8J9FrY6EDB79naYF");
     });
 });

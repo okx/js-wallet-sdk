@@ -12,6 +12,7 @@ import {
   MsgEditValidator, MsgUndelegate,
 } from './types/cosmos/staking/v1beta1/tx';
 import { DecodeObject, EncodeObject, TxBodyEncodeObject, TxBodyValue } from './encoding';
+import {TelescopeGeneratedCodec} from "./types";
 
 // transfer
 export const bankTypes: ReadonlyArray<[string, GeneratedType]> = [
@@ -56,10 +57,14 @@ export interface PbjsGeneratedType {
   readonly decode: (reader: protobuf.Reader | Uint8Array, length?: number) => any;
 }
 
-export type GeneratedType = TsProtoGeneratedType | PbjsGeneratedType;
+export type GeneratedType = TsProtoGeneratedType | PbjsGeneratedType | TelescopeGeneratedCodec;
 
 export function isTsProtoGeneratedType(type: GeneratedType): type is TsProtoGeneratedType {
   return typeof (type as TsProtoGeneratedType).fromPartial === "function";
+}
+
+export function isTelescopeGeneratedCodec(type: GeneratedType): type is TelescopeGeneratedCodec {
+  return typeof (type as TelescopeGeneratedCodec).fromPartial === "function";
 }
 
 const defaultTypeUrls = {
@@ -143,7 +148,12 @@ export class Registry {
       return this.encodeTxBody(value);
     }
     const type = this.lookupTypeWithError(typeUrl);
-    const instance = isTsProtoGeneratedType(type) ? type.fromPartial(value) : type.create(value);
+    let instance
+    if (isTsProtoGeneratedType(type) || isTelescopeGeneratedCodec(type)){
+      instance = type.fromPartial(value)
+    } else {
+      instance = type.create(value);
+    }
     return type.encode(instance).finish();
   }
 
