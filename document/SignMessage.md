@@ -64,7 +64,7 @@ We currently support message signing and verifying for utxo and evm chains.
 |54 | 11235 | HAQQ Network | HAQQ | EVM        |                 |  |  
 |55 | 70000038 | BTC Testnet | TBTC | BTC        | "Bitcoin"       |        |        
 
-# Evm sign message and verify signed message
+## Evm sign message and verify signed message
 
 ### Install dependency
 
