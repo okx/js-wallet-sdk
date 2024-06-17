@@ -77,16 +77,18 @@ npm install @okxweb3/coin-ethereum
 ### Evm  code sample
 
 ```js
-
 import eth from "@okxweb3/coin-ethereum";
 
 const privateKey = "0x49c0722d56d6bac802bdf5c480a17c870d1d18bc4355d8344aa05390eb778280";
 
+var msg = '' + Date.parse(new Date());
+console.log('msg', msg)
+
 const account = eth.getNewAddress(privateKey)
-console.log('address', account.address)
+console.log('address',account.address)
 let data = {
-    type: eth.MessageTypes.ETH_SIGN,
-    message: "0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0"
+    type: eth.MessageTypes.PERSONAL_SIGN,
+    message: msg
 };
 let wallet = new eth.EthWallet()
 let signParams = {
@@ -95,16 +97,17 @@ let signParams = {
 };
 
 let result = await wallet.signMessage(signParams);
-console.info('signed result', result)
+console.info('signed result',result)
 
 let verifyMessageParams = {
     signature: result,
     data: data,
     address: account.address
 };
-console.log("verifying message params", verifyMessageParams)
-const verified = await wallet.verifyMessage(verifyMessageParams)
-console.info("verified", verified)
+console.log("verifying message params",verifyMessageParams)
+const verified =await wallet.verifyMessage(verifyMessageParams)
+console.info("verified",verified)
+
 
 
 ```
@@ -112,16 +115,13 @@ console.info("verified", verified)
 ### output
 
 >
-> address 0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b
-> signed result 0xa4a11b0526c248576756292f420f3cf4c5bb744a8491f8c1a33838b95f401aed7afe88e296edf246291e3f9fcd125a7fe795c76ab118d5abb97421e1f03fa36f1b
-> verifying message params {
-> signature: '0xa4a11b0526c248576756292f420f3cf4c5bb744a8491f8c1a33838b95f401aed7afe88e296edf246291e3f9fcd125a7fe795c76ab118d5abb97421e1f03fa36f1b',
-> data: {
-> type: 0,
-> message: '0x879a053d4800c6354e76c7985a865d2922c82fb5b3f4577b2fe08b998954f2e0'
-> },
-> address: '0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b'
-> }
+> address 0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b 
+> signed result 0x4bb3e90eaec979f74c9ebb8c9c26dc364dc79dec792744b7234c28029647a3836994c3cd22506609001fe89f8042becd773495ee4f03bac0cbda28836d02b6021b 
+> verifying message params { 
+> signature: '0x4bb3e90eaec979f74c9ebb8c9c26dc364dc79dec792744b7234c28029647a3836994c3cd22506609001fe89f8042becd773495ee4f03bac0cbda28836d02b6021b', 
+> data: { type: 1, message: '1718623781000' }, 
+> address: '0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b' 
+> } 
 > verified true
 >
 >
