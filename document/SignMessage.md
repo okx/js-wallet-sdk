@@ -2,14 +2,14 @@
 
 We currently support message signing and verifying for utxo and evm chains.
 
-## chains list
+## Chain list
 
 |       | Chain Index | Chain Name | Coin/Short Name | Chain type | Prefix for UTXO | Remark  |
 |-------|-------------|------------|-----------|------------|-----------------|---------|
-|1 | 0 | BTC | btc | BTC        | "Bitcoin"                   |  |  
-|2 | 1 | Ethereum | eth | EVM        |                 |  |  
-|3 | 2 | Litecoin | LTC | BTC        | "Litecoin"      |  |  
-|4 | 3 | Dogecoin | DOGE | BTC        | "Dogecoin"      |  |  
+|1 | 0 | BTC | btc | BTC        | "Bitcoin"                   |  |
+|2 | 1 | Ethereum | eth | EVM        |                 |  |
+|3 | 2 | Litecoin | LTC | BTC        | "Litecoin"      |  |
+|4 | 3 | Dogecoin | DOGE | BTC        | "Dogecoin"      |  |
 |6 | 10 | Optimism | Optimism | EVM        |                 |  |  
 |7 | 14 | Flare | Flr | EVM        |                 |  |  
 |8 | 25 | Cronos | Cronos | EVM        |                 |  |  
@@ -112,7 +112,7 @@ console.info("verified",verified)
 
 ```
 
-### output
+### Output
 
 >
 > address 0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b 
@@ -177,7 +177,7 @@ console.info("verified", verified)
 
 ```
 
-### output
+### Output
 
 >
 > msg 1718618813000
