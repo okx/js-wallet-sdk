@@ -22,7 +22,7 @@ import {intToHex} from "./util";
 export const hashPersonalMessage = function(message: Buffer): Buffer {
   assertIsBuffer(message)
   const prefix = Buffer.from(
-    `\u0019Ethereum Signed Message:\n${message.length.toString()}`,
+    `\x19Ethereum Signed Message:\n${message.length.toString()}`,
     'utf-8'
   )
   return keccak(Buffer.concat([prefix, message]))
