@@ -1,34 +1,39 @@
 import {
+    BaseWallet,
+    CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    GetDerivedPathParam,
-    NewAddressParams,
-    SignTxParams,
-    ValidAddressParams,
-    CalcTxHashError,
-    NewAddressError,
-    SignTxError,
-    BaseWallet,
-    assertBufferLength,
-    GenPrivateKeyError,
-    ed25519_getRandomPrivateKey,
     ed25519_getDerivedPrivateKey,
-    NewAddressData,
-    SignMsgError, ValidAddressData
+    ed25519_getRandomPrivateKey,
+    GenPrivateKeyError,
+    GetDerivedPathParam,
+    NewAddressError,
+    NewAddressParams,
+    SignTxError,
+    SignTxParams,
+    ValidAddressData,
+    ValidAddressParams
 } from '@okxweb3/coin-base';
 import {base, BN, signUtil} from '@okxweb3/crypto-lib';
 import {
     AccessKey,
     addKey,
-    createTransaction, deleteKey,
+    createTransaction,
+    deleteKey,
     functionCall,
-    getAddress, getPubkey, publicKeyFromBase58,
-    publicKeyFromSeed, SignedTransaction,
+    getAddress,
+    getPubkey,
+    publicKeyFromBase58,
+    publicKeyFromSeed, SCHEMA,
+    SignedTransaction,
     signTransaction,
     transfer,
     validateAddress
 } from "./index";
-import {PublicKey} from "./keypair";
+import {MessagePayload, SignMessageParamsNEP} from "./nearlib";
+import {SignMsgError} from "@okxweb3/coin-base/dist/error";
+import {serialize} from "borsh";
+
 
 export enum NearTypes {
     TransferNear = 0,
@@ -202,7 +207,28 @@ export class NearWallet extends BaseWallet {
     }
 
     async signMessage(param: SignTxParams): Promise<string> {
-        throw new Error('Method not implemented.');
+        const type = param.data.type || 0;
+        try {
+            let data = param.data as SignMessageParamsNEP;
+            const {message, nonce, recipient, callbackUrl, state} = data;
+            const nonceArray = Buffer.from(data.nonce);
+            if (nonceArray.length !== 32) {
+                throw Error('Expected nonce to be a 32 bytes buffer')
+            }
+            const payload = new MessagePayload({
+                message,
+                nonce: nonceArray, recipient, callbackUrl
+            });
+            const encodedPayload = serialize(SCHEMA, payload);
+            const hash = base.sha256(encodedPayload)
+            const prvHex = this.getPrvFromBase58(param.privateKey)
+            const privateKey = base.fromHex(prvHex)
+            const s = signUtil.ed25519.sign(hash, privateKey);
+            return Promise.resolve(Buffer.from(s).toString('base64'));
+        } catch (e) {
+            console.log(e)
+            return Promise.reject(SignMsgError);
+        }
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

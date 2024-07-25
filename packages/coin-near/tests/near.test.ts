@@ -1,26 +1,23 @@
 import {
-    createTransaction,
-    getAddress,
-    publicKeyFromSeed,
-    signTransaction,
-    functionCall,
-    transfer,
-    functionCallAccessKey,
-    validateAddress,
-    createAccount,
-    addKey,
-    NearWallet,
-    fullAccessKey,
-    NearTypes,
-    DAppTxParams,
-    ActionParams,
-    TransactionParams,
     AccessKey,
-    deployContract,
-    AccessKeyPermission,
-    FullAccessPermission,
+    addKey,
+    createAccount,
+    createTransaction,
     deleteAccount,
-    deleteKey, SCHEMA, stake,
+    deleteKey,
+    deployContract,
+    fullAccessKey,
+    functionCall,
+    functionCallAccessKey,
+    getAddress,
+    NearTypes,
+    NearWallet,
+    publicKeyFromSeed,
+    SCHEMA,
+    signTransaction,
+    stake,
+    transfer,
+    validateAddress,
 } from '../src';
 import {base, BN, signUtil} from '@okxweb3/crypto-lib';
 import {SignTxParams} from "@okxweb3/coin-base";
@@ -46,6 +43,22 @@ describe("near", () => {
         console.info(addr);
     })
 
+    test("signMessage", async () => {
+        let wallet = new NearWallet()
+        let privateKey = await wallet.getRandomPrivateKey();
+        let res = await wallet.signMessage({
+            privateKey: privateKey,
+            data: {
+                message: "",
+                recipient: "",
+                nonce: Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]),
+                callbackUrl: "",
+                state: ""
+            }
+        });
+        console.log("res:", res);
+    })
+
     test("serialize", async () => {
         const encodedKey = "ed25519:5Y5W9HDZLWYi2vq2JFvwLNBue5z2RDyivs44T372T2XsxJwSttPzpuhwbnZnYyq7P7Ynb4GDdEQiQxHgzTLoLMUM"
         const parts = encodedKey.split(':');
@@ -61,7 +74,7 @@ describe("near", () => {
             console.info(base.toHex(message));
         }
         {
-            const action = addKey(newPublicKey, functionCallAccessKey("a",['a'], new BN(1)))
+            const action = addKey(newPublicKey, functionCallAccessKey("a", ['a'], new BN(1)))
             const message = serialize(SCHEMA, action)
             expect(base.toHex(message)).toEqual('050058064be4ab6a0097b6c794f5cf1983ef36c60ea82c17e8488107433f6386b5ba00000000000000000001010000000000000000000000000000000100000061010000000100000061')
             console.info(base.toHex(message));
