@@ -45,11 +45,11 @@ describe("near", () => {
 
     test("signMessage", async () => {
         let wallet = new NearWallet()
-        let privateKey = await wallet.getRandomPrivateKey();
+        let privateKey = "ed25519:5Y5W9HDZLWYi2vq2JFvwLNBue5z2RDyivs44T372T2XsxJwSttPzpuhwbnZnYyq7P7Ynb4GDdEQiQxHgzTLoLMUM";
         let res = await wallet.signMessage({
             privateKey: privateKey,
             data: {
-                message: "",
+                message: "hello world",
                 recipient: "",
                 nonce: Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]),
                 callbackUrl: "",

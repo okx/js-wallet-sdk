@@ -207,7 +207,6 @@ export class NearWallet extends BaseWallet {
     }
 
     async signMessage(param: SignTxParams): Promise<string> {
-        const type = param.data.type || 0;
         try {
             let data = param.data as SignMessageParamsNEP;
             const {message, nonce, recipient, callbackUrl, state} = data;

@@ -195,7 +195,7 @@ export const SCHEMA = new Map<Function, any>([
             ['message', 'string'],
             ['nonce', [32]],
             ['recipient', 'string'],
-            ['callbackUrl', 'string']
+            ['callbackUrl', {kind:'option',type:'string'}]
         ]
     }],
     [Signature, {
