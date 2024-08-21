@@ -11,7 +11,7 @@ export const App = () => (
   <ChakraProvider theme={theme}>
     <Header/>
     <Box bg="gray.100" pt={20} pb={4} minH={"100vh"}>
-        <BrowserRouter>
+        <BrowserRouter  basename={"/js-wallet-sdk"}>
           <Routes>
               <Route path="/" element={<Home/>}/>
               <Route path="/btc" element={<Btc/>} />
