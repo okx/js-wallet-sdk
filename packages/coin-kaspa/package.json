@@ -33,6 +33,6 @@
   },
   "dependencies": {
     "@okxweb3/coin-base": "^1.0.5",
-    "@okxweb3/crypto-lib": "^1.0.1"
+    "@okxweb3/crypto-lib": "^1.0.5"
   }
 }
