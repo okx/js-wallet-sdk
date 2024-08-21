@@ -11,3 +11,4 @@ coverage
 *.tgz
 package-lock.json
 .eslintcache
+yarn.lock
