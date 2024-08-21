@@ -22,8 +22,8 @@ export class KaspaWallet extends BaseWallet {
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
         return Promise.resolve({
-            address: addressFromPrvKey(param.privateKey),
-            publicKey: pubKeyFromPrvKey(param.privateKey),
+            address: addressFromPrvKey(param.privateKey.toLowerCase()),
+            publicKey: pubKeyFromPrvKey(param.privateKey.toLowerCase()),
         });
     }
 
