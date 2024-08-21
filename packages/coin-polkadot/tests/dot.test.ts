@@ -28,6 +28,9 @@ describe("dot", () => {
         const address = getNewAddress(privateKey, NetWork.polkadot)
         console.info(address)
 
+        // const address99 = getNewAddress("xss", NetWork.polkadot)
+        // console.info(address99)
+
         const v = validateAddress(address, NetWork.polkadot)
         console.info(v)
 

@@ -6,14 +6,14 @@ import {
     SignTxParams,
     SignTxError,
     CalcTxHashParams,
-    CalcTxHashError
+    CalcTxHashError, ValidPrivateKeyParams, ValidPrivateKeyData
 } from "@okxweb3/coin-base";
 import {
-    addressFromPrvKey,
+    addressFromPrvKey, checkPrvKey,
     pubKeyFromPrvKey,
     validateAddress
 } from "./address";
-import { transfer, signMessage, calcTxHash } from "./transaction";
+import {transfer, signMessage, calcTxHash} from "./transaction";
 
 export class KaspaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -25,6 +25,15 @@ export class KaspaWallet extends BaseWallet {
             address: addressFromPrvKey(param.privateKey),
             publicKey: pubKeyFromPrvKey(param.privateKey),
         });
+    }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        let isValid = checkPrvKey(param.privateKey);
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {

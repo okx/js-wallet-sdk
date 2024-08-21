@@ -5,6 +5,7 @@ import {
   closestPackableTransactionFee
 } from '../src';
 import Assert from 'assert';
+import {BigNumber} from "@ethersproject/bignumber";
 
 
 describe("zksync", () => {
@@ -58,36 +59,23 @@ describe("zksync", () => {
   });
 
   test("closestPackableTransactionAmount", async () => {
-    const data= closestPackableTransactionAmount("5410801312626000000")
-    // @ts-ignore
-    const hexString = data;
-    // @ts-ignore
-    const number = parseInt(hexString, 10);
-    console.log(number)
-    Assert.strictEqual(number,5410801312000000000)
+    const number= closestPackableTransactionAmount("5410801312626000000")
+    const amounts_number= BigNumber.from("5410801312000000000")
+    console.log(number.eq(amounts_number))
+    Assert.ok(number.eq(amounts_number))
   });
 
   test("closestPackableTransactionFee", async () => {
-    const data= closestPackableTransactionFee("54900000000000")
-    // @ts-ignore
-    const hexString = data;
-    // @ts-ignore
-    const number = parseInt(hexString, 10);
-    console.log(number)
-    Assert.strictEqual(number,54900000000000)
+    const number = closestPackableTransactionFee("54900000000000")
+    const amounts_number= BigNumber.from("54900000000000")
+    console.log(number.eq(amounts_number))
+    Assert.ok(number.eq(amounts_number))
   });
 
   test("testAmount", async () => {
-    const data= closestPackableTransactionAmount("541080131200000000000000000")
-    // @ts-ignore
-    const hexString = data;
-    // @ts-ignore
-    const number = parseInt(hexString, 10);
-
-    const amounts="541080131200000000000000000";
-    const amounts_number=parseInt(amounts)
-
-    console.log(number==amounts_number)
-    Assert.strictEqual(number,amounts_number)
+    const number= closestPackableTransactionAmount("541080131200000000000000000")
+    const amounts_number= BigNumber.from("541080131200000000000000000")
+    console.log(number.eq(amounts_number))
+    Assert.ok(number.eq(amounts_number))
   });
 });

@@ -6,11 +6,50 @@ export * from "./transaction"
 export * from "./NearWallet"
 
 export function getAddress(seedHex: string) {
-    const publicKey = signUtil.ed25519.publicKeyCreate(base.fromHex(seedHex))
+    let ok = checkPrivateKey(seedHex);
+    if (!ok) {
+        throw new Error("invalid key");
+    }
+    let pri = seedHex;
+    if (seedHex.startsWith("0x") || seedHex.startsWith("0X")) {
+        pri = seedHex.substring(2);
+    }
+    // const publicKey = signUtil.ed25519.publicKeyCreate(base.fromHex(seedHex))
+    const publicKey = signUtil.ed25519.publicKeyCreate(base.fromHex(pri))
     return base.toHex(publicKey)
 }
 
+export function checkPrivateKey(seedHex: string) {
+    if (!seedHex) {
+        throw new Error("invalid key");
+    }
+    let pri = "";
+    if (seedHex.startsWith("0x") || seedHex.startsWith("0X")) {
+        pri = seedHex.substring(2)
+        if (!base.isHexString("0x" + pri)) {
+            throw new Error("invalid key");
+        }
+        if (seedHex.length != 130 && seedHex.length != 66) {
+            throw new Error("invalid key");
+        }
+    } else {
+        if (!base.isHexString("0x" + seedHex)) {
+            throw new Error("invalid key");
+        }
+        if (seedHex.length != 128 && seedHex.length != 64) {
+            throw new Error("invalid key");
+        }
+        pri = seedHex;
+    }
+    const buf = base.fromHex(pri);
+    if (buf.length != 64 && buf.length != 32) {
+        throw new Error("invalid key");
+    }
+    return true
+}
+
 export function getPubkey(seedHex: string) {
+    checkPrivateKey(seedHex);
     const publicKey = signUtil.ed25519.publicKeyCreate(base.fromHex(seedHex))
     return "ed25519:" + base.toBase58(publicKey)
 }

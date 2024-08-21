@@ -1,9 +1,9 @@
 import {bech32} from "@scure/base";
 
-export function toBech32(prefix: string, data: Buffer | Uint8Array | Number[]): string {
+export function toBech32(prefix: string, data: Buffer | Uint8Array | Number[], limit?: number | false): string {
     const a = Buffer.from(data)
     const bit5 = bech32.toWords(Uint8Array.from(a))
-    return bech32.encode(prefix, bit5)
+    return bech32.encode(prefix, bit5, limit)
 }
 
 export function fromBech32(data: string, limit?: number | false): [string, Buffer] {

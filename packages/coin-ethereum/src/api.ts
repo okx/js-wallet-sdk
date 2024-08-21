@@ -1,30 +1,45 @@
 import {base, signUtil} from "@okxweb3/crypto-lib"
 import {
-    TxData,
-    TransactionFactory,
     AccessListEIP2930TxData,
+    ecdsaSign,
     FeeMarketEIP1559TxData,
+    isHexString,
+    isValidAddress,
+    makeSignature,
     privateToPublic,
     publicToAddress,
-    isValidAddress,
+    recoverFromSignature,
     toChecksumAddress,
-    ecdsaSign,
-    makeSignature,
-    recoverFromSignature
+    TransactionFactory,
+    TxData
 } from "./sdk";
-import {MessageTypes, hashMessage} from "./message"
-import { padWithZeroes, } from './sdk/eth-sig-util';
-import {typedSignatureHash, TypedDataUtils, signTypedMessage} from "eth-sig-util";
+import {hashMessage, MessageTypes} from "./message"
+import {padWithZeroes,} from './sdk/eth-sig-util';
+import {signTypedMessage, TypedDataUtils, typedSignatureHash} from "eth-sig-util";
 
 
 export function getNewAddress(privateKeyHex: string) {
+    if (!validPrivateKey(privateKeyHex)) {
+        throw new Error('invalid key');
+    }
     const privateKey = base.fromHex(privateKeyHex)
     const publicKey = privateToPublic(privateKey)
     const address = publicToAddress(publicKey)
-    return  {
-        address:  base.toHex(address, true),
+    return {
+        address: base.toHex(address, true),
         publicKey: base.toHex(publicKey, true)
     }
+}
+
+export function validPrivateKey(privateKeyHex: string): boolean {
+    if (!base.validateHexString(privateKeyHex)) {
+        return false;
+    }
+    const privateKey = base.fromHex(privateKeyHex.toLowerCase())
+    if (privateKey.length != 32) {
+        return false;
+    }
+    return true;
 }
 
 export function validAddress(address: string) {
@@ -52,16 +67,16 @@ export function signTransaction(privateKeyHex: string, txData: TxData | AccessLi
     return base.toHex(signedTx.serialize(), true);
 }
 
-export function signMessage(messageType: MessageTypes, message: string, privateKey?: Buffer) : string {
+export function signMessage(messageType: MessageTypes, message: string, privateKey?: Buffer): string {
     if (!privateKey) {
         return signMPCMessage(messageType, message)
     }
 
-    if( messageType == MessageTypes.TYPE_DATA_V1) {
+    if (messageType == MessageTypes.TYPE_DATA_V1) {
         return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V1");
-    } else if( messageType == MessageTypes.TYPE_DATA_V3) {
+    } else if (messageType == MessageTypes.TYPE_DATA_V3) {
         return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V3");
-    } else if( messageType == MessageTypes.TYPE_DATA_V4) {
+    } else if (messageType == MessageTypes.TYPE_DATA_V4) {
         return signTypedMessage(privateKey, {data: JSON.parse(message)}, "V4");
     }
 
@@ -70,25 +85,25 @@ export function signMessage(messageType: MessageTypes, message: string, privateK
     return makeSignature(v, r, s)
 }
 
-export function signMPCMessage(messageType: MessageTypes, message: string) : string {
-    if( messageType == MessageTypes.TYPE_DATA_V1) {
+export function signMPCMessage(messageType: MessageTypes, message: string): string {
+    if (messageType == MessageTypes.TYPE_DATA_V1) {
         return typedSignatureHash(JSON.parse(message));
-    } else if( messageType == MessageTypes.TYPE_DATA_V3) {
+    } else if (messageType == MessageTypes.TYPE_DATA_V3) {
         return base.toHex(TypedDataUtils.sign(JSON.parse(message), false));
-    } else if( messageType == MessageTypes.TYPE_DATA_V4) {
+    } else if (messageType == MessageTypes.TYPE_DATA_V4) {
         return base.toHex(TypedDataUtils.sign(JSON.parse(message)));
     }
     return hashMessage(messageType, message)
 }
 
-export function verifyMessage(messageType: MessageTypes, message: string, signature: Buffer) : Buffer {
+export function verifyMessage(messageType: MessageTypes, message: string, signature: Buffer): Buffer {
     const msgHash = hashMessage(messageType, message)
     const [r, s, v] = [
         signature.slice(0, 32),
         signature.slice(32, 64),
         signature[64],
     ];
-    return recoverFromSignature(base.fromHex(msgHash), v , r , s)
+    return recoverFromSignature(base.fromHex(msgHash), v, r, s)
 }
 
 export function getMPCTransaction(raw: string, sig: string, publicKey: string) {
@@ -127,7 +142,7 @@ export function validSignedTransaction(tx: string, chainId?: number, publicKey?:
     const rStr = padWithZeroes(base.toHex(signedTx.r!.toArrayLike(Buffer)), 64)
     const sStr = padWithZeroes(base.toHex(signedTx.s!.toArrayLike(Buffer)), 64)
     const rs = base.fromHex(rStr.concat(sStr))
-    if(publicKey && !signUtil.secp256k1.verifyWithNoRecovery(msgHash, rs, base.fromHex(publicKey))) {
+    if (publicKey && !signUtil.secp256k1.verifyWithNoRecovery(msgHash, rs, base.fromHex(publicKey))) {
         return new Error("signature error")
     }
     return signedTx;

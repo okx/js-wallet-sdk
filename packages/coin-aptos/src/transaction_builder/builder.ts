@@ -311,6 +311,7 @@ export class TransactionBuilderABI {
 
         throw new Error("Invalid ABI.");
     }
+
 }
 
 export type RemoteABIBuilderConfig = Partial<Omit<ABIBuilderConfig, "sender">> & {
