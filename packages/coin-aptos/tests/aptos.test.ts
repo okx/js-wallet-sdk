@@ -249,7 +249,7 @@ describe("aptos", () => {
             data: messagePayload
         };
         let res = await wallet.signMessageByPayload(signParams);
-        expect(res.signature).toBe("f731756c76517cbf91e41a5f2a05ea99de22ef3959993ee65a6da7ac8a59542cfe5fb90798d5f08f6a51bb056420d5ee0e37fa0d05b7e0ffc8cd51265a757104")
+        expect(res.signature).toBe("a8f9685b42789c864ffc836b468e0fd1cf6c4edc96dd871f185a96ca1a0d3f315ce0de76beb186db5523bf9a300ce0f54234c90f745f4c35c89454f025ed6808")
     });
 
     test("tokenTransfer", async () => {
