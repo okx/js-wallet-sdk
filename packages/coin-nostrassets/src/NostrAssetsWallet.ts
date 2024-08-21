@@ -4,7 +4,12 @@ import {
     NewAddressParams,
     ValidAddressParams,
     SignTxParams,
-    NotImplementedError, ValidAddressData, secp256k1SignTest, GenPrivateKeyError, DerivePriKeyParams,
+    NotImplementedError,
+    ValidAddressData,
+    secp256k1SignTest,
+    GenPrivateKeyError,
+    DerivePriKeyParams,
+    ValidPrivateKeyParams, ValidPrivateKeyData,
 } from "@okxweb3/coin-base";
 import {
     base, bip32, bip39
@@ -94,6 +99,16 @@ export class NostrAssetsWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(e);
         }
+    }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        const [c, d] = base.fromBech32(param.privateKey);
+        let isValid = nsec == c
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {

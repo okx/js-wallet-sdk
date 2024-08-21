@@ -189,13 +189,13 @@ const CURVE_ORDER = BigInt(
 
 export function modPrivateKey(privateKey: string): string {
     let key: string;
-    if (!privateKey.startsWith("0x")) {
+    if (!privateKey.startsWith("0x") && !privateKey.startsWith('0X')) {
         key = `0x${privateKey}`; // Remove the "0x" prefix
     } else {
         key = privateKey;
     }
 
-    const pk = BigInt(privateKey);
+    const pk = BigInt(key.toLowerCase());
     const priKey = pk % CURVE_ORDER;
 
     return "0x" + priKey.toString(16);

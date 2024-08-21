@@ -75,3 +75,17 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** support analyze PSBT hex to utxo.
+
+# [1.0.20] (2024-6-19)
+
+- **coin-bitcoin:** Fixed runes asset precision issues in mint.
+
+# [1.0.22] (2024-7-2)
+
+- **coin-bitcoin:** add runes serial mint model.add splitTools psbt
+
+# [1.0.23] (2024-07-24)
+
+### Feature
+
+- **coin-bitcoin:** Added support for Atomical half-dyed assets

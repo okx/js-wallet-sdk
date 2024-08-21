@@ -2,6 +2,7 @@ import * as bscript from './bitcoinjs-lib/script';
 import {OPS} from './bitcoinjs-lib/ops';
 import {Edict} from "./type";
 import {ErrCodeLessRunesMainAmt, ErrCodeOpreturnExceeds} from "./wallet";
+import {base} from "@okxweb3/crypto-lib";
 import * as buffer from "buffer";
 import {number} from "./bitcoinjs-lib/script";
 
@@ -178,12 +179,38 @@ export function buildRuneMainMintData(isMainnet: boolean, edicts: Edict[],useDef
         }))
     }
 
-    // const hexString = '0x02030482fefefefefefefefefefefefefefefefefe7d0102038774054006cd1008cd10';
-    // const bufferData = Buffer.from(hexString.slice(2), 'hex');
-    // const opReturnScript = bscript.compile([OPS.OP_RETURN, Buffer.from(prefix), bufferData])
-    // console.log(Buffer.from(payload));
-
     const opReturnScript = bscript.compile([OPS.OP_RETURN, OPS.OP_13, Buffer.from(payload)])
 
     return opReturnScript
+}
+
+export function buildRuneMainMintOp(id: string,useDefaultOutput :boolean,defaultOutput :number, mint: boolean) {
+    let payload: number[] = []
+
+    let block = parseInt(id.split(":")[0])
+    let txindex=parseInt(id.split(":")[1])
+
+    if ((mint != undefined) && mint && txindex != undefined ){
+        encodeToVecV2(TAG_Mint, payload);
+        encodeToVecV2(BigInt(block), payload); // only mint edicts[0].id
+        encodeToVecV2(TAG_Mint, payload);
+        encodeToVecV2(BigInt(txindex), payload); // only mint edicts[0].id
+    }
+
+    if (useDefaultOutput){
+        encodeToVecV2(TAG_Pointer, payload);
+        encodeToVecV2(BigInt(defaultOutput), payload);
+    }
+
+    if (payload.length > 80){
+        throw new Error(JSON.stringify({
+            errCode:ErrCodeOpreturnExceeds,
+            date:{
+                payloadLenth:payload.length
+            }
+        }))
+    }
+
+    const opReturnScript = bscript.compile([OPS.OP_RETURN, OPS.OP_13, Buffer.from(payload)])
+    return {address: '', amount: 0, omniScript: base.toHex(opReturnScript)}
 }
