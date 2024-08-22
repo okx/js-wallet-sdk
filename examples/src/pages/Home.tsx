@@ -1,12 +1,13 @@
 import React from 'react';
-import { Box, Flex, Text, Link } from '@chakra-ui/react';
+import { Flex, Text, Link } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Home = () => {
     return (
         <Flex direction="row" align="center" justify="center" height="100vh">
-            <Box
-                as={Link}
-                href="/btc"
+            <Link
+                as={RouterLink}
+                to="/btc"
                 w="300px"
                 h="200px"
                 bg="blue.500"
@@ -18,10 +19,10 @@ const Home = () => {
                 justifyContent="center"
             >
                 <Text color="white" fontSize="xl" textAlign="center">Bitcoin</Text>
-            </Box>
-            <Box
-                as={Link}
-                href="/evm"
+            </Link>
+            <Link
+                as={RouterLink}
+                to="/evm"
                 w="300px"
                 h="200px"
                 bg="blue.500"
@@ -33,10 +34,10 @@ const Home = () => {
                 justifyContent="center"
             >
                 <Text color="white" fontSize="xl" textAlign="center">Ethereum</Text>
-            </Box>
-            <Box
-                as={Link}
-                href="/ton"
+            </Link>
+            <Link
+                as={RouterLink}
+                to="/ton"
                 w="300px"
                 h="200px"
                 bg="blue.500"
@@ -48,7 +49,7 @@ const Home = () => {
                 justifyContent="center"
             >
                 <Text color="white" fontSize="xl" textAlign="center">TON</Text>
-            </Box>
+            </Link>
         </Flex>
     );
 };
