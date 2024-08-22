@@ -1,11 +1,11 @@
 {
   "files": {
-    "main.js": "/js-wallet-sdk/static/js/main.07b02464.js",
+    "main.js": "/js-wallet-sdk/static/js/main.9e910305.js",
     "index.html": "/js-wallet-sdk/index.html",
     "static/media/index.cjs": "/js-wallet-sdk/static/media/index.88d9c658b5ebd0b9ee47.cjs",
-    "main.07b02464.js.map": "/js-wallet-sdk/static/js/main.07b02464.js.map"
+    "main.9e910305.js.map": "/js-wallet-sdk/static/js/main.9e910305.js.map"
   },
   "entrypoints": [
-    "static/js/main.07b02464.js"
+    "static/js/main.9e910305.js"
   ]
 }
