@@ -6,6 +6,7 @@ import {
     useColorModeValue,
     Heading
 } from '@chakra-ui/react';
+import { Link as RouterLink } from 'react-router-dom';
 
 const Header: React.FC = () => {
     const bgColor = useColorModeValue('gray.100', 'gray.900');
@@ -26,38 +27,42 @@ const Header: React.FC = () => {
                 <Heading>OKX js-wallet-sdk Demo</Heading>
                 <Flex alignItems={'center'}>
                     <Link
+                        as={RouterLink}
+                        to="/"
                         px={2}
                         py={1}
                         rounded={'md'}
                         _hover={{ textDecoration: 'none', bg: useColorModeValue('gray.200', 'gray.700') }}
-                        href={'/'}
                     >
                         Home
                     </Link>
                     <Link
+                        as={RouterLink}
+                        to="/btc"
                         px={2}
                         py={1}
                         rounded={'md'}
                         _hover={{ textDecoration: 'none', bg: useColorModeValue('gray.200', 'gray.700') }}
-                        href={'/btc'}
                     >
                         Bitcoin
                     </Link>
                     <Link
+                        as={RouterLink}
+                        to="/evm"
                         px={2}
                         py={1}
                         rounded={'md'}
                         _hover={{ textDecoration: 'none', bg: useColorModeValue('gray.200', 'gray.700') }}
-                        href={'/evm'}
                     >
                         EVM
                     </Link>
                     <Link
+                        as={RouterLink}
+                        to="/ton"
                         px={2}
                         py={1}
                         rounded={'md'}
                         _hover={{ textDecoration: 'none', bg: useColorModeValue('gray.200', 'gray.700') }}
-                        href={'/ton'}
                     >
                         Ton
                     </Link>
