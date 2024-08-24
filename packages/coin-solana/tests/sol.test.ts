@@ -5,15 +5,47 @@ import {base} from "@okxweb3/crypto-lib";
 import {ed25519_getRandomPrivateKey} from "@okxweb3/coin-base";
 import {TOKEN_2022_PROGRAM_ID} from "../src/sdk/spl";
 import {deserializeMessages} from "../src/api";
+
 const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
 const privateKeyBase58 = base.toBase58(base.fromHex(privateKey))
 describe("address", () => {
-    test('private key', () => {
+    test('private key', async () => {
         let key = ed25519_getRandomPrivateKey(true, 'hex')
         let key1 = ed25519_getRandomPrivateKey(true, 'base58')
         console.log(key)
         console.log(key1)
     })
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new SolWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            try {
+                await wallet.getNewAddress({privateKey: ps[i]});
+            } catch (e) {
+                j = j + 1
+            }
+        }
+        expect(j).toEqual(ps.length+1);
+    });
+
+    test("validPrivateKey", async () => {
+        const wallet = new SolWallet();
+        const privateKey = await wallet.getRandomPrivateKey();
+        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        expect(res.isValid).toEqual(true);
+    });
 
     test("getNewAddress", async () => {
         const address = api.getNewAddress(privateKeyBase58);
@@ -155,7 +187,6 @@ describe("address", () => {
         const privateKey = "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc";
         const from = api.getNewAddress(privateKey);
         const to = "9qinWp4oc3TvBocbwAvYZAZWfSswub2qM49Pn6rkCQ9q";
-
         const nft = {
             tokenStandard: TokenStandard.ProgrammableNonFungible,
             address: new PublicKey("DberpiNB1sttkWdd66amQV5hrnMGacBeDeMbcEFMVBiR"),
@@ -191,5 +222,109 @@ describe("address", () => {
             lastValidBlockHeight: 181854107,
         });
         console.log(signedTx);
+    });
+
+    test("mplTransfer", async () => {
+        let wallet = new SolWallet()
+        let params = {
+            privateKey: '5qE6uYyxnPQTkVcQb5ndmCz4TDErkRu6JfTSwpwsYbaNmziwEUuF1UFu37FGHS7WwCVYtwXzu5rGUnKWUXjr5fcU',
+            data: {
+                "type": "mplTransfer",
+                "payer": "CS8ifB68oddKXdW87RAyrxFSoz1DMMcX9WsWeAgbYDCC",
+                "blockHash": "Bm1Wrt6Uqwa9d4Qs3SJpBpjbWtxoiWK5mwELsT3HVG5H",
+                "from": "CS8ifB68oddKXdW87RAyrxFSoz1DMMcX9WsWeAgbYDCC",
+                "to": "9qinWp4oc3TvBocbwAvYZAZWfSswub2qM49Pn6rkCQ9q",
+                "amount": 1,
+                "computeUnitPrice": "10",
+                "computeUnitLimit": "1400000",
+                /**
+                 * export enum TokenStandard {
+                 *   NonFungible,// 0
+                 *   FungibleAsset,// 1
+                 *   Fungible,// 2
+                 *   NonFungibleEdition,// 3
+                 *   ProgrammableNonFungible,// 4
+                 * }
+                 */
+                // "tokenStandard": 4,
+                "mint": "CBFUFA2QXo7onXqWJGeuqPKGvB9UanQWa6nFddfSHaC7",
+                "createAssociatedAddress": true
+            }
+        }
+        let tx = await wallet.signTransaction(params);
+        // console.log(tx);
+        const expected = `f4rS6meMr7jL34Fjo7AAh9NnZzdyFPBMdMEX6eVdZgHuerMWnk3ZfujRLkzxFHSz39aUKxsrDAcjL8mxiXf6nQGRe3P4bXECCRdaeTxw8UWBTGt9ZsV4ehvWuMVKZpGiPPXWJ8rckg3Roj1tSd4bmTzYi75nNockqGgkb9x89UqVsVpTMHmfTXogP2zGmbUhzeapGc1AtaycoqW2GhZw7tSDUiMBqDQBe81qyp3hPGw4VzfDC9xyRQbs3ZzAJLqq83ebNpcHoAWJ2KZc1hxEtxL5ysjnuTZEW4UMr8vXyzQLMp91raqSxCBesH5PnDn6xSPdPZdCTm3R5x1XEneTRLzSnjYu8NNUSdisQZuBBSNwWpuPsXc7m5rJQDsZYbNhq8sLAM8tzpZ7PrDAq7SWFQAedVd1xPSe7aJPUvYvp7QhKykzjp5vCsiFPqe7EbtTk1bCZtYpynHJECbjEFriLsZv2wDUesLRgNUVaVfUbD5mGtXEdD6sy5dRcqaXhPDjiRbwEViD61KnquAeGTiCtL7vvbcAKoHSEwYQkEVrt2H6Co97WpiBjbCJJ9v91nDFLm3JwSX5ErwKQKDToYcxLXziVAsWVjAkBorJFaQowuqeU3NCruB4GcW2U7bo11yXX5XboXT2KiQRtAeDXnQ3PPHn4jHNUmwVCn1BzDzhCWMMqM3YJmAUtUgvFUsAhrs68Bt3XkCysfDzVU6HgDjFqfe36BZ1WwHs6X7CGkBU6LF9Wqqx8Q9aqtFGTxai4HdBvFvezduVckF6wTjDFX6vHcbtgbkyz1aT5Wk6vQGsTWpqvdkLAAWHMSBtG5NpCE614suSnoW3oHck1nfa2eXs1Q17ERNrmCYc4HSpCYJQSrRZ48XC8XpTouYA2C8FjFdQTJUJppP96cX`;
+        expect(tx).toBe(expected)
+    });
+
+    test("transfer getSerializedTransaction", async () => {
+        let wallet = new SolWallet()
+        let params = {
+            privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
+            data: {
+                // version: 0,
+                type: "transfer",
+                payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                blockHash: "6t1qEvLH5uC9NMmMTPhaE9tAaWdk1qvBjqsKsKNPB7sX",
+                from: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                to: "7NRmECq1R4tCtXNvmvDAuXmii3vN1J9DRZWhMCuuUnkM",
+                amount: 100000000,
+                computeUnitLimit: 140000,
+                computeUnitPrice: 10,
+                needPriorityFee: false
+            }
+        }
+        let tx = await wallet.getSerializedTransaction(params);
+        let expected = `3md7BBV9wFjYGnMWcMNyAZcjca2HGfXWZkrU8vvho66z2sJMZFcx6HZdBiAddjo2kzgBv3uZoac3domBRjJJSXkbBvokxTN1jy2dVLvYUXwMDooQzZypN6XL8H86iAaWL7MfHri8ANQ3Cm1oDnXfozNXsULH4svh8D321zZEBTcD3CwM5Mjyx15MD8zcivUbtSzxKce7Lr6oBHrw4mmwPNVR7Sxo67pxCmN6ct2K6fQe97AngFpAVp7Z6dyZ7aPgFCUD3zUTxcNS9dPWx31ejPg6BZKWfK7mQydbD`;
+        expect(tx).toBe(expected);
+    });
+
+    test("tokenTransfer getSerializedTransaction", async () => {
+        let wallet = new SolWallet()
+        let param = {
+            privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
+            data: {
+                // version: 0,
+                type: "tokenTransfer",
+                payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                blockHash: "HwN3QorABLpYftu9FeE1FGrwrBK1aAhhz3cirEVrN3Fn",
+                from: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                to: "7NRmECq1R4tCtXNvmvDAuXmii3vN1J9DRZWhMCuuUnkM",
+                amount: 100000,
+                mint: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+                createAssociatedAddress: false,
+                token2022: false,
+                decimal: 9,
+                computeUnitLimit: 140000,
+                computeUnitPrice: 10,
+                needPriorityFee: false
+            }
+        }
+        let tx = await wallet.getSerializedTransaction(param);
+        let expected = `3T4DHUNXqSgNrtRMsDwQr7oG7756JXW4uNJ7x7RKJLTcSJRe6PqyR5fQffnXh4KTHs4MyRrDhR1K3zCeRrWsJBeoXxrw5G79LAb1SBsTUtXnF1XvQ9RhQiwR73XUCNcKukjXw8QTrqAcsnSZJSShmffE5G93PFyvPhG3NRJqfBrCdqWGZAqrtDAqjTJ2qoY6oajcE8xBRs1uqMfHFmUyvoyLWiqGKnTuMSxJ16UCjiw5LfgnnJFDvoGB5KCv9FXzfyRQXckjSaEmLADGgQV5qCEkaSKa8PY5L62pVGBDE8pY6xhW6m154oTaXx8ySMFBRo2Hd2yY7436B9`;
+        expect(tx).toBe(expected);
+    });
+
+    test("mplTransfer getSerializedTransaction", async () => {
+        let wallet = new SolWallet()
+        let params = {
+            privateKey: '5qE6uYyxnPQTkVcQb5ndmCz4TDErkRu6JfTSwpwsYbaNmziwEUuF1UFu37FGHS7WwCVYtwXzu5rGUnKWUXjr5fcU',
+            data: {
+                "type": "mplTransfer",
+                "payer": "CS8ifB68oddKXdW87RAyrxFSoz1DMMcX9WsWeAgbYDCC",
+                "blockHash": "Bm1Wrt6Uqwa9d4Qs3SJpBpjbWtxoiWK5mwELsT3HVG5H",
+                "from": "CS8ifB68oddKXdW87RAyrxFSoz1DMMcX9WsWeAgbYDCC",
+                "to": "9qinWp4oc3TvBocbwAvYZAZWfSswub2qM49Pn6rkCQ9q",
+                "amount": 1,
+                "computeUnitPrice": "92280",
+                "computeUnitLimit": "100000",
+                "mint": "CBFUFA2QXo7onXqWJGeuqPKGvB9UanQWa6nFddfSHaC7",
+                "createAssociatedAddress": true,
+                "needPriorityFee": false
+            }
+        }
+        let tx = await wallet.getSerializedTransaction(params);
+        let expected = `R1skTPrnLQL7Hg9BPsxT1PwcbSD3LPQPWm83qF33iTNZ7dLzH7TA5cdRb92gJRfy94zJqm3xNrJKJGh3rDHHbhiYRmSisjGFTNn6NpMiz4Eb1KB6H9i9LrWZcGaJEkJjcLtoyLvjDi55xX8ruewUbzaHrzTKgrW4yY2iLxaJ1CHzuYZHxRjyNkwmUMmjVZ5CRW7vRVdaVNCA4RokxJaFTC2v2GfsdUc82g5482b6a5zZ8ZuNFrj9v2Z6Pyu7Bvd1eG13pVD27ZbedBeVVY98uFPniZqmkBHwdLRESqv9BSdTpEC4q5RuTRQiMRjY9snNAxKg6mr1Lt6AHnGFvAowrD45wUMn5BXmFr2pyoXvgP3RogGfrF6kQqUJrQTJvTzve2VfGcCatRbhrs44gHwdGKto65ZLrB5JgBnk4ujLGprMvuMmFNFRK5jXETdKULhfhhbMm9qRSzco9pbkMPzM4wP83qJ2U9Wm2GqR2eNcNSMAGXr7ZR4iApMNdRToAPFWMe1NNgTG7BbQDtreq7HyMZGXwrkT6uVxD3BTzRNzg7MYjmPDuUVufThhs3LW6p1TNMRNcmK4FV7X5oaT8XwQFyKJmmmdLXiAGzVrk469R1tB42uHzYC2eRBsPk6VVZ7Yq3i5rKRLkcr6k4MnRqiJaSuRKzycLHSPNEuHABx4WPAi77z7gPppWrM2WqvhVwbyYVWpoAegMST2gDGUWZpsEMmQamygqC9FKggeCyvRENyLuUgL19u54848NFDgmnV2qb5w9L6aDoJddKKd7JtGZz5uuzzDRBu2ThchbTG6NyU5yFP6ipp9zNsidxznhwzA8X11`;
+        expect(tx).toBe(expected);
     });
 })

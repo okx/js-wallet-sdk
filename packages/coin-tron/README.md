@@ -53,6 +53,16 @@ const ok = await wallet.validAddress({ address: addr });
 
 ### Transaction
 sign transaction
+
+parameter
+* `fromAddress` address， TRX token的转出地址
+* `refBlockBytes` 引用的区块字节，指向相关的区块。
+* `refBlockHash`
+* `expiration`
+* `timeStamp`
+* `toAddress`
+* `amount`
+
 ```typescript
 import { TrxWallet } from "@okxweb3/coin-tron";
 

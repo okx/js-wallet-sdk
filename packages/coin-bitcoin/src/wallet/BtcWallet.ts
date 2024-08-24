@@ -259,6 +259,16 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
+        } else if (type === bitcoin.BtcXrcTypes.PSBT_RUNEMAIN){ // psbt runes main
+            try {
+                let wallet = new RuneMainWallet()
+                if (this.network() === networks.testnet) {
+                    wallet = new RuneMainTestWallet()
+                }
+                return Promise.resolve(wallet.buildPsbt(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
         } else {
             let txHex = null;
             try {
@@ -520,6 +530,29 @@ export class BtcWallet extends BaseWallet {
             return Promise.reject(SignTxError);
         }
     }
+
+    async buildPsbt(param: SignTxParams): Promise<any> {
+        const type = param.data.type || 0;
+        if (type === bitcoin.BtcXrcTypes.RUNEMAIN) { // rune
+            try {
+                let wallet = new RuneMainWallet()
+                if (this.network() === networks.testnet) {
+                    wallet = new RuneMainTestWallet()
+                }
+                return Promise.resolve(wallet.buildPsbt(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else {
+            let txHex = null;
+            try {
+                return Promise.resolve(txHex);
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        }
+    }
+
 }
 
 export class TBtcWallet extends BtcWallet {

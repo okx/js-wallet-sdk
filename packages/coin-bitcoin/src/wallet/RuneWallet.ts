@@ -156,6 +156,9 @@ export class RuneWallet extends BtcWallet {
         if (networks.bitcoin === network) {
             isMainnet = true;
         }
+        if (runeData.edicts == undefined){
+            runeData.edicts = []
+        }
         const opReturnScript = buildRuneData(isMainnet, runeData.edicts);
         const opReturnOutput = {address: '', amount: 0, omniScript: base.toHex(opReturnScript)};
         return opReturnOutput;

@@ -7,6 +7,7 @@ import { Assignable, Enum } from './enums';
 import { serialize, deserialize } from 'borsh';
 import { base, signUtil, BN } from '@okxweb3/crypto-lib';
 import { base_encode } from './serialize';
+import {MessagePayload} from "./nearlib";
 
 export class FunctionCallPermission extends Assignable {
   allowance?: BN;
@@ -159,6 +160,15 @@ export class SignedTransaction extends Assignable {
 }
 
 export const SCHEMA = new Map<Function, any>([
+    [MessagePayload, {
+        kind: 'struct', fields: [
+            ['tag', 'u32'],
+            ['message', 'string'],
+            ['nonce', [32]],
+            ['recipient', 'string'],
+            ['callbackUrl', {kind:'option',type:'string'}]
+        ]
+    }],
   [Signature, {kind: 'struct', fields: [
       ['keyType', 'u8'],
       ['data', [64]]

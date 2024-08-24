@@ -33,6 +33,9 @@ export function private2Address(privateKey: Uint8Array, prefix: string, useEthSe
 }
 
 export function getNewAddress(privkey: Uint8Array, prefix = "cosmos", useEthSecp256k1?: boolean) {
+    if (privkey.length != 32) {
+        throw new Error("invalid key")
+    }
     return private2Address(privkey, prefix, useEthSecp256k1 || false)
 }
 
@@ -47,7 +50,7 @@ export function addressFromPublic(publicKeyHex: string, prefix: string = "cosmos
         address = public2Address(publicKey, true);
     } else {
         if (publicKey.length !== 33) {
-        publicKey = signUtil.secp256k1.publicKeyConvert(publicKey, true)!;
+            publicKey = signUtil.secp256k1.publicKeyConvert(publicKey, true)!;
         }
         address = public2Address(publicKey, false);
     }
@@ -205,6 +208,7 @@ export async function SignWithSignDocForINJ(privateKey: Uint8Array, message: str
     const {signature} = signUtil.secp256k1.sign(Buffer.from(messageHash), privateKey)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
+
 export async function SignWithSignDocForINJWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
     const m: SignDocMessage = JSON.parse(message)
     const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
@@ -242,7 +246,8 @@ export async function signWithStdSignDocForINJ(privateKey: Uint8Array, message: 
     const publicKey = private2Public(privateKey, true)
     return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
 }
-export async function signWithStdSignDocForINJWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, wallet: CosmosWallet ) {
+
+export async function signWithStdSignDocForINJWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, wallet: CosmosWallet) {
     const m: amino.StdSignDoc = JSON.parse(message)
     const signDocBytes = amino.serializeSignDoc(m)
     const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
@@ -263,6 +268,7 @@ export async function signWithStdSignDocForINJWithTx(privateKey: Uint8Array, mes
     const sig = encodeSecp256k1Signature(publicKey, signature, false)
     return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
 }
+
 export async function SignWithSignDoc(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean) {
     const m: SignDocMessage = JSON.parse(message)
     const signDoc = makeSignDoc(base.fromHex(m.body), base.fromHex(m.authInfo), m.chainId, parseInt(m.accountNumber));
@@ -313,7 +319,8 @@ export async function signWithStdSignDoc(privateKey: Uint8Array, message: string
         return Promise.resolve(encodeSecp256k1Signature(publicKey, signature, false))
     }
 }
-export async function signWithStdSignDocWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, prefix: string, wallet: CosmosWallet ) {
+
+export async function signWithStdSignDocWithTx(privateKey: Uint8Array, message: string, useEthSecp256k1: boolean, prefix: string, wallet: CosmosWallet) {
     const m: amino.StdSignDoc = JSON.parse(message)
     const signDocBytes = amino.serializeSignDoc(m)
     const messageHash = useEthSecp256k1 ? base.keccak256(signDocBytes) : base.sha256(signDocBytes);
@@ -341,6 +348,7 @@ export async function signWithStdSignDocWithTx(privateKey: Uint8Array, message: 
         return Promise.resolve(jsonStringifyUniform({signature: sig, tx: tx}))
     }
 }
+
 export async function sendAminoMessage(privateKey: Uint8Array,
                                        prefix: string,
                                        // json

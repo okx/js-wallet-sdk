@@ -159,6 +159,9 @@ export interface StacksPrivateKey {
 }
 
 export function createStacksPrivateKey(key: string | Uint8Array): StacksPrivateKey {
+  if (key == undefined || null || key.length == 0) {
+    throw new Error('invalid key');
+  }
   const data = privateKeyToBytes(key);
   const compressed = data.length == PRIVATE_KEY_COMPRESSED_LENGTH;
   return { data, compressed };

@@ -1,9 +1,14 @@
 import * as elliptic from "../elliptic";
 import {concatBytes} from "../base";
 import BN from "bn.js";
+
 const ed25519 = new elliptic.eddsa('ed25519');
 const curve = ed25519.curve
 
+export function ed25519MulBase(scalar: Uint8Array) {
+    const G = ed25519.curve.g;
+    return ed25519.encodePoint(G.mul(elliptic.utils.intFromLE(scalar)))
+}
 export function sign (message: Uint8Array | Buffer, secretKey: Uint8Array | Buffer): Uint8Array {
     let pk = secretKey
     if(pk.length == 64) {

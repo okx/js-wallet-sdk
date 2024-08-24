@@ -101,6 +101,11 @@ let address5 = await wallet.getAddressByPublicKey(params5);
 
 
 ### Sign Transaction
+
+[rune mint doc](./doc/rune.md)
+
+[atomical token doc](./doc/atomical.md)
+
 sign transaction
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
@@ -240,6 +245,80 @@ import { TBtcWallet } from "@okxweb3/coin-bitcoin";
 
         const txs: InscribeTxs =await wallet.signTransaction({privateKey: privateKey, data: request});
         console.log(JSON.stringify(txs));
+```
+
+BRC20 inscribe
+
+```typescript
+test("inscribe", async () => {
+    let network = bitcoin.networks.testnet;
+    let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+
+    const commitTxPrevOutputList: PrevOutput[] = [];
+    commitTxPrevOutputList.push({
+        txId: "36cdb491d2b02c1668d02e42edd80af339e1195df4d58927ab9db9e4893509a5",
+        vOut: 4,
+        amount: 1145068,
+        address: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+        privateKey: privateKey,
+    });
+    commitTxPrevOutputList.push({
+        txId: "3d79592cd151427d2d3e55aaf09749c8417d24889c20edf68bd936adc427412a",
+        vOut: 0,
+        amount: 546,
+        address: "tb1qtsq9c4fje6qsmheql8gajwtrrdrs38kdzeersc",
+        privateKey: privateKey,
+    });
+    commitTxPrevOutputList.push({
+        txId: "83f5768abfd8b95dbfd9191a94042a06a2c3639394fd50f40a00296cb551be8d",
+        vOut: 0,
+        amount: 546,
+        address: "mouQtmBWDS7JnT65Grj2tPzdSmGKJgRMhE",
+        privateKey: privateKey,
+    });
+    commitTxPrevOutputList.push({
+        txId: "8583f92bfc087549f6f20eb2d1604b69d5625a9fe60df72e61e9138884f57c41",
+        vOut: 0,
+        amount: 546,
+        address: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+        privateKey: privateKey,
+    });
+
+    const inscriptionDataList: InscriptionData[] = [];
+    inscriptionDataList.push({
+        contentType: "text/plain;charset=utf-8",
+        body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"100"}`,
+        revealAddr: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+    });
+    inscriptionDataList.push({
+        contentType: "text/plain;charset=utf-8",
+        body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"10"}`,
+        revealAddr: "mouQtmBWDS7JnT65Grj2tPzdSmGKJgRMhE",
+    });
+    inscriptionDataList.push({
+        contentType: "text/plain;charset=utf-8",
+        body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"10000"}`,
+        revealAddr: "tb1qtsq9c4fje6qsmheql8gajwtrrdrs38kdzeersc",
+    });
+    inscriptionDataList.push({
+        contentType: "text/plain;charset=utf-8",
+        body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"1"}`,
+        revealAddr: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
+    });
+
+    const request: InscriptionRequest = {
+        commitTxPrevOutputList,
+        commitFeeRate: 2,
+        revealFeeRate: 2,
+        revealOutValue: 546,
+        inscriptionDataList,
+        changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+    };
+
+    const txs: InscribeTxs = inscribe(network, request);
+    console.log(txs);
+    expect(txs.commitTxFee).toEqual(1180)
+});
 ```
 
 ## License: MIT

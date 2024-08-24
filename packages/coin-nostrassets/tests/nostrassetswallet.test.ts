@@ -1,5 +1,6 @@
 import {NostrAssetsWallet, nsecFromPrvKey, CryptTextParams, verifySignature, nipOpType, decodeBytes} from "../src";
 import {bip39} from "@okxweb3/crypto-lib";
+import {base58} from "@scure/base";
 
 const wallet = new NostrAssetsWallet();
 const prv = 'nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y'
@@ -10,6 +11,15 @@ describe("nostr", () => {
         console.log(prv)
         expect(prv.startsWith('nsec')).toBe(true)
     })
+
+    test("getNewAddress common2", async () => {
+        //sei137augvuewy625ns8a2age4sztl09hs7pk0ulte
+        const privateKey = "nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y"
+        const wallet = new NostrAssetsWallet();
+        let expectedAddress = "npub1znxtu8222hlzxc59w6nlq33h7erl66ux6d30nql5a0tmjh2809hstw0d22";
+        expect((await wallet.getNewAddress({privateKey:privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.validPrivateKey({privateKey:privateKey})).isValid).toEqual(true);
+    });
 
     test("generate", async () => {
         let memo = await bip39.generateMnemonic();
@@ -22,6 +32,13 @@ describe("nostr", () => {
         let newAddress = await wallet.getNewAddress({privateKey: derivePrivateKey});
         console.log("generate new address:", newAddress.address, "newAddress.publicKey", newAddress.publicKey);
     })
+
+    test("validPrivateKey", async () => {
+        const wallet = new NostrAssetsWallet();
+        const privateKey = await wallet.getRandomPrivateKey();
+        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        expect(res.isValid).toEqual(true);
+    });
 
 
     test("address", async () => {

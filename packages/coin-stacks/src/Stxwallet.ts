@@ -16,7 +16,7 @@ import {
     GetPayLoadError,
     NewAddressError,
     SignMsgError,
-    SignTxError
+    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData
 } from "@okxweb3/coin-base";
 import {
     createStacksPrivateKey,
@@ -171,10 +171,8 @@ export class StxWallet extends BaseWallet {
 
     getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            if (param.privateKey.startsWith("0x")) {
-                param.privateKey = param.privateKey.substring(2);
-            }
-            const privateKey = createStacksPrivateKey(param.privateKey);
+            let key = param.privateKey.toLowerCase().startsWith("0x")? param.privateKey.substring(2):param.privateKey
+            const privateKey = createStacksPrivateKey(key.toLowerCase());
             const publicKey = base.toHex(getPublicKey(privateKey).data);
             let address;
             if (param.version && param.version === 'Testnet') {
@@ -190,6 +188,23 @@ export class StxWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(NewAddressError);
         }
+    }
+
+    checkPrivateKey(privateKeyHex: string) {
+        if (privateKeyHex.toLowerCase().startsWith("0x")) {
+            privateKeyHex = privateKeyHex.substring(2);
+        }
+        createStacksPrivateKey(privateKeyHex);
+        return true
+    }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        let isValid = this.checkPrivateKey(param.privateKey)
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

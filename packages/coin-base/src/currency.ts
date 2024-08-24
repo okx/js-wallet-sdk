@@ -40,6 +40,7 @@ export enum Currency {
     Celestia = 2854,
     DYDX = 2897,
     Kaspa = 111111,
+    TON = 607,
     NostrAssets = 1237,
     Near = 397,
 }
@@ -94,4 +95,5 @@ export const CoinCurveMap = new Map<Currency, string>([
     [Currency.SOL, ed25519],
     [Currency.APTOS, ed25519],
     [Currency.SUI, ed25519],
+    [Currency.TON, ed25519],
 ]);

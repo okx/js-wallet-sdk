@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-bitcoin",
-  "version": "1.0.19",
+  "version": "1.0.23",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@okxweb3/coin-base": "^1.0.5",
+    "@okxweb3/coin-bitcoin": "^1.0.22",
     "@okxweb3/crypto-lib": "^1.0.1",
     "big-integer": "1.6.36"
   }

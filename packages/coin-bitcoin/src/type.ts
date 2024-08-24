@@ -54,13 +54,14 @@ type utxoTx = {
 
 // rune
 type RuneData = {
-    edicts: Edict[]
+    edicts?: Edict[]
     etching?: any
     useDefaultOutput?:boolean
     defaultOutput?:number
     burn?: boolean
     mint?: boolean
     mintNum?: number
+    serialMint?:boolean
 }
 
 type Edict = {
