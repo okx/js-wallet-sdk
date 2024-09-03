@@ -321,4 +321,58 @@ test("inscribe", async () => {
 });
 ```
 
+Runes deploy
+
+```typescript
+let network = testnet;
+let privateKeyTestnet = "" //testnet
+let btcWallet = new TBtcWallet();
+let addressData = await btcWallet.getNewAddress({privateKey: privateKeyTestnet, addressType: "segwit_taproot"})
+let address = addressData.address;
+const commitTxPrevOutputList: PrevOutput[] = [];
+commitTxPrevOutputList.push({
+    txId: "61850f94abe913a23bdc77a5d8e5e89e02d2aae36afaef0a8068656deeca5fb7",
+    vOut: 1,
+    amount: 270356,
+    address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
+    privateKey: privateKeyTestnet,
+});
+let logoData = base.fromHex("89504e470d0a1a0a0000000d494844520000001a0000001a0806000000a94a4cce000000017352474200aece1ce90000000467414d410000b18f0bfc6105000000097048597300000ec400000ec401952b0e1b0000008e49444154484bed96010a80200c456797a95b56c7ec34ab8181e8ac6d9642f64012a93da61fc9e13c225460f0cfd7f94566be2762e3edd6cdcfae39bef5b37b121149a40534ef761406da96f8acb83529ed3b424cef5a6e4d4abea3654a13c5ad0969bf754fa31259134764456794c3613d1f222ba2a2f128417da986424d97aa9f93b8b046d479bc4ba82402d8011ca1446416a08a910000000049454e44ae426082")
+let logoDataStr = "hello world";
+const request: RunesMainInscriptionRequest = {
+    type: BtcXrcTypes.RUNEMAIN,
+    commitTxPrevOutputList,
+    commitFeeRate: 5,
+    revealFeeRate: 5,
+    revealOutValue: 1000,
+    runeData: {
+        revealAddr: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
+        etching: {
+            premine: BigInt(1000000),
+            rune: {value: "ABCDEFG•ABC•PPPM•OPOETAB"},
+            symbol: "X",
+            terms: {
+                amount: BigInt(1000),
+                cap: BigInt(20000)
+            },
+            turbo: false,//todo
+            contentType: "image/png", //optional
+            body: logoData  //optional
+        }
+    },
+    changeAddress: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
+};
+
+let res = await btcWallet.signTransaction({
+    privateKey: privateKeyTestnet,
+    data: request
+});
+expect(res.revealTxs.length).toEqual(1)
+expect(res.commitTxFee).toEqual(770)
+```
+
+* [commit example](https://www.oklink.com/zh-hans/btc/tx/7d25c2be38b45d2dc37496fd4884e6a80881b753e437f93e909b94bf3efe154c)
+* [reveal example](https://www.oklink.com/zh-hans/btc/tx/7b5c77bdccad264b36d7bf1b0f8c38bc831eb921d9e77eba27855c5de9033569)
+
+
 ## License: MIT
