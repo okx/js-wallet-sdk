@@ -1,4 +1,4 @@
-import {cloneObject, SignTxParams} from "@okxweb3/coin-base";
+import {cloneObject, SignTxError, SignTxParams} from "@okxweb3/coin-base";
 import {BtcWallet} from "./BtcWallet";
 import * as bitcoin from "../index"
 import {
@@ -14,6 +14,7 @@ import {
 } from "../index"
 import {buildRuneMainMintData, buildRuneMainMintOp} from "../rune";
 import {base} from "@okxweb3/crypto-lib";
+import {runesMainInscribe, RunesMainInscriptionRequest} from "../runesMain";
 
 export const ErrCodeLessRunesMainAmt     = 2010300
 export const ErrCodeOpreturnExceeds       = 2010301;
@@ -259,7 +260,13 @@ export class RuneMainWallet extends BtcWallet {
         const network = this.network()
         let txHex = null;
 
-        if (param.data.runeData.mintNum == undefined || param.data.runeData.mintNum <= 1){
+        if(param.data.runeData.etching){
+            try {
+                return Promise.resolve(runesMainInscribe(network, param.data as RunesMainInscriptionRequest));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (param.data.runeData.mintNum == undefined || param.data.runeData.mintNum <= 1){
             try {
                 const privateKey = param.privateKey;
                 if (!param.data.runeData) {
