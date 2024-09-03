@@ -1,7 +1,129 @@
-import {Rune} from "../type";
-import {base26Encode} from "./base26";
+import {Rune} from "./type";
 import {base} from "@okxweb3/crypto-lib";
-import {removeSpacers} from "./spacers";
+
+export function base26Encode(input: string): bigint {
+    let result = 0n
+    for (let i = 0; i < input.length; i++) {
+        const charCode = BigInt(input.charCodeAt(i) - 'A'.charCodeAt(0))
+
+        const iInv = BigInt(input.length) - 1n - BigInt(i)
+
+        if (iInv == 0n) {
+            result += charCode
+        } else {
+            const base = 26n ** iInv
+            result += base * (charCode + 1n)
+        }
+    }
+    return result
+}
+
+export function base26Decode(s: bigint): string {
+    if (s === 340282366920938463463374607431768211455n) {
+        return "BCGDENLQRQWDSLRUGSNLBTMFIJAV";
+    }
+
+    s += 1n;
+    let symbol = [];
+    while (s > 0) {
+        const i = (s - 1n) % 26n;
+        symbol.push("ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(Number(i)))
+        s = (s - 1n) / 26n;
+    }
+    return symbol.reverse().join('')
+}
+
+
+export function encodeLEB128(value: bigint): number[] {
+    const bytes = [];
+    let more = true;
+
+    while (more) {
+        let byte = Number(value & BigInt(0x7F)); // Get the lowest 7 bits
+        value >>= BigInt(7);
+        if (value === BigInt(0)) { // No more data to encode
+            more = false;
+        } else { // More bytes to come
+            byte |= 0x80; // Set the continuation bit
+        }
+        bytes.push(byte);
+    }
+
+    // Convert array to Buffer
+    return bytes;
+}
+
+export function decodeLEB128(buf: number[]): {
+    n: bigint,
+    len: number
+} {
+
+    let n = BigInt(0);
+    for (let i = 0; i < buf.length; i++) {
+        const byte = BigInt(buf[i]);
+
+        if (i > 18) {
+            throw new Error("Overlong");
+        }
+
+        let value = byte & BigInt(0b0111_1111);
+
+
+        if ((i == 18) && ((value & BigInt(0b0111_1100)) != BigInt(0))){
+            throw new Error("Overflow");
+        }
+
+
+        n |= value << (BigInt(7) * BigInt(i));
+
+        if ((byte & BigInt(0b1000_0000)) == BigInt(0)) {
+            return {
+                n,
+                len: i + 1
+            }
+        }
+    }
+
+    throw new Error("Unterminated");
+
+}
+
+export function applySpacers(str: string, spacers: number): string {
+    let res = ''
+    for (let i = 0; i < str.length; i++) {
+        res += str.charAt(i)
+        if (spacers > 0) {
+            // Get the least significant bit
+            let bit = spacers & 1;
+
+            if (bit === 1) {
+                res += '•'
+            }
+
+            // Right shift the number to process the next bit
+            spacers >>= 1;
+        }
+    }
+
+    return res
+}
+
+export function getSpacersVal(str: string): number {
+    let res = 0
+    let spacersCnt = 0
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charAt(i)
+        if (char === '•' || char=='.') {
+            res += 1 << (i - 1 - spacersCnt)
+            spacersCnt++
+        }
+    }
+    return res
+}
+
+export function removeSpacers(rune: string): string {
+    return  rune.replace(/[.•]+/g, "")
+}
 
 
 export enum Flag {

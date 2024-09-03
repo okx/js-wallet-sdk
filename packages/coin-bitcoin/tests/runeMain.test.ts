@@ -19,9 +19,8 @@ import {
     uint128Max,
     uint64Max
 } from "../src/runesMain";
-import {getSpacersVal, removeSpacers} from "../src/rune-main/spacers";
-import {base26Decode, base26Encode} from "../src/rune-main/base26";
 import {testnet} from "../src/bitcoinjs-lib/networks";
+import {base26Decode, base26Encode, getSpacersVal, removeSpacers} from "../src/runestones";
 describe('rune test', () => {
 
     test("test buildRuneMainDeployData", async () => {
@@ -111,11 +110,7 @@ describe('rune test', () => {
     test("inscribe runes", async () => {
         let network = testnet;
         let privateKeyTestnet = "cNMaTDJid2zx35iVJyhNoku3Aja4EuAZ1bp9Qix7jkAcrMzk3VSU" //testnet
-        // let revealPrivateKey = "cNMaTDJid2zx35iVJyhNoku3Aja4EuAZ1bp9Qix7jkAcrMzk3VSU"
         let btcWallet = new TBtcWallet();
-        // let revealAddress = await btcWallet.getNewAddress({privateKey:revealPrivateKey,addressType:"segwit_taproot"})
-        //tb1plmnan0g987gpe07pvzstv4svv9ag8e9kjha7hkhywkpq5stqykgq6t32y8
-        // console.log("revealAddress:", revealAddress);
         let addressData = await btcWallet.getNewAddress({privateKey: privateKeyTestnet, addressType: "segwit_taproot"})
         let address = addressData.address;
         //tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3
@@ -147,7 +142,7 @@ describe('rune test', () => {
                         cap: BigInt(20000)
                     },
                     turbo: false,//todo
-                    contentType: "img/png",
+                    contentType: "image/png",
                     body: logoData
                 }
             },
@@ -161,9 +156,12 @@ describe('rune test', () => {
         // let res = runesMainInscribe(btcWallet.network(), request);
         expect(res.revealTxs.length).toEqual(1)
         expect(res.commitTxFee).toEqual(770)
-        console.log(res)
+        let partial = /^02000000000101b75fcaee6d6568800aeffa6ae3aad2029ee8e5d8a577dc3ba213e9ab940f85610100000000fdffffff02b10800000000000022512097178b3579f761f3b7dc5617fcd74995b2af7472dc58f724cc685984e9585cbc61140400000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80140.*/
+        expect(res.commitTx).toMatch(partial)
+        partial = /^020000000001018af7dc8359e9abab33a5302fd6fb7252ea7ad576d29ac8c6db97dec323b398390000000000fdffffff020000000000000000246a5d21020304e398a2f3cb95e98680a0a6aada0803c044055806c0843d0ae80708a09c01e8030000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80340.*/
+        expect(res.revealTxs[0]).toMatch(partial)
+        // console.log(res)
     })
-
     test('rune transfer OP_RETURN test', () => {
 
         const opReturnScript = buildRuneMainMintData(
