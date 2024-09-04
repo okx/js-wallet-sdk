@@ -44,7 +44,7 @@ npm install @okxweb3/coin-bitcoin
 ## Build Locally
 You can build the sdk locally ,and run test-code.
 
-## Building from Source
+### Building from Source
 
 To build the SDK locally and run tests:
 
@@ -54,32 +54,25 @@ cd js-wallet-sdk
 sh build.sh
 ```
 
-## Supported chains
+## Supported Chains
 
-|             | Account Generation | Transaction Creation | Transaction Signing | SDK NPM Link                                                                         |
-|-------------|-------------------|----------------------|---------------------|--------------------------------------------------------------------------------------|
-| BTC         | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-bitcoin](https://www.npmjs.com/package/@okxweb3/coin-bitcoin)         | 
-| Ethereum    | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-ethereum](https://www.npmjs.com/package/@okxweb3/coin-ethereum)       | 
-| Aptos       | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-aptos](https://www.npmjs.com/package/@okxweb3/coin-aptos)             | 
-| Cosmos      | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-cosmos](https://www.npmjs.com/package/@okxweb3/coin-cosmos)           | 
-| Eos         | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-eos](https://www.npmjs.com/package/@okxweb3/coin-eos)                 | 
-| Flow        | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-flow](https://www.npmjs.com/package/@okxweb3/coin-flow)               | 
-| Stacks      | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-stacks](https://www.npmjs.com/package/@okxweb3/coin-stacks)           | 
-| Starknet    | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-starknet](https://www.npmjs.com/package/@okxweb3/coin-starknet)       | 
-| Sui         | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-sui](https://www.npmjs.com/package/@okxweb3/coin-sui)                 | 
-| Near        | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-near](https://www.npmjs.com/package/@okxweb3/coin-near)               | 
-| Tron        | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-tron](https://www.npmjs.com/package/@okxweb3/coin-tron)               | 
-| Ton         | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-ton](https://www.npmjs.com/package/@okxweb3/coin-ton)                 | 
-| Osmosis     | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-cosmos](https://www.npmjs.com/package/@okxweb3/coin-cosmos)           | 
-| Cardano     | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-cardano](https://www.npmjs.com/package/@okxweb3/coin-cardano)         | 
-| Solana      | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-solana](https://www.npmjs.com/package/@okxweb3/coin-solana)           | 
-| Zkspace     | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-zkspace](https://www.npmjs.com/package/@okxweb3/coin-zkspace)         | 
-| Polkadot    | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-polkadot](https://www.npmjs.com/package/@okxweb3/coin-polkadot)       | 
-| Nostrassets | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-nostrassets](https://www.npmjs.com/package/@okxweb3/coin-nostrassets) | 
-| Kaspa       | ✅                 | ✅                    | ✅                   | [@okxweb3/coin-kaspa](https://www.npmjs.com/package/@okxweb3/coin-kaspa)             | 
-
-
-*Note: Bitcoin support includes core functions for BRC20, Atomicals, and Runes protocols, such as deployment, minting, transfer, and trading. This covers inscription creation, buying, selling, and other advanced operations across these Bitcoin-based token standards.
+| Package | Generate Address | Sign Transaction | Sign Message | Version |
+|---------|:----------------:|:-----------------:|:------------:|:-------:|
+| [@okxweb3/coin-bitcoin](https://www.npmjs.com/package/@okxweb3/coin-bitcoin) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-bitcoin) |
+| [@okxweb3/coin-ethereum](https://www.npmjs.com/package/@okxweb3/coin-ethereum) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-ethereum) |
+| [@okxweb3/coin-aptos](https://www.npmjs.com/package/@okxweb3/coin-aptos) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-aptos) |
+| [@okxweb3/coin-cosmos](https://www.npmjs.com/package/@okxweb3/coin-cosmos) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-cosmos) |
+| [@okxweb3/coin-eos](https://www.npmjs.com/package/@okxweb3/coin-eos) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-eos) |
+| [@okxweb3/coin-stacks](https://www.npmjs.com/package/@okxweb3/coin-stacks) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-stacks) |
+| [@okxweb3/coin-starknet](https://www.npmjs.com/package/@okxweb3/coin-starknet) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-starknet) |
+| [@okxweb3/coin-sui](https://www.npmjs.com/package/@okxweb3/coin-sui) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-sui) |
+| [@okxweb3/coin-near](https://www.npmjs.com/package/@okxweb3/coin-near) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-near) |
+| [@okxweb3/coin-tron](https://www.npmjs.com/package/@okxweb3/coin-tron) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-tron) |
+| [@okxweb3/coin-ton](https://www.npmjs.com/package/@okxweb3/coin-ton) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-ton) |
+| [@okxweb3/coin-cardano](https://www.npmjs.com/package/@okxweb3/coin-cardano) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-cardano) |
+| [@okxweb3/coin-solana](https://www.npmjs.com/package/@okxweb3/coin-solana) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-solana) |
+| [@okxweb3/coin-kaspa](https://www.npmjs.com/package/@okxweb3/coin-kaspa) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-kaspa) |
+*Note: Bitcoin support includes core functions for BRC20 ,Atomicals and Runes protocols, such as deployment, minting, transfer, and trading. This covers inscription creation, buying, selling, and other advanced operations across these Bitcoin-based token standards.
 
 ## Architecture
 
@@ -94,20 +87,34 @@ The OKX Web3 Wallet SDK is composed of three main modules:
 Here's a basic exampl of how to use the SDK with Ethereum:
 
 ```javascript
-    import { EthereumWallet } from '@okxweb3/coin-ethereum';
-// Generate a new Ethereum wallet
-const wallet = new EthereumWallet();
-const address = wallet.getNewAddress();
-console.log('New Ethereum address:', address);
-// Create and sign a transaction
-const transaction = {
-    to: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-    value: '0.1',
-    gasLimit: '21000',
-    gasPrice: '20000000000'
-};
-const signedTx = wallet.signTransaction(transaction, 'your_private_key_here');
-console.log('Signed transaction:', signedTx);
+const { EthWallet } = require('@okxweb3/coin-ethereum');
+const privateKey = "your_private_key_here";
+
+async function run() {
+    const wallet = new EthWallet();
+    let params = {
+        privateKey: privateKey
+    };
+    let address = await wallet.getNewAddress(params);
+    console.log('Ethereum address:', address);
+
+    let ethTxParams = {
+        to: "0xee7c7f76795cd0cab3885fee6f2c50def89f48a3",
+        value: 1,
+        nonce: 5,
+        gasPrice: "100000000000",
+        gasLimit: 21000,
+        chainId: 42,
+    };
+    let signParams = {
+        privateKey: privateKey,
+        data: ethTxParams
+    };
+    let tx = await wallet.signTransaction(signParams);
+    console.log('Signed transaction:', tx);
+}
+
+run();
 ```
 
 For more detailed examples and usage instructions for each supported blockchain, please refer to the documentation in the respective coin-specific package.
