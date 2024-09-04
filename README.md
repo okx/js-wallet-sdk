@@ -124,7 +124,8 @@ We encourage everyone to use our [online demo](https://okx.github.io/wallet-sdk-
 ## Security
 
 If you find security risks, it is recommended to feedback through the following channels and get your reward!
-submit on HackerOne platform https://hackerone.com/okg?type=team Or on our OKX feedback submission page > security bugs https://www.okx.com/feedback/submit## License
+submit on HackerOne platform https://hackerone.com/okg Or on our OKX feedback submission page > security bugs https://www.okx.com/feedback/submit
+
 
 ## License
 
