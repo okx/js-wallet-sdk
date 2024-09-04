@@ -24,32 +24,6 @@ For detailed documentation and API references, please visit our [online document
 Try our [online signing demo](https://okx.github.io/wallet-sdk-demo/) to see the SDK in action.
 
 
-## Installation
-
-To use the OKX Web3 Wallet SDK, install the core packages and the specific coin packages you need:
-
-```shell
-# Core packages (required for all coins)
-npm install @okxweb3/crypto-lib
-npm install @okxweb3/coin-base
-
-# coin-specific packages (install as needed)
-
-npm install @okxweb3/coin-ethereum
-npm install @okxweb3/coin-bitcoin
-
-# ... other coin packages
-```
-
-## Build Locally
-To build the SDK locally and run tests:
-
-```shell
-git clone https://github.com/okx/js-wallet-sdk.git
-cd js-wallet-sdk
-sh build.sh
-```
-
 ## Supported Chains
 
 | Package | Generate Address | Sign Transaction | Sign Message | Version |
@@ -79,9 +53,35 @@ The OKX Web3 Wallet SDK is composed of three main modules:
 2. **coin-base**: Provides a common interface for all supported coins.
 3. **coin-specific packages**: Implement transaction creation and signing for each supported blockchain.
 
+## Installation
+
+To use the OKX Web3 Wallet SDK, install the core packages and the specific coin packages you need:
+
+```shell
+# Core packages (required for all coins)
+npm install @okxweb3/crypto-lib
+npm install @okxweb3/coin-base
+
+# coin-specific packages (install as needed)
+
+npm install @okxweb3/coin-ethereum
+npm install @okxweb3/coin-bitcoin
+
+# ... other coin packages
+```
+
+## Build Locally
+To build the SDK locally and run tests:
+
+```shell
+git clone https://github.com/okx/js-wallet-sdk.git
+cd js-wallet-sdk
+sh build.sh
+```
+
 ## Usage
 
-Here's a basic exampl of how to use the SDK with Ethereum:
+Here's a basic example of how to use the SDK with Ethereum:
 
 ```javascript
 const { EthWallet } = require('@okxweb3/coin-ethereum');
