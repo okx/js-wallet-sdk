@@ -42,10 +42,6 @@ npm install @okxweb3/coin-bitcoin
 ```
 
 ## Build Locally
-You can build the sdk locally ,and run test-code.
-
-### Building from Source
-
 To build the SDK locally and run tests:
 
 ```shell
@@ -72,6 +68,7 @@ sh build.sh
 | [@okxweb3/coin-cardano](https://www.npmjs.com/package/@okxweb3/coin-cardano) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-cardano) |
 | [@okxweb3/coin-solana](https://www.npmjs.com/package/@okxweb3/coin-solana) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-solana) |
 | [@okxweb3/coin-kaspa](https://www.npmjs.com/package/@okxweb3/coin-kaspa) | ✅ | ✅ | ✅ | ![npm](https://img.shields.io/npm/v/@okxweb3/coin-kaspa) |
+
 *Note: Bitcoin support includes core functions for BRC20 ,Atomicals and Runes protocols, such as deployment, minting, transfer, and trading. This covers inscription creation, buying, selling, and other advanced operations across these Bitcoin-based token standards.
 
 ## Architecture
