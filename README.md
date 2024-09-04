@@ -119,11 +119,9 @@ We encourage everyone to use our [online demo](https://okx.github.io/wallet-sdk-
 
 ## Security
 
-If you have any usage problems, you can submit them through the issue method and we will help you troubleshoot the problem.
 If you find security risks, it is recommended to feedback through the following channels and get your reward!
 submit on HackerOne platform https://hackerone.com/okg?type=team Or on our OKX feedback submission page > security bugs https://www.okx.com/feedback/submit## License
 
 ## License
 
 The OKX Web3 Wallet SDK is open-sourced software licensed under the [MIT license](LICENSE).
-se our [online demo](https://okx.github.io/wallet-sdk-demo/) and [documentation](https://okx.github.io/js-wallet-sdk/). If you encounter any issues or have suggestions, please submit them through [GitHub Issues](https://github.com/okx/js-wallet-sdk/issues).
