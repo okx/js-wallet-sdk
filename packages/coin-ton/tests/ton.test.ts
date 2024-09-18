@@ -16,11 +16,10 @@ describe("ton", () => {
     // const timeoutAtSeconds = 1718863283n;
     test("derive seed", async () => {
         const seed = await tonWallet.getDerivedPrivateKey({
-            // bip39 mnemoric
-            //or  ton official mnemoric
+            // bip39 mnemonic or ton official mnemonic
             mnemonic: "muscle chest cereal often muscle right melt depend deny insect taste hungry expire feel cream grow aerobic build all patrol cloud garden fly emerge",
-            // hdPath: "m/44'/607'/0'/0'/1'", // for bip39 mnemoric
-            hdPath: "", // for ton official mnemoric
+            // hdPath: "m/44'/607'/0'", // for bip39 mnemonic
+            hdPath: "", // for ton official mnemonic
         });
         expect(seed).toBe("4789815d45fcf0a79083b0adaec3b5f0d02e948056c1cfde174327c3ee93ed35");
     });
