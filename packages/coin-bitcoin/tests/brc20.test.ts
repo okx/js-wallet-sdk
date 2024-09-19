@@ -1,5 +1,6 @@
 import * as bitcoin from "../src";
 import {
+    createInscriptionTxCtxData,
     generateMPCSignedBuyingTx,
     generateMPCSignedListingPSBT, generateMPCSignedPSBT, generateMPCUnsignedBuyingPSBT,
     generateMPCUnsignedListingPSBT, generateMPCUnsignedPSBT,
@@ -17,14 +18,25 @@ import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams} from "@okxweb3/coin-base";
 
 describe("brc20 test", () => {
+    test("inscription refund fee get middle address", async () => {
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+        const inscriptionRefundFeeData = {
+            contentType: "text/plain;charset=utf-8",
+            body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"100"}`,
+            revealAddr: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+        }
+        const {commitTxAddress} = createInscriptionTxCtxData(network, inscriptionRefundFeeData, privateKey);
+        console.log(commitTxAddress);
+    });
     test("inscription refund fee", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
         const inputs: PrevOutput[] = [];
         inputs.push({
-            txId: "dab42409d99918cc6fc48c01331198e80205e58465c63c9693dd70e3dcdf22f8",
+            txId: "831735bbc26229cdb3665a491378c0fd4047c366521492825aa20c5d180656a5",
             vOut: 0,
-            amount: 16891,
+            amount: 1848,
             address: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
             privateKey: privateKey,
         });
@@ -38,13 +50,11 @@ describe("brc20 test", () => {
 
         const request: InscriptionRefundFeeRequest = {
             inputs,
-            commitFeeRate: 2,
-            revealFeeRate: 2,
-            revealOutValue: 546,
+            feeRate: 2,
             inscriptionRefundFeeDataList,
             changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
-            middleAddress: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
-            amountOfInput: 100
+            // middleAddress: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            maxAmountOfInput: 100
         };
         const txs = inscribeRefundFee(network, request);
         console.log(txs);
