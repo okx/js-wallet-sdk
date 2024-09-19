@@ -1,12 +1,13 @@
 import * as bitcoin from "../src";
 import {
+    BtcWallet,
     extractPsbtTransaction,
     generateMPCSignedBuyingTx,
     generateMPCSignedListingPSBT, generateMPCSignedPSBT, generateMPCUnsignedBuyingPSBT,
     generateMPCUnsignedListingPSBT, generateMPCUnsignedPSBT,
-    inscribe,
+    inscribe, inscribeRefundFee,
     InscribeTxs,
-    InscriptionData,
+    InscriptionData, InscriptionRefundFeeData, InscriptionRefundFeeRequest,
     InscriptionRequest,
     networks,
     PrevOutput,
@@ -16,15 +17,44 @@ import {
 import * as bscript from "../src/bitcoinjs-lib/script";
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams} from "@okxweb3/coin-base";
-import {mergeSignedBuyingPsbt} from "@okxweb3/coin-bitcoin";
-
 
 describe("brc20 test", () => {
+    test("inscription refund fee", async () => {
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+        const inputs: PrevOutput[] = [];
+        inputs.push({
+            txId: "dab42409d99918cc6fc48c01331198e80205e58465c63c9693dd70e3dcdf22f8",
+            vOut: 0,
+            amount: 16891,
+            address: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            privateKey: privateKey,
+        });
+
+        const inscriptionRefundFeeDataList: InscriptionRefundFeeData[] = [];
+        inscriptionRefundFeeDataList.push({
+            contentType: "text/plain;charset=utf-8",
+            body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"100"}`,
+            revealAddr: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+        });
+
+        const request: InscriptionRefundFeeRequest = {
+            inputs,
+            commitFeeRate: 2,
+            revealFeeRate: 2,
+            revealOutValue: 546,
+            inscriptionRefundFeeDataList,
+            changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+            middleAddress: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            amountOfInput: 100
+        };
+        const txs = inscribeRefundFee(network, request);
+        console.log(txs);
+    });
 
     test("inscribe", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
-
         const commitTxPrevOutputList: PrevOutput[] = [];
         commitTxPrevOutputList.push({
             txId: "36cdb491d2b02c1668d02e42edd80af339e1195df4d58927ab9db9e4893509a5",
