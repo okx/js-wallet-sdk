@@ -30,10 +30,10 @@ export type PrevOutput = {
 
 export type InscriptionRefundFeeRequest = {
     inputs: PrevOutput[]
-    commitFeeRate: number
-    revealFeeRate: number
+    feeRate: number
+    // revealFeeRate: number
     inscriptionRefundFeeDataList: InscriptionRefundFeeData[]
-    revealOutValue: number
+    // revealOutValue: number
     changeAddress: string
     minChangeValue?: number
     shareData?: string
@@ -42,7 +42,7 @@ export type InscriptionRefundFeeRequest = {
     commitTx?: string
     signatureList?: string[]
     middleAddress?: string
-    amountOfInput?: number
+    maxAmountOfInput?: number
 }
 
 export type InscribeTxs = {
@@ -93,17 +93,16 @@ export class InscriptionRefundFeeTool {
         const tool = new InscriptionRefundFeeTool();
         tool.network = network;
 
-        const revealOutValue = request.revealOutValue || defaultRevealOutValue;
         const minChangeValue = request.minChangeValue || defaultMinChangeValue;
-        if (!request.middleAddress) {
-            throw new Error("need check middle address")
-        }
+        // if (!request.middleAddress) {
+        //     throw new Error("need check middle address")
+        // }
         if (request.inputs && request.inputs.length > 600) {
             throw new Error("invalid amount of inputs");
         }
         let amountOfInputs = 100;
-        if (request.amountOfInput) {
-            amountOfInputs = request.amountOfInput;
+        if (request.maxAmountOfInput) {
+            amountOfInputs = request.maxAmountOfInput;
         }
         if (amountOfInputs > request.inputs.length) {
             amountOfInputs = request.inputs.length
@@ -113,11 +112,14 @@ export class InscriptionRefundFeeTool {
         request.inscriptionRefundFeeDataList.forEach(inscriptionData => {
             tool.inscriptionTxCtxDataList.push(createInscriptionTxCtxData(network, inscriptionData, privateKey));
         });
-        if (request.middleAddress != tool.inscriptionTxCtxDataList[0].commitTxAddress) {
+
+        if (request.middleAddress && request.middleAddress != tool.inscriptionTxCtxDataList[0].commitTxAddress) {
             throw new Error("invalid middle address")
+        } else {
+            tool.commitAddrs = [tool.inscriptionTxCtxDataList[0].commitTxAddress]
         }
         tool.merkleRoot = tool.inscriptionTxCtxDataList[0].hash;
-        const insufficient = tool.buildrReFundFeeTx(network, request.inputs, request.changeAddress, 0, request.commitFeeRate, minChangeValue);
+        const insufficient = tool.buildrRefundFeeTx(network, request.inputs.slice(0, amountOfInputs), request.changeAddress, 0, request.feeRate, minChangeValue);
         if (insufficient) {
             return tool;
         }
@@ -125,22 +127,22 @@ export class InscriptionRefundFeeTool {
         return tool;
     }
 
-    buildrReFundFeeTx(network: bitcoin.Network, commitTxPrevOutputList: PrevOutput[], changeAddress: string, totalRevealPrevOutputValue: number, commitFeeRate: number, minChangeValue: number): boolean {
+    buildrRefundFeeTx(network: bitcoin.Network, prevOutputList: PrevOutput[], changeAddress: string, totalRevealPrevOutputValue: number, commitFeeRate: number, minChangeValue: number): boolean {
         let totalSenderAmount = 0;
         const tx = new bitcoin.Transaction();
         tx.version = defaultTxVersion;
 
-        commitTxPrevOutputList.forEach(commitTxPrevOutput => {
-            const hash = base.reverseBuffer(base.fromHex(commitTxPrevOutput.txId));
-            tx.addInput(hash, commitTxPrevOutput.vOut, defaultSequenceNum);
-            this.commitTxPrevOutputFetcher.push(commitTxPrevOutput.amount);
-            totalSenderAmount += commitTxPrevOutput.amount;
+        prevOutputList.forEach(prevOutput => {
+            const hash = base.reverseBuffer(base.fromHex(prevOutput.txId));
+            tx.addInput(hash, prevOutput.vOut, defaultSequenceNum);
+            this.commitTxPrevOutputFetcher.push(prevOutput.amount);
+            totalSenderAmount += prevOutput.amount;
         });
         const changePkScript = bitcoin.address.toOutputScript(changeAddress, network);
         tx.addOutput(changePkScript, 0);
         const txForEstimate = tx.clone();
-        signTx(txForEstimate, commitTxPrevOutputList, this.network);
-        const vsize = countAdjustedVsize(txForEstimate, commitTxPrevOutputList.map(a => a.address), network)
+        signTx(txForEstimate, prevOutputList, this.network);
+        const vsize = countAdjustedVsize(txForEstimate, prevOutputList.map(a => a.address), network)
         const fee = Math.floor(vsize * commitFeeRate);
         const changeAmount = totalSenderAmount - totalRevealPrevOutputValue - fee;
         if (changeAmount >= minChangeValue) {
@@ -148,20 +150,19 @@ export class InscriptionRefundFeeTool {
         } else {
             tx.outs = tx.outs.slice(0, tx.outs.length - 1);
             txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
-            const vsizeWithoutChange = countAdjustedVsize(txForEstimate, commitTxPrevOutputList.map(a => a.address), network)
+            const vsizeWithoutChange = countAdjustedVsize(txForEstimate, prevOutputList.map(a => a.address), network)
             const feeWithoutChange = Math.floor(vsizeWithoutChange * commitFeeRate);
             if (totalSenderAmount - totalRevealPrevOutputValue - feeWithoutChange < 0) {
                 this.mustTxFee = fee;
                 return true;
             }
         }
-
         this.refundFeeTx = tx;
         return false;
     }
 
     signRefundFeeTx(inputs: PrevOutput[]) {
-        signTx(this.refundFeeTx, inputs, this.network);
+        signTx(this.refundFeeTx, inputs, this.network, this.merkleRoot);
     }
 
     calculateFee() {
@@ -219,7 +220,7 @@ function signTx(tx: bitcoin.Transaction, refundFeeTxPrevOutputList: PrevOutput[]
     });
 }
 
-function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: InscriptionRefundFeeData, privateKeyWif: string): InscriptionTxCtxData {
+export function createInscriptionTxCtxData(network: bitcoin.Network, inscriptionData: InscriptionRefundFeeData, privateKeyWif: string): InscriptionTxCtxData {
     const privateKey = base.fromHex(privateKeyFromWIF(privateKeyWif, network));
     const internalPubKey = wif2Public(privateKeyWif, network).slice(1);
     const ops = bitcoin.script.OPS;
@@ -288,6 +289,7 @@ export function inscribeRefundFee(network: bitcoin.Network, request: Inscription
     return {
         refundFeeTx: tool.refundFeeTx.toHex(),
         ...tool.calculateFee(),
+        middleAddresses: tool.commitAddrs
     };
 }
 
