@@ -18,6 +18,7 @@ import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams} from "@okxweb3/coin-base";
 
 describe("brc20 test", () => {
+
     test("inscription refund fee get middle address", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
@@ -29,6 +30,7 @@ describe("brc20 test", () => {
         const {commitTxAddress} = createInscriptionTxCtxData(network, inscriptionRefundFeeData, privateKey);
         console.log(commitTxAddress);
     });
+
     test("inscription refund fee", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
@@ -49,11 +51,14 @@ describe("brc20 test", () => {
         });
 
         const request: InscriptionRefundFeeRequest = {
+            // max amount is 600, but final amount = min( input.length, maxAmountOfInput )
             inputs,
             feeRate: 2,
             inscriptionRefundFeeDataList,
             changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+            // if null, get the middle address
             // middleAddress: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            // default 100
             maxAmountOfInput: 100
         };
         const txs = inscribeRefundFee(network, request);
