@@ -196,6 +196,42 @@ describe("ton", () => {
         console.log(tx);
     });
 
+    test("ton jetton mintless signTransaction", async () => {
+        const param = {
+            privateKey: "fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8",
+            data: {
+                type: "jettonTransfer", // type of jetton TOKEN transfer
+                // jetton wallet address of from address
+                fromJettonAccount: "EQAbjeYovCwu8rdK_BVD-K3G1RO9DwHDXAYQVjYX2oYq2nNs",
+                to: "UQDXgyxgYKNSdTiJBqmNNfbD7xuRMl6skrBmsEtyXslFm5an",
+                seqno: 2, // nonce or sequence of from address
+                toIsInit: false, // destination address init or not
+                memo: "", // comment for this tx
+                decimal: 9, // decimal of jetton TOKEN on ton blockchain
+                amount: "0", // decimal of TOKEN is 2 on ton blockchain, so that here real value is 1
+                messageAttachedTons: "100000000", // message fee, default 0.05, here is 0.05 * 10^9
+                invokeNotificationFee: "1", // notify fee, official recommend 0.000000001, here is 0.000000001 * 10^9
+                expireAt: timeoutAtSeconds, // timeout at seconds eg, 1718863283n, default now + 60s
+                customPayload: "te6ccgECMQEABD0AAQgN9gLWAQlGA6+1FWXC4ss/wvDOFwMk2bVM97AUEWqaUhh63uWfQ26nAB4CIgWBcAIDBCIBIAUGKEgBAfRz1Bc0mT2ncrMSGDzpgrCQTSHm8sfmADRmLiUnsNxaAB0iASAHCChIAQENfwBAdh4BtwI1FNpt1Hbn/aOwPSJoRdgU4zhuF90XqQAcIgEgCQooSAEBUi2VG6r6RjQj0FCr2Sx9GziTij+IViV1EBb8L/8WoM4AGyhIAQGxLvEY9WgzlAYqIwgEJVjCjPP2LL8POA5cPtDX/ICFaQAZIgEgCwwoSAEB6C5kMujM0MhhSLbqrUztWB5Kcfdecx8LZ6KRkOc5bDcAGCIBIA0OKEgBAbJ3XoghuVwSjFJGWOTC54k0ZFmCsOAOc0Wt15GI+gb6ABciASAPEChIAQFyOFgLXez90Sj/+GRRcPt/AJ/ObHVkwgjYcDhSx6fbsAAWIgEgERIiASATFChIAQEDtQVupKrXeJhjhyUKYd3OPf0GxwVV1IDy+iXMR/goewAVKEgBAQph4s1pC9y8MWknNPBHNJrSHdimhsjwJTKsTtzHBRlqABQiASAVFihIAQHp9WxWiNgvfUyhwWIaQ2z+uU0RwqxkbNxLSMEnZWzzQAASIgEgFxgoSAEBBkIlY9AlSY8GsPcFaJPchY7tWfKtKX0Awx0SEiJz3lAAEiIBIBkaKEgBAfdZX+TtPDalGNq7Md2id0vCHK8HKOR0+77eJzH8InXhABEiASAbHCIBIB0eKEgBATpKVSPw6KyxJiw0GmzuGCyNHlA5ogc24DODkte6fzy9AA8iASAfIChIAQE3+haceo/EslgK3xv0t2ZrKxRfLxDm0IkOkcnDyCeavwANKEgBATO8W3KDeWmmTIv23CQoiJhyidxgL6c3entEm7SheuCDAA0iASAhIiIBICMkKEgBARarfhq0MYyF8WkqTkqkIPAVBh7lU3reBlDc6wA/70b8AAsiASAlJihIAQFt+vYtnMIi7RH91EaU58Yvf+MiwNd7A40P1aoFhaD+IgAJKEgBAWxv6OupJReZmkRM5LIkpMupuGMKAGRnI4L0J6ZOw9s7AAkiASAnKChIAQE/XI2bRyyEWynQamQHJC2HjpgY4hauLSTGBuNFatZlSAAIIgEgKSooSAEB+Xjkf6ScDOWWGtDqcMQtUW65GhHphB4SHSQ14sx0VCYABiIBICssIgEgLS4oSAEBU4bYiAJBEK5qwy1eRIdLAOK8QELz0yTAPCTsYmZhPEUABCIBbi8wKEgBAerGQGO6mv6nukMVfDI/M+KNNRCBH8q+t4G6XRxqKAK/AAEoSAEBf4jiG+pY6Cml375ovmTBNuvf7QI6oiVsL8e/DGVfGE4AAABduf2NRRLK+qYONCLh6kHV9jpZw5nRQ26fwK2MmpB9IdzWUAAAAzcG7AAAAzeq1oQ=",
+                stateInit: "te6ccgEBAwEAjwACATQBAghCAg7xnhv0Dyukkvyqw4buylm/aCejhQcI2fzZrbaDq8M2AMoAgAPeTn9jUUSyvqmDjQi4epB1fY6WcOZ0UNun8CtjJqQfUAPpn0MdzkzH7w8jwjgGMZfR3Y2FqlpEArXYKCy3B42gyr7UVZcLiyz/C8M4XAyTZtUz3sBQRappSGHre5Z9DbqcDA==",
+                /**
+                 * export enum SendMode {
+                 *     CARRY_ALL_REMAINING_BALANCE = 128,
+                 *     CARRY_ALL_REMAINING_INCOMING_VALUE = 64,
+                 *     DESTROY_ACCOUNT_IF_ZERO = 32,
+                 *     PAY_GAS_SEPARATELY = 1,
+                 *     IGNORE_ERRORS = 2,
+                 *     NONE = 0
+                 * }
+                 */
+                sendMode: 3,
+                // queryId: "18446744073709551615" // string of uint64 number, eg 18446744073709551615 = 2^64 - 1
+            },
+        };
+        const tx = await tonWallet.signTransaction(param);
+        console.log(tx.boc);
+    });
+
     test("getWalletInformation", async () => {
         const param = {
             workChain: 0, // mainnet
