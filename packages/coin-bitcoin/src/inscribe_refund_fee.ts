@@ -148,6 +148,9 @@ export class InscriptionRefundFeeTool {
         if (changeAmount >= minChangeValue) {
             tx.outs[tx.outs.length - 1].value = changeAmount;
         } else {
+            if (tx.outs.length <= 1) {
+                throw new Error("change amount < min change amount")
+            }
             tx.outs = tx.outs.slice(0, tx.outs.length - 1);
             txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
             const vsizeWithoutChange = countAdjustedVsize(txForEstimate, prevOutputList.map(a => a.address), network)
