@@ -85,6 +85,7 @@ export class InscriptionRefundFeeTool {
     commitTxPrevOutputFetcher: number[] = [];
     revealTxPrevOutputFetcher: number[] = [];
     mustTxFee: number = 0;
+    dustChange: number = 0;
     // mustRevealTxFees: number[] = [];
     commitAddrs: string[] = [];
     merkleRoot = new Uint8Array();
@@ -149,7 +150,9 @@ export class InscriptionRefundFeeTool {
             tx.outs[tx.outs.length - 1].value = changeAmount;
         } else {
             if (tx.outs.length <= 1) {
-                throw new Error("change amount < min change amount")
+                // throw new Error("change amount < min change amount")
+                this.dustChange = changeAmount;
+                return true;
             }
             tx.outs = tx.outs.slice(0, tx.outs.length - 1);
             txForEstimate.outs = txForEstimate.outs.slice(0, txForEstimate.outs.length - 1);
@@ -282,10 +285,11 @@ export function createInscriptionTxCtxData(network: bitcoin.Network, inscription
 
 export function inscribeRefundFee(network: bitcoin.Network, request: InscriptionRefundFeeRequest) {
     const tool = InscriptionRefundFeeTool.newInscriptionRefundFeeTool(network, request);
-    if (tool.mustTxFee > 0) {
+    if (tool.mustTxFee > 0 || tool.dustChange > 0) {
         return {
             refundFeeTx: "",
             mustTxFee: tool.mustTxFee,
+            dustChange: tool.dustChange
         };
     }
 
