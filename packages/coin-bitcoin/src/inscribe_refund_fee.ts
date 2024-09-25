@@ -285,7 +285,7 @@ export function createInscriptionTxCtxData(network: bitcoin.Network, inscription
 
 export function inscribeRefundFee(network: bitcoin.Network, request: InscriptionRefundFeeRequest) {
     const tool = InscriptionRefundFeeTool.newInscriptionRefundFeeTool(network, request);
-    if (tool.mustTxFee > 0 || tool.dustChange > 0) {
+    if (tool.mustTxFee > 0 || tool.dustChange != 0) {
         return {
             refundFeeTx: "",
             mustTxFee: tool.mustTxFee,
