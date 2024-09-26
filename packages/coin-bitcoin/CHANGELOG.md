@@ -89,3 +89,9 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** Added support for Atomical half-dyed assets
+
+# [1.0.26] (2024-09-26)
+
+### Feature
+
+- **coin-bitcoin:** refund fee for brc20 inscribe
