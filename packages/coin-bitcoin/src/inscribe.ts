@@ -488,7 +488,7 @@ export function inscribeForMPCSigned(request: InscriptionRequest, network: bitco
     const unsignedCommitTxHash = tx.getHash()
     tx.ins.forEach((input, i) => {
         const signature = base.fromHex(signatures[i]);
-        if (!input.witness) {
+        if (!input.witness || input.witness.length == 0) {
             input.script = bitcoin.payments.p2pkh({
                 pubkey: bitcoin.payments.p2pkh({input: input.script}).pubkey,
                 signature: bitcoin.script.signature.encode(signature, bitcoin.Transaction.SIGHASH_ALL),
