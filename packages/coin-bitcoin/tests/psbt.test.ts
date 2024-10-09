@@ -178,7 +178,7 @@ describe("psbt test", () => {
     });
 
     test("psbt sign none fail", async () => {
-        const psbtBase64 ="cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEgwAAAAETQewp45rcGKVJsmfOE0pzg/qWwh+s56QX1rSmLdjrE/UPXQ4631wnPK0NC9pisk8gY+2dICGCFpD6fVxNQn5B1AWDARcgV7uy1KnLiiNXYz8gG5xRjCeV3taCt5E8a+7z/iO9bS8AAA=="
+        const psbtBase64 ="cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEAgAAAAEXIFe7stSpy4ojV2M/IBucUYwnld7WgreRPGvu8/4jvW0vAAA="
         const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
         const signedPsbt = psbtSign(psbtBase64, privateKey, networks.testnet);
         console.log(signedPsbt);
