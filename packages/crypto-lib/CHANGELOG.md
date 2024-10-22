@@ -3,6 +3,12 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.0.6](https://github.com/okx/js-wallet-sdk) (2024-10-22)
+
+### Bug Fixes
+
+- **crypto-lib:** fix bip32 publicKey check
+
 # [1.0.4](https://github.com/okx/js-wallet-sdk) (2024-08-20)
 
 ### New Feature
