@@ -2,6 +2,7 @@ import {sha256} from "@noble/hashes/sha256";
 import {Buffer} from "buffer";
 import {base, bip32, bip39, signUtil} from "../src";
 import {randomBytes} from '../src/base';
+import {secp256k1} from "../src/signutil";
 
 
 describe("crypto", () => {
@@ -144,6 +145,16 @@ describe("crypto", () => {
         const bb = signUtil.secp256k1.verifyWithNoRecovery(msgHash, s.signature, publicKeyCompressed)
         console.info(bb);
     });
+
+    test("publicKeyVerify test", async ()=> {
+        const zeroUncompressed = Buffer.concat([Buffer.from([0x04]), Buffer.alloc(64)])
+        expect(secp256k1.publicKeyVerify(zeroUncompressed)).toBe(false);
+
+        const zeroCompressed = Buffer.concat([Buffer.from([0x02]), Buffer.alloc(32)])
+        expect(secp256k1.publicKeyVerify(zeroCompressed)).toBe(false);
+
+        // bip32.fromPublicKey(zeroCompressed,Buffer.alloc(32))
+    })
 
     test("bip32", async () => {
         let node: bip32.BIP32Interface = bip32.fromSeed(base.fromHex("000102030405060708090a0b0c0d0e0f"));

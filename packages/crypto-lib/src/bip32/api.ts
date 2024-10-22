@@ -21,6 +21,10 @@ function loadCompressedPublicKey (first: number, xbuf: Uint8Array) {
     let y = x.redSqr().redIMul(x).redIAdd(curve.b).redSqrt()
     if ((first === 0x03) !== y.isOdd()) y = y.redNeg()
 
+    // x*x*x + b = y*y
+    const x3 = x.redSqr().redIMul(x)
+    if (!y.redSqr().redISub(x3.redIAdd(curve.b)).isZero()) return null
+
     return secp256k1.keyPair({ pub: { x: x, y: y } })
 }
 
