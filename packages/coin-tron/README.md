@@ -57,7 +57,7 @@ sign transaction
 parameter
 * `fromAddress` address， TRX token的转出地址
 * `refBlockBytes` 引用的区块字节，指向相关的区块。
-* `refBlockHash`
+* `refBlockHash` 
 * `expiration`
 * `timeStamp`
 * `toAddress`
@@ -97,6 +97,28 @@ const param1 = {
     }
 }
 const v = await wallet.validSignedTransaction(param1)
+```
+
+
+asset transfer transaction
+```typescript
+const latestBlockNumber = new BN(43376730)
+const latestBlockHash = base.fromHex("000000000295e05aa866246a779650fe41d6c2a80b8a610c343ecaa2c43c2d1c")
+const refBlockBytes = latestBlockNumber.toBuffer('be', 8)
+
+const timeStamp = Date.parse(new Date().toString())
+const t = assetTransfer({
+    fromAddress: "TGXQHj3fXhEtCmooRgGemCZyHBEQAv6ct8",
+    refBlockBytes: base.toHex(refBlockBytes.slice(6, 8)),
+    refBlockHash: base.toHex(latestBlockHash.slice(8, 16)),
+    expiration: timeStamp + 3600 * 1000,
+    timeStamp: timeStamp,
+    feeLimit: 0,
+    toAddress: "TTczxNWoJJ8mZjj9w2eegiSZqTCTfhjd4g",
+    amount: "10000000",
+    assetName: "TestToken"
+}, "bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a")
+console.info(t)
 ```
 
 sign message
