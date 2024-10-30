@@ -37,6 +37,8 @@ export type JettonTxData = {
     expireAt?: number
     queryId?: string
     publicKey?: string
+    customPayload?: string
+    stateInit?: string
 };
 
 export function transfer(txData: TxData, seed: string) {
@@ -125,6 +127,7 @@ export function jettonTransfer(txData: JettonTxData, seed: string) {
     }
     const queryId = txData.queryId ? BigInt(txData.queryId) : generateQueryId();
     let transferPayload: Cell
+    const customPayload = txData.customPayload ? Cell.fromBase64(txData.customPayload!) : undefined
     const messageBuild = beginCell()
         .storeUint(0x0f8a7ea5, 32) // opcode for jetton transfer
         // .storeUint(0, 64) // query id
@@ -133,7 +136,7 @@ export function jettonTransfer(txData: JettonTxData, seed: string) {
         .storeCoins(BigInt(txData.amount)) // jetton amount, amount * 10^9
         .storeAddress(toAddr)
         .storeAddress(responseAddr) // response destination
-        .storeBit(false) // no custom payload
+        .storeMaybeRef(customPayload)
         .storeCoins(BigInt(txData.invokeNotificationFee || "1")) // forward fee, amount of TON
 
     if (txData.memo) {
@@ -148,12 +151,17 @@ export function jettonTransfer(txData: JettonTxData, seed: string) {
     } else {
         transferPayload = messageBuild.storeBit(false).endCell();
     }
-
+    const stateInit = txData.stateInit ? Cell.fromBase64(txData.stateInit!) : undefined
+    const init = stateInit ? {
+        code: stateInit.refs[0],
+        data: stateInit.refs[1],
+    } : undefined;
     const internalMessage = [internal({
         to: fromJettonWallet,
         // value: toNano(txData.messageAttachedTons || "0.05"),
         value: BigInt(txData.messageAttachedTons || "50000000"), // message fee, amount of TON
         body: transferPayload,
+        init,
         // bounce: txData.toIsInit,
         bounce: false, // depend on the design of PM
     })];

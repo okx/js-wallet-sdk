@@ -5,6 +5,8 @@ export * from "./type"
 export * as wif from "./wif"
 export * from "./src20"
 export * from "./inscribe"
+// @ts-ignore
+export * from "./inscribe_refund_fee"
 export * from "./doginals"
 export * from "./psbtSign"
 export * as message from "./message"

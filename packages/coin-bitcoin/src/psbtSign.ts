@@ -281,7 +281,6 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
         Transaction.SIGHASH_ALL,
         Transaction.SIGHASH_DEFAULT
     ];
-
     for (let i = 0; i < psbt.inputCount; i++) {
         if (isTaprootInput(psbt.data.inputs[i])) {
             const input = psbt.data.inputs[i];
@@ -295,6 +294,7 @@ export function psbtSignImpl(psbt: Psbt, privateKey: string, network?: Network) 
         try {
             psbt.signInput(i, signer, allowedSighashTypes);
         } catch (e) {
+            // console.log(e)
         }
     }
 }
