@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-nostrassets",
-  "version": "1.0.2",
+  "version": "1.0.5",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -31,8 +31,8 @@
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
   },
-  "dependencies": {
-    "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+  "peerDependencies": {
+    "@okxweb3/crypto-lib": "1.0.7-beta.0",
+    "@okxweb3/coin-base": "1.0.12-beta.0"
   }
 }

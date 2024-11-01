@@ -3,8 +3,6 @@ import {
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
     GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressData,
@@ -141,7 +139,7 @@ function checkPrivateKey(privateKeyHex: string):boolean{
 export class TonWallet extends BaseWallet {
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve(ed25519_getRandomPrivateKey(false, "hex"));
+            return Promise.resolve(signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex"));
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -155,7 +153,7 @@ export class TonWallet extends BaseWallet {
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
             if (param.hdPath) {
-                return Promise.resolve(ed25519_getDerivedPrivateKey(param, false, "hex"));
+                return Promise.resolve(signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic,param.hdPath, false, "hex"));
             } else { // ton official derived path is null
                 const seedBytes = await mnemonicToSeed(param.mnemonic.split(` `));
                 const seed = base.toHex(seedBytes);

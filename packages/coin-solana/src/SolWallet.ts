@@ -10,8 +10,6 @@ import {
     ValidAddressParams,
     ValidSignedTransactionParams,
     BaseWallet,
-    ed25519_getRandomPrivateKey,
-    ed25519_getDerivedPrivateKey,
     jsonStringifyUniform,
     CalcTxHashError,
     GenPrivateKeyError,
@@ -21,7 +19,7 @@ import {
     SignTxError,
     validSignedTransactionError, ValidPrivateKeyParams, ValidPrivateKeyData,
 } from '@okxweb3/coin-base';
-import {base} from '@okxweb3/crypto-lib';
+import {base,signUtil} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
 import {ComputeBudgetProgram} from "./sdk/web3/programs/compute-budget";
 import {TokenStandard} from "./sdk/metaplex";
@@ -56,7 +54,7 @@ export class SolWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
+            return Promise.resolve(signUtil.ed25519.ed25519_getRandomPrivateKey(true, "base58"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -64,7 +62,7 @@ export class SolWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const key = await ed25519_getDerivedPrivateKey(param, true, "base58")
+            const key = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic,param.hdPath, true, "base58")
             return Promise.resolve(key);
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);

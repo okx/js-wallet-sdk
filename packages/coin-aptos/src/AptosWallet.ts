@@ -4,8 +4,6 @@ import {
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
     GenPrivateKeyError,
     GetDerivedPathParam,
     jsonStringifyUniform,
@@ -22,7 +20,7 @@ import {
     ValidPrivateKeyParams,
     ValidPrivateKeyData
 } from "@okxweb3/coin-base";
-import {base} from '@okxweb3/crypto-lib';
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
     AptosAccount,
     burnCoin,
@@ -52,7 +50,7 @@ import {
 } from "./v2";
 import {Network} from "./v2/utils/apiEndpoints";
 import {signTransaction} from "./v2/internal/transactionSubmission";
-import {TransactionPayload, TransactionPayloadEntryFunction} from "./transaction_builder/aptos_types";
+import {TransactionPayload} from "./transaction_builder/aptos_types";
 import { Deserializer as DeserializerBcs } from "./transaction_builder/bcs";
 
 export type AptosParam = {
@@ -178,7 +176,7 @@ export class AptosWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve("0x" + ed25519_getRandomPrivateKey(false, "hex"))
+            return Promise.resolve("0x" + signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -186,7 +184,7 @@ export class AptosWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const key = await ed25519_getDerivedPrivateKey(param, false, "hex")
+            const key = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic, param.hdPath, false, "hex")
             return Promise.resolve("0x" + key);
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);

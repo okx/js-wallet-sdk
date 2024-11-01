@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-tron",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,8 +32,10 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@okxweb3/coin-ethereum": "1.0.0",
-    "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+    "@okxweb3/coin-ethereum": "1.0.10"
+  },
+  "peerDependencies": {
+    "@okxweb3/coin-base": "1.0.12-beta.0",
+    "@okxweb3/crypto-lib": "1.0.7-beta.0"
   }
 }
