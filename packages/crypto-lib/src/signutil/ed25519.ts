@@ -1,7 +1,6 @@
 import * as elliptic from "../elliptic";
 import {concatBytes, hmacSHA512, randomBytes, sha256, toBase58, toHex} from "../base";
 import BN from "bn.js";
-import {base} from "../../dist/elliptic/curve";
 import {mnemonicToSeed} from "../bip39";
 const ed25519 = new elliptic.eddsa('ed25519');
 const curve = ed25519.curve

@@ -34,10 +34,10 @@
   "dependencies": {
     "borsh": "^0.7.0",
     "bigint-buffer": "^1.1.5",
-    "@metaplex-foundation/beet": "^0.7.1",
-    "@okxweb3/crypto-lib": "1.0.6"
+    "@metaplex-foundation/beet": "^0.7.1"
   },
   "peerDependencies": {
-    "@okxweb3/coin-base": "1.0.11"
+    "@okxweb3/crypto-lib": "1.0.7-beta.0",
+    "@okxweb3/coin-base": "1.0.12-beta.0"
   }
 }

@@ -9,14 +9,13 @@ import {
     ValidAddressData,
     ValidAddressParams,
 } from "@okxweb3/coin-base";
-import { ed25519_getRandomPrivateKey } from "@okxweb3/coin-base";
 import {
     CalcTxHashError,
     GenPrivateKeyError,
     NewAddressError,
     SignTxError,
 } from "@okxweb3/coin-base";
-import { base } from "@okxweb3/crypto-lib";
+import { base,signUtil } from "@okxweb3/crypto-lib";
 import {getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey, checkPrivateKey} from "./account";
 import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData } from "./transaction";
 
@@ -27,7 +26,7 @@ export class AdaWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve(ed25519_getRandomPrivateKey(false, "hex"))
+            return Promise.resolve(signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }

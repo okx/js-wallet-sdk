@@ -33,11 +33,11 @@
     "@types/url-join": "^4.0.1"
   },
   "dependencies": {
-    "pako": "2.1.0",
-    "@okxweb3/crypto-lib": "1.0.6"
+    "pako": "2.1.0"
   },
   "peerDependencies": {
-    "@okxweb3/coin-base": "1.0.11"
+    "@okxweb3/coin-base": "1.0.12-beta.0",
+    "@okxweb3/crypto-lib": "1.0.7-beta.0"
   },
   "description": ""
 }
