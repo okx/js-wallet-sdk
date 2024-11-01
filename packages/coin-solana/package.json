@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-solana",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,9 @@
     "borsh": "^0.7.0",
     "bigint-buffer": "^1.1.5",
     "@metaplex-foundation/beet": "^0.7.1",
-    "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+    "@okxweb3/crypto-lib": "1.0.6"
+  },
+  "peerDependencies": {
+    "@okxweb3/coin-base": "1.0.11"
   }
 }

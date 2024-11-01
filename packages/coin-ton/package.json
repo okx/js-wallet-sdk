@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-ton",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,13 +32,15 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@okxweb3/coin-base": "1.0.10",
-    "@okxweb3/crypto-lib": "1.0.5",
+    "@okxweb3/crypto-lib": "1.0.6",
     "crypto": "^1.0.1",
     "jssha": "^3.3.1",
     "prando": "^6.0.1",
     "symbol.inspect": "^1.0.3",
     "tonweb-mnemonic": "1.0.1",
     "tweetnacl": "^1.0.3"
+  },
+  "peerDependencies": {
+    "@okxweb3/coin-base": "1.0.11"
   }
 }
