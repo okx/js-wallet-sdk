@@ -17,7 +17,7 @@ import {
   SignTxError,
   SignTxParams,
   ValidAddressData,
-  ValidAddressParams,
+  ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
   validSignedTransactionError,
   ValidSignedTransactionParams
 } from '@okxweb3/coin-base';
@@ -102,9 +102,14 @@ export abstract class CosmosWallet extends BaseWallet {
   }
 
   async getNewAddress(param: NewAddressParams): Promise<any> {
+    let ok = await this.checkPrivateKey(param.privateKey)
+    if(!ok){
+      throw new Error('invalid key');
+    }
     try {
       const prefix = param.hrp || this.getPrefix()
-      const privateKey = base.fromHex(param.privateKey)
+      let priv = param.privateKey;
+      const privateKey = base.fromHex(priv.toLowerCase())
       const ethSign = this.supportEthSign()
       const publicKey = private2Public(privateKey, !ethSign)
       const address = getNewAddress(privateKey, prefix, ethSign)
@@ -116,6 +121,22 @@ export abstract class CosmosWallet extends BaseWallet {
     } catch (e) {
       return Promise.reject(NewAddressError);
     }
+  }
+  async checkPrivateKey(privateKeyHex: string) {
+    if (!base.validateHexString(privateKeyHex)) {
+      return Promise.resolve(false);
+    }
+    const privateKey = base.fromHex(privateKeyHex.toLowerCase())
+    return privateKey.length == 32
+  }
+
+  async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+    let isValid = await this.checkPrivateKey(param.privateKey);
+    const data: ValidPrivateKeyData = {
+      isValid: isValid,
+      privateKey: param.privateKey
+    };
+    return Promise.resolve(data);
   }
 
   async validAddress(param: ValidAddressParams): Promise<any> {

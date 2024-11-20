@@ -3,6 +3,17 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.0.7](https://github.com/okx/js-wallet-sdk) (2024-08-20)
+
+### New Features
+
+- **coin-aptos:** support Fungible Asset, compatible with different dapp protocols ([](https://github.com/okx/js-wallet-sdk))
+
+### Fix
+
+- **coin-aptos:** upgrade private key verification ([](https://github.com/okx/js-wallet-sdk))
+
+
 # [1.0.1](https://github.com/okx/js-wallet-sdk) (2023-11-17)
 
 ### Bug Fixes

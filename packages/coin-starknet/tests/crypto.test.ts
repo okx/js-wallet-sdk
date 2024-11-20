@@ -1,20 +1,21 @@
 import {signUtil} from "@okxweb3/crypto-lib";
 import {
-    ec,
-    json,
-    hash,
+    Account,
     CalculateContractAddressFromHash,
+    Call,
+    CreateContractCall,
+    CreateMultiContractCall,
     CreateSignedDeployAccountTx,
     CreateTransferTx,
+    ec,
     GetRandomPrivateKey,
-    CreateContractCall,
-    signMessageWithTypeData,
-    verifyMessage,
-    typedData,
-    Call,
-    CreateMultiContractCall,
+    hash,
+    json,
     modPrivateKey,
-    Account
+    signMessageWithTypeData,
+    StarknetWallet,
+    typedData,
+    verifyMessage
 } from "../src"
 import {TypedData} from '../src/utils/typedData';
 import {ETH, ETHBridge, StarknetChainId} from '../src/constants';
@@ -33,6 +34,55 @@ describe("tx", () => {
     test('randomKey', async () => {
         const pri = await GetRandomPrivateKey();
         console.log(pri)
+        const wallet = new StarknetWallet();
+        const p = await wallet.getRandomPrivateKey();
+        expect((await wallet.validPrivateKey({privateKey:p})).isValid).toEqual(true);
+    })
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new StarknetWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            try {
+                await wallet.getNewAddress({privateKey: ps[i]});
+            } catch (e) {
+                j = j + 1
+            }
+        }
+        expect(j).toEqual(ps.length+1);
+    });
+
+    test("validPrivateKey", async () => {
+        const wallet = new StarknetWallet();
+        const privateKey = await wallet.getRandomPrivateKey();
+        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        expect(res.isValid).toEqual(true);
+    });
+
+    test('getNewAddress', async () => {
+        const privateKey = "49c0722d56d6bac802bdf5c480a17c870d1d18bc4355d8344aa05390eb778280";
+        const wallet = new StarknetWallet();
+        const expectedAddress = "0x05b0563ae63a7ba9929129f5117bcbcbe552b7cc8cf81c806d343e2de7f3d555";
+        expect((await wallet.getNewAddress({privateKey: privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.getNewAddress({privateKey: '0x'+privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.getNewAddress({privateKey: '0X'+privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.getNewAddress({privateKey: '0X'+privateKey.toUpperCase()})).address).toEqual(expectedAddress);
+
+        expect((await wallet.validPrivateKey({privateKey:privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey: '0x'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey: '0X'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey: '0X'+privateKey.toUpperCase()})).isValid).toEqual(true);
     })
 
     test("signMessage", async () => {

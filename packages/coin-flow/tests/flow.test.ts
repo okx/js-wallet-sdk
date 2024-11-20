@@ -70,4 +70,26 @@ describe("flow", () => {
     const pk = private2Public("bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a")
     console.info(pk)
   })
+  test('private2Public', async () => {
+    let pub = '4f86f59016bd953ebe2a5ee6b7274177fd0cc15a67f7aff7aea52b026c0bf4a09b970b9d9c6ae568367415d9897028ce8fca9ecbb4e1975c6b1104951f2ecb33'
+    let key = "bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a"
+    let pk = private2Public(key)
+    expect(pub).toEqual(pk)
+    pk = private2Public("0XBDD80F4421968142B3A4A6C27A1D84A3623384D085A04A895F109FD8D49CEF0A")
+    expect(pub).toEqual(pk)
+    pk = private2Public("0xbdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a")
+    expect(pub).toEqual(pk)
+
+    key = "bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0axxzz"
+    expect(() => private2Public(key)).toThrowError("invalid key")
+    key = "xxbdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a"
+    expect(() => private2Public(key)).toThrowError("invalid key")
+    key = "bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cx*0a"
+    expect(() => private2Public(key)).toThrowError("invalid key")
+    key = ""
+    expect(() => private2Public(key)).toThrowError("invalid key")
+    key = "0123456789abcdef"
+    expect(private2Public(key)).toEqual("3988322ab9f52c7f11d5d1aa92a2ac0b00275bcad8e934682257323fda672482855b7389f116c19c0014311c3d57dc02001e3a0ec8bd90c797732034aacd9918")
+  });
+
 });

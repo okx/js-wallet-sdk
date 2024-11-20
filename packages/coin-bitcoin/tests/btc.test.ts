@@ -22,6 +22,48 @@ import {countAdjustedVsize} from "../src/sigcost";
 
 describe("bitcoin", () => {
 
+    test("validPrivateKey", async () => {
+        const wallet = new BtcWallet();
+        const res = await wallet.validPrivateKey({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"});
+        expect(res.isValid).toEqual(true);
+    });
+
+    test("getNewAddress", async () => {
+        const wallet = new BtcWallet();
+        //1GhLyRg4zzFixW3ZY5ViFzT4W5zTT9h7Pc
+        expect((await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"})).address).toEqual("1GhLyRg4zzFixW3ZY5ViFzT4W5zTT9h7Pc");
+        //bc1q4s4n983qnlhppajgn8enmgn4dts7g3c74jnwpd
+        expect((await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:'segwit_native'})).address).toEqual("bc1q4s4n983qnlhppajgn8enmgn4dts7g3c74jnwpd");
+        //3FAS9ewd56NoQkZCccAJonDyTkubU87qrt
+        expect((await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:'segwit_nested'})).address).toEqual("3FAS9ewd56NoQkZCccAJonDyTkubU87qrt");
+        //bc1ptdyzxxmr4qm6cvgdug5u9n0ns8fdjr3m294y7ec5nffhuz3pnk3s6upms2
+        expect((await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:'segwit_taproot'})).address).toEqual("bc1ptdyzxxmr4qm6cvgdug5u9n0ns8fdjr3m294y7ec5nffhuz3pnk3s6upms2");
+    });
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new BtcWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            try {
+                await wallet.getNewAddress({privateKey: ps[i]});
+            } catch (e) {
+                j = j + 1
+            }
+        }
+        expect(j).toEqual(ps.length+1);
+    });
+
     test("private key", async () => {
         let wallet = new BtcWallet()
         let key = await wallet.getRandomPrivateKey()
@@ -38,6 +80,8 @@ describe("bitcoin", () => {
         console.log(sigops2)
         expect(sigops2).toEqual(1014)
     })
+
+
 
     test("bitcoin address", async () => {
         let privateKey = "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS"

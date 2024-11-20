@@ -1,7 +1,7 @@
 import * as eth from "../src"
 import {randomBytes} from "crypto";
 import {abi, base, BigNumber} from "@okxweb3/crypto-lib";
-import {ecdsaSign, makeSignature, MessageTypes} from "../src"
+import {ecdsaSign, makeSignature, MessageTypes,EthWallet} from "../src"
 import { NewAddressParams, SignTxParams, ValidAddressParams, VerifyMessageParams } from "@okxweb3/coin-base";
 import Assert from "assert";
 
@@ -15,6 +15,60 @@ describe("eth api", () => {
         const privateKey = randomBytes(32)
         const address = eth.getNewAddress(base.toHex(privateKey))
         console.info(address)
+        let p = base.toHex(privateKey);
+        console.info(p)
+        console.info(p.toUpperCase())
+    });
+
+    test("getNewAddress", async () => {
+        const wallet = new EthWallet();
+        const privateKey = "7322bdd5504180eab25053bf00ee3928e67e5c8a2c044894ea8397ed54661880";
+        const expectedAddress = "0x483317c95fd01da74d75e817d6a8fd4898295a15";
+        expect((await wallet.getNewAddress({privateKey:privateKey})).address).toEqual(expectedAddress);
+        const privateKey2 = "0x7322bdd5504180eab25053bf00ee3928e67e5c8a2c044894ea8397ed54661880";
+        expect((await wallet.getNewAddress({privateKey:privateKey2})).address).toEqual(expectedAddress);
+        const privateKey3 = "0x7322BDD5504180EAB25053BF00EE3928E67E5C8A2C044894EA8397ED54661880";
+        expect((await wallet.getNewAddress({privateKey:privateKey3})).address).toEqual(expectedAddress);
+        const privateKey4 = "0X7322BDD5504180EAB25053BF00EE3928E67E5C8A2C044894EA8397ED54661880";
+        expect((await wallet.getNewAddress({privateKey:privateKey4})).address).toEqual(expectedAddress);
+    });
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("0X");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new EthWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            let  param = {privateKey: ps[i]}
+            try {
+                await wallet.getNewAddress(param);
+            } catch (e) {
+                j = j + 1
+            }
+            expect(ps[i]).toEqual(param.privateKey);
+        }
+        expect(j).toEqual(ps.length+1);
+    });
+
+    test("validPrivateKey", async () => {
+        const wallet = new EthWallet();
+        const privateKeyTemp = await wallet.getRandomPrivateKey();
+        const privateKey= privateKeyTemp.slice(2);
+        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        expect((await wallet.validPrivateKey({privateKey:privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0x'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0X'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0X'+privateKey.toUpperCase()})).isValid).toEqual(true);
     });
 
     test("signMessage", async () => {

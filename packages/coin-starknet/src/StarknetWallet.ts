@@ -1,36 +1,36 @@
 import {
+    BaseWallet,
     DerivePriKeyParams,
+    GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressData,
+    NewAddressError,
     NewAddressParams,
+    SignTxError,
     SignTxParams,
     ValidAddressData,
-    ValidAddressParams,
-    VerifyMessageParams,
-    BaseWallet,
-    GenPrivateKeyError,
-    NewAddressError,
-    SignTxError
+    ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
+    VerifyMessageParams
 } from '@okxweb3/coin-base';
 import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 
 
 import {
-    DeployAccountContractPayload,
-    validateAndParseAddress,
-    ec,
-    constants,
-    CreateTransferTx,
-    CreateSignedDeployAccountTx,
     CalculateContractAddressFromHash,
+    Call,
+    constants,
     CreateContractCall,
-    typedData,
+    CreateMultiContractCall,
+    CreateSignedDeployAccountTx,
+    CreateTransferTx,
+    DeployAccountContractPayload,
+    ec, GetRandomPrivateKey,
+    modPrivateKey,
     signMessage,
     signMessageWithTypeData,
-    verifyMessage,
-    Call,
-    CreateMultiContractCall,
-    modPrivateKey
+    typedData,
+    validateAndParseAddress,
+    verifyMessage
 } from "./index";
 
 export type StarknetTransactionType =
@@ -63,7 +63,22 @@ export type StarknetSignData = {
     }
 }
 
+function checkPrivateKey(privateKeyHex: string):boolean{
+    if (!base.validateHexString(privateKeyHex)){
+        return false;
+    }
+    const keyBytes = base.fromHex(privateKeyHex.toLowerCase());
+    if (keyBytes.length < 25 || keyBytes.length > 33) {
+        return false;
+    }
+    return true
+}
+
 export class StarknetWallet extends BaseWallet {
+
+    getRandomPrivateKey(): Promise<any> {
+        return GetRandomPrivateKey();
+    }
 
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
         return `m/44'/9004'/0'/0/${param.index}`;
@@ -93,6 +108,9 @@ export class StarknetWallet extends BaseWallet {
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
+        if (!checkPrivateKey(param.privateKey)){
+            throw new Error('invalid key');
+        }
         try {
             const pri = modPrivateKey(param.privateKey);
             const pub = ec.starkCurve.getStarkKey(pri);
@@ -105,6 +123,14 @@ export class StarknetWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(NewAddressError + ":" + e);
         }
+    }
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        let isValid = checkPrivateKey(param.privateKey)
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
