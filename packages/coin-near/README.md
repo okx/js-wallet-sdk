@@ -170,4 +170,26 @@ console.info(result)
         let result = await wallet.signTransaction(param)
         console.info(result)
 ```
+
+### signMessage
+
+```typescript
+const message = "log me in";
+const nonce = Buffer.from(Array.from(Array(32).keys()));
+const recipient = "http://localhost:3000";
+const callbackUrl = "http://localhost:1234";
+
+let wallet = new NearWallet()
+let privateKey = "";
+let res = await wallet.signMessage({
+    privateKey: privateKey,
+    data: {
+        message,
+        recipient,
+        nonce,
+        callbackUrl,
+        state: ""
+    }
+});
+```
 ## License: MIT

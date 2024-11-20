@@ -14,7 +14,7 @@ import {
     GenPrivateKeyError,
     NewAddressError,
     SignMsgError,
-    SignTxError
+    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData
 } from '@okxweb3/coin-base';
 import {base} from '@okxweb3/crypto-lib';
 import {
@@ -89,6 +89,15 @@ export class SuiWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(NewAddressError);
         }
+    }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        tryDecodeSuiPrivateKey(param.privateKey)
+        const data: ValidPrivateKeyData = {
+            isValid: true,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

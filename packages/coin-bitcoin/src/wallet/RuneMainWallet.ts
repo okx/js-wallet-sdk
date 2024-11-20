@@ -1,12 +1,20 @@
-import {cloneObject, SignTxParams} from "@okxweb3/coin-base";
+import {cloneObject, SignTxError, SignTxParams} from "@okxweb3/coin-base";
 import {BtcWallet} from "./BtcWallet";
 import * as bitcoin from "../index"
-import {BtcXrcTypes, ErrCodeLessAtomicalAmt, networks, RuneData, signBtc, utxoTx} from "../index"
-import {buildRuneMainMintData} from "../rune";
+import {
+    BtcXrcTypes,
+    buildPsbt,
+    calculateTxSize,
+    ErrCodeLessAtomicalAmt,
+    networks,
+    psbtSign,
+    RuneData,
+    signBtc,Transaction,
+    utxoTx
+} from "../index"
+import {buildRuneMainMintData, buildRuneMainMintOp} from "../rune";
 import {base} from "@okxweb3/crypto-lib";
-import bigInt from "big-integer";
-import {run} from "jest";
-import {Transaction} from "@okxweb3/coin-bitcoin";
+import {runesMainInscribe, RunesMainInscriptionRequest} from "../runesMain";
 
 export const ErrCodeLessRunesMainAmt     = 2010300
 export const ErrCodeOpreturnExceeds       = 2010301;
@@ -19,13 +27,13 @@ export class RuneMainWallet extends BtcWallet {
         const clonedParamData = cloneObject(paramData)
 
         // Prevent setting usedefaultOutput but lacking defaultOutput
-        if (clonedParamData.useDefaultOutput == true && clonedParamData.defaultOutput == undefined) {
-            clonedParamData.defaultOutput = 0
+        if (clonedParamData.runeData.useDefaultOutput == true && clonedParamData.runeData.defaultOutput == undefined) {
+            clonedParamData.runeData.defaultOutput = 0
         }
 
         // Prevent setting usedefaultOutput but lacking defaultOutput
-        if (clonedParamData.mint == true && clonedParamData.mintNum == undefined) {
-            clonedParamData.mintNUm = 1
+        if (clonedParamData.runeData.mint == true && clonedParamData.runeData.mintNum == undefined) {
+            clonedParamData.runeData.mintNUm = 1
         }
 
 
@@ -35,7 +43,11 @@ export class RuneMainWallet extends BtcWallet {
             if (dataArray != null && dataArray instanceof Array) {
                 for (let data of dataArray) {
                     if(typeof data["amount"] === "string") {
-                        data["amount"] = BigInt(data["amount"]);
+                        if (clonedParamData.runeData.mint) {
+                            data["amount"] = BigInt(1)
+                        }else{
+                            data["amount"] = BigInt(data["amount"]);
+                        }
                     }
                 }
             }
@@ -46,7 +58,11 @@ export class RuneMainWallet extends BtcWallet {
             if (dataArray != null && dataArray instanceof Array) {
                 for (let data of dataArray) {
                     if(typeof data["amount"] === "string") {
-                        data["amount"] = BigInt(data["amount"]);
+                        if (clonedParamData.runeData.mint) {
+                            data["amount"] = BigInt(1)
+                        }else{
+                            data["amount"] = BigInt(data["amount"]);
+                        }
                     }
                 }
             }
@@ -60,7 +76,11 @@ export class RuneMainWallet extends BtcWallet {
             if (dataArray != null && dataArray instanceof Array) {
                 for (const data of dataArray) {
                     let runeId: string = data["id"];
-                    let runeAmount: bigint = BigInt(data["amount"]);
+                    let runeAmount = BigInt(1)
+                    if (!clonedParamData.runeData.mint) {
+                        runeAmount = BigInt(data["amount"]);
+                    }
+                    // let runeAmount: bigint = BigInt(data["amount"]);
                     if (runeId == null || runeAmount == null) {
                         continue
                     }
@@ -92,7 +112,10 @@ export class RuneMainWallet extends BtcWallet {
             let data = output.data;
             if (data != null) {
                 let runeId: string = data["id"];
-                let runeAmount: bigint = BigInt(data["amount"]);
+                let runeAmount = BigInt(1)
+                if (!clonedParamData.runeData.mint) {
+                    runeAmount = BigInt(data["amount"]);
+                }
                 if (runeId == null || runeAmount == null) {
                     continue
                 }
@@ -104,8 +127,6 @@ export class RuneMainWallet extends BtcWallet {
                 }
             }
         }
-
-
 
         let isRuneChange = false;
         for (const id of runeInputMap.keys()) {
@@ -137,7 +158,11 @@ export class RuneMainWallet extends BtcWallet {
             let data = output.data;
             if (data != null) {
                 let runeId: string = data["id"];
-                let runeAmount: bigint = BigInt(data["amount"]);
+
+                let runeAmount = BigInt(1)
+                if (!clonedParamData.runeData.mint) {
+                    runeAmount = BigInt(data["amount"]);
+                }
                 if (runeId == null || runeAmount == null) {
                     continue
                 }
@@ -188,7 +213,7 @@ export class RuneMainWallet extends BtcWallet {
         const typedEdict: bitcoin.Edict = {
             block:parseInt(curRuneInfo.id.split(":")[0]),
             id:parseInt(curRuneInfo.id.split(":")[1]),
-            amount: BigInt(curRuneInfo.amount),
+            amount: BigInt(1),
             output: 0,
         }
         typedEdicts.push(typedEdict)
@@ -235,7 +260,13 @@ export class RuneMainWallet extends BtcWallet {
         const network = this.network()
         let txHex = null;
 
-        if (param.data.runeData.mintNum == undefined || param.data.runeData.mintNum <= 1){
+        if(param.data.runeData.etching){
+            try {
+                return Promise.resolve(runesMainInscribe(network, param.data as RunesMainInscriptionRequest));
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (param.data.runeData.mintNum == undefined || param.data.runeData.mintNum <= 1){
             try {
                 const privateKey = param.privateKey;
                 if (!param.data.runeData) {
@@ -249,7 +280,8 @@ export class RuneMainWallet extends BtcWallet {
             } catch (e) {
                 return Promise.reject(e);
             }
-        } else if (param.data.runeData.mint){
+        }
+        else if (param.data.runeData.mint && !param.data.runeData.serialMint) {
             try {
                 let txHexs = []
                 const privateKey = param.privateKey;
@@ -257,29 +289,29 @@ export class RuneMainWallet extends BtcWallet {
                     return Promise.reject("missing runeData");
                 }
                 let mintData = {
-                    id : param.data.outputs[0].data.id,
-                    amount : param.data.outputs[0].data.amount,
-                    mintNum : param.data.runeData.mintNum,
+                    id: param.data.outputs[0].data.id,
+                    amount: param.data.outputs[0].data.amount,
+                    mintNum: param.data.runeData.mintNum,
                 }
 
                 // First of all, you need to estimate the approximate minimum fee of Mint.
-                let baseMintTx =  this.getMockMinRuneTx(param.data,mintData)
-                const  opMintReturnOutput = this.getRuneMainOpReturnOutput(network, baseMintTx.runeData!);
+                let baseMintTx = this.getMockMinRuneTx(param.data, mintData)
+                const opMintReturnOutput = this.getRuneMainOpReturnOutput(network, baseMintTx.runeData!);
                 baseMintTx.outputs.push(opMintReturnOutput as never)
                 txHex = signBtc(baseMintTx, privateKey, network);
                 // console.log(txHex)
-                const baseMintfee = bitcoin.estimateBtcFee(baseMintTx, this.network())+546;
+                const baseMintfee = bitcoin.estimateBtcFee(baseMintTx, this.network()) + 546;
 
                 // Continue to generate split transactions for batch Mint
                 const runeTx = this.convert2RuneTx(param.data);
                 let batchMintStatNum = runeTx.outputs.length
-                for (let i = 0; i<mintData.mintNum-1; i++){
+                for (let i = 0; i < mintData.mintNum - 1; i++) {
                     runeTx.outputs.push({
-                        address:param.data.address,
-                        amount:baseMintfee,
+                        address: param.data.address,
+                        amount: baseMintfee,
                     } as never)
                 }
-                const  opReturnOutput = this.getRuneMainOpReturnOutput(network, runeTx.runeData!);
+                const opReturnOutput = this.getRuneMainOpReturnOutput(network, runeTx.runeData!);
                 runeTx.outputs.push(opReturnOutput as never)
 
                 // Sign the split transaction and get the transaction hash
@@ -288,20 +320,20 @@ export class RuneMainWallet extends BtcWallet {
                 txHexs.push(txHex)
 
                 // Generate the structure of the sub-Mint transaction and sign it
-                for (let i = 0; i < mintData.mintNum-1; i++){
+                for (let i = 0; i < mintData.mintNum - 1; i++) {
                     let curInput = {
-                        txId:parentTxId,
-                        vOut:batchMintStatNum,
-                        address:param.data.address,
-                        amount:baseMintfee,
-                        data:[mintData]
+                        txId: parentTxId,
+                        vOut: batchMintStatNum,
+                        address: param.data.address,
+                        amount: baseMintfee,
+                        data: [mintData]
                     }
                     let curOutput = {
-                        address : param.data.address,
-                        amount : 546
+                        address: param.data.address,
+                        amount: 546
                     }
                     batchMintStatNum += 1
-                    let curSubTx = this.getMinRuneTx(param.data,mintData,curInput,curOutput)
+                    let curSubTx = this.getMinRuneTx(param.data, mintData, curInput, curOutput)
                     curSubTx.outputs.push(opReturnOutput as never)
 
                     let curSubTxHex = signBtc(curSubTx, privateKey, network);
@@ -314,8 +346,56 @@ export class RuneMainWallet extends BtcWallet {
             } catch (e) {
                 return Promise.reject(e);
             }
-        }
+        }else {
+            try {
+                let txHexs = []
+                const privateKey = param.privateKey;
+                if (!param.data.runeData) {
+                    return Promise.reject("missing runeData");
+                }
+                let mintData = {
+                    id: param.data.outputs[0].data.id,
+                    amount: 1,
+                    mintNum: param.data.runeData.mintNum,
+                }
+                let baseMintTx = this.getMockMinRuneTx(param.data, mintData)
+                const opMintReturnOutput = buildRuneMainMintOp(mintData.id,false,0,true);
+                baseMintTx.outputs.push(opMintReturnOutput as never)
+                const baseMintfee = bitcoin.estimateBtcFee(baseMintTx, this.network()) ;
+                let curAmount =  (mintData.mintNum-1) * baseMintfee + 546
 
+                const runeTx = this.convert2RuneTxSerialMint(param.data,curAmount);
+                runeTx.outputs.push(opMintReturnOutput as never)
+
+                txHex = signBtc(runeTx, privateKey, network);
+                let parentTxId = Transaction.fromHex(txHex).getId();
+                txHexs.push(txHex)
+
+                for (let i = 1; i < mintData.mintNum ; i++) {
+                    let curInput = {
+                        txId: parentTxId,
+                        vOut: 0,
+                        address: param.data.address,
+                        amount: curAmount
+                    }
+                    curAmount  = curAmount - baseMintfee
+                    let curOutput = {
+                        address: param.data.address,
+                        amount: curAmount
+                    }
+                    let curSubTx = this.getMinRuneTx(param.data, mintData, curInput, curOutput)
+                    curSubTx.outputs.push(opMintReturnOutput as never)
+
+                    let curSubTxHex = signBtc(curSubTx, privateKey, network);
+                    parentTxId = Transaction.fromHex(curSubTxHex).getId();
+                    txHexs.push(curSubTxHex)
+                }
+                return  txHexs
+            }
+            catch (e) {
+                return Promise.reject(e);
+            }
+        }
     }
 
     private getRuneMainOpReturnOutput(network: bitcoin.Network, runeData: bitcoin.RuneData) {
@@ -337,13 +417,14 @@ export class RuneMainWallet extends BtcWallet {
         }
 
         const opReturnScript = buildRuneMainMintData(
+            // @ts-ignore
             isMainnet, runeData.edicts,runeData.useDefaultOutput,runeData.defaultOutput,runeData.mint,runeData.mintNum);
         return  {address: '', amount: 0, omniScript: base.toHex(opReturnScript)};
     }
 
-
     async estimateFee(param: SignTxParams): Promise<any> {
         try {
+            const network = this.network()
             if (!param.data.runeData) {
                 return Promise.reject("missing runeData");
             }
@@ -368,7 +449,8 @@ export class RuneMainWallet extends BtcWallet {
 
             if (param.data.runeData.mintNum == undefined || param.data.runeData.mintNum <= 1) {
                 return Promise.resolve(fee);
-            }else{
+            }
+            else if (param.data.runeData.mint && !param.data.runeData.serialMint){
                 let fees = []
                 fees.push(fee)
 
@@ -390,11 +472,118 @@ export class RuneMainWallet extends BtcWallet {
                 }
                 return Promise.resolve(fees);
             }
+            else if  (param.data.runeData.mint && param.data.runeData.serialMint){
+                let fees = []
+                if (!param.data.runeData) {
+                    return Promise.reject("missing runeData");
+                }
+                let mintData = {
+                    id: param.data.outputs[0].data.id,
+                    amount: 1,
+                    mintNum: param.data.runeData.mintNum,
+                }
+                let baseMintTx = this.getMockMinRuneTx(param.data, mintData)
+                const opMintReturnOutput = buildRuneMainMintOp(mintData.id,false,0,true);
+                baseMintTx.outputs.push(opMintReturnOutput as never)
+                const baseMintfee = bitcoin.estimateBtcFee(baseMintTx, this.network()) ;
+                let curAmount =  (mintData.mintNum-1) * baseMintfee + 546
+
+                const runeTx = this.convert2RuneTxSerialMint(param.data,curAmount);
+                runeTx.outputs.push(opMintReturnOutput as never)
+                let fee = bitcoin.estimateBtcFee(runeTx,network)
+                fees.push(fee)
+                for (let i = 1; i < mintData.mintNum ; i++) {
+                    fees.push(baseMintfee)
+                }
+                return Promise.resolve(fees);
+            }
         } catch (e) {
             return Promise.reject(e);
         }
     }
 
+    convert2RuneTxSerialMint(paramData: any,outputAmount: number): utxoTx {
+        const clonedParamData = cloneObject(paramData)
+
+        let curOutputs = [{
+            address:clonedParamData.address,
+            amount:outputAmount
+        }]
+        return {
+            inputs: clonedParamData.inputs,
+            // @ts-ignore
+            outputs: curOutputs,
+            address: clonedParamData.address,
+            feePerB: clonedParamData.feePerB,
+            runeData: {
+                edicts: clonedParamData.runeData!.edicts,
+                etching: clonedParamData.runeData!.etching,
+                burn: clonedParamData.runeData!.burn,
+                defaultOutput : clonedParamData.runeData!.defaultOutput,
+                mint: clonedParamData.runeData!.mint,
+                mintNum: clonedParamData.runeData!.mintNum,
+            },
+        }
+    }
+    convert2RuneTxPsbt(paramData: any): utxoTx {
+        const clonedParamData = cloneObject(paramData)
+
+        return {
+            inputs: clonedParamData.inputs,
+            // @ts-ignore
+            outputs: clonedParamData.outputs,
+            address: clonedParamData.address,
+            feePerB: clonedParamData.feePerB,
+            runeData: {
+                edicts: clonedParamData.runeData.edicts,
+                etching: clonedParamData.runeData!.etching,
+                burn: clonedParamData.runeData!.burn,
+                defaultOutput : clonedParamData.runeData!.defaultOutput,
+                mint: clonedParamData.runeData!.mint,
+                mintNum: clonedParamData.runeData!.mintNum,
+            },
+        }
+    }
+
+
+    async buildPsbt(param: SignTxParams): Promise<any> {
+        const network = this.network()
+        let txHex = null;
+        try {
+            const privateKey = param.privateKey;
+            if (!param.data.runeData) {
+                return Promise.reject("missing runeData");
+            }
+            const runeTx = this.convert2RuneTxPsbt(param.data);
+
+            // @ts-ignore
+            const opReturnOutput = this.getRuneMainOpReturnOutput(network, runeTx.runeData);
+            runeTx.outputs.push(opReturnOutput as never)
+            let fakeAddr = "KwdkfXMV2wxDVDMPPuFZsio3NeCskAUd4N2U4PriTgpj2MqAGmmc"
+            if (runeTx.dustSize == undefined){
+                runeTx.dustSize = 546
+            }
+            let {
+                inputAmount,
+                outputAmount,
+                virtualSize
+            } = calculateTxSize(runeTx.inputs,runeTx.outputs,runeTx.address,fakeAddr,network,runeTx.dustSize)
+            // @ts-ignore
+            let changeAmount = inputAmount - outputAmount - virtualSize * runeTx.feePerB;
+
+            if (changeAmount > runeTx.dustSize) {
+                runeTx.outputs.push({ address:runeTx.address,amount:changeAmount} as never)
+            }
+            // 546 ,500
+
+            const txHex = buildPsbt(runeTx,network)
+            const res = [txHex,changeAmount]
+                // txHex = signBtc(runeTx, privateKey, network);
+            return Promise.resolve(res);
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    }
 }
 
 export class RuneMainTestWallet extends RuneMainWallet {

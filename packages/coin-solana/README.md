@@ -58,6 +58,33 @@ let valid = await wallet.validAddress(addrParam);
 ```
 
 ### Transaction
+
+`signTransaction` 参数定义如下
+* `type`  trsanction type, support "transfer" | "tokenTransfer" | "mplTransfer"
+    * `transfer` 表示转账SOL token
+    * `tokenTransfer` 表示转账 spl token类似于 ERC20协议的token
+    * `mplTransfer` 表示nft token的转账
+* `payer` address, 表示交易手续费的支付地址
+* `blockHash`, 长度为32的字节数组，表示最近的区块hash
+* `from` address, 表示SOL token的转出地址
+* `to` address,表示SOL token的转入地址
+* `amount` number, 表示要转账的SOL token的数量，SOL token精度是8
+* `mint` address, 表示token地址
+* `createAssociatedAddress` boolean, 表示是否需要创建ata地址，
+* `version` number， 交易version
+* `tokenStandard` TokenStandard,表示交易的标准，有以下五种取值
+    * NonFungible, 
+    * FungibleAsset, 
+    * Fungible, 
+    * NonFungibleEdition, 
+    * ProgrammableNonFungible,
+* `token2022` boolean, true表示 token2022标准的spl token, false表示spl token标准的token
+* `decimal` number, 表示token2022标准的spl token的精度，当转账该标准的token的时候需要该字段。
+* `computeUnitLimit` 表示交易中每个指令可以消耗的计算单位的数量
+* `computeUnitPrice` 表示每个计算单元的价格
+* `needPriorityFee` boolean，和`computeUnitLimit`，`computeUnitPrice`一起使用，手动设置交易的手续费参数。
+
+
 transfer
 ```typescript
 import {SolWallet} from "@okxweb3/coin-solana";
@@ -84,6 +111,8 @@ const checkParam = {
 }
 const ok = await wallet.validSignedTransaction(checkParam);
 ```
+
+
 
 token transfer
 ```typescript

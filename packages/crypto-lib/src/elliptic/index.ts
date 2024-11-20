@@ -14,4 +14,6 @@ const curves = require('./curves');
 const ec = require('./ec');
 const eddsa = require('./eddsa');
 
-export {ec, eddsa, curve, curves}
+const utils = require('./utils')
+
+export {ec, eddsa, curve, curves, utils}
