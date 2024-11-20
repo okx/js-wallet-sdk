@@ -39,7 +39,7 @@
     "@noble/ed25519": "^1.7.3",
     "@noble/hashes": "1.0.0",
     "@noble/secp256k1": "^1.7.1",
-    "@scure/base": "1.0.0",
+    "@scure/base": "1.1.7",
     "asmcrypto.js": "^2.3.2",
     "bigint-conversion": "^2.3.0",
     "bigint-crypto-utils": "^3.1.8",
