@@ -9,7 +9,7 @@ import {
     Keypair,
     Transaction, CompiledInstruction,
 } from './sdk/web3';
-import {TokenStandard, transferNftBuilder, getSignedTransaction} from "./sdk/metaplex";
+import {TokenStandard, transferNftBuilder, getSignedTransaction, getSerializedTransaction} from "./sdk/metaplex";
 import {TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID} from "./sdk/spl";
 import {
     COMPUTE_BUDGET_INSTRUCTION_LAYOUTS,
@@ -19,7 +19,14 @@ import {
 import {decodeData} from "./sdk/web3/instruction";
 
 export function getNewAddress(privateKey: string): string {
-    const publicKey = signUtil.ed25519.publicKeyCreate(base.fromBase58(privateKey))
+    if (!privateKey) {
+        throw new Error("invalid key");
+    }
+    const buf = base.fromBase58(privateKey)
+    if (buf.length != 64) {
+        throw new Error("invalid key length");
+    }
+    const publicKey = signUtil.ed25519.publicKeyCreate(buf)
     return base.toBase58(publicKey)
 }
 
@@ -261,6 +268,36 @@ export type TxData = {
     token2022?: boolean
     computeUnitLimit?: number
     computeUnitPrice?: number
+    needPriorityFee?: boolean
+}
+
+export async function getSerializedTransferVersionedTransaction(txData: TxData, ...privateKey: string[]) {
+    const instructions = [];
+    if (txData.needPriorityFee && txData.computeUnitLimit && txData.computeUnitPrice) {
+        const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+            units: txData.computeUnitLimit // default: 200000 =0.2 * 10^6
+        });
+
+        const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: txData.computeUnitPrice // 1 = 1*10-6 lamport default: 0
+        });
+        instructions.push(modifyComputeUnits);
+        instructions.push(addPriorityFee);
+    }
+    instructions.push(web3.SystemProgram.transfer({
+        fromPubkey: new web3.PublicKey(txData.from),
+        toPubkey: new web3.PublicKey(txData.to),
+        lamports: txData.amount,
+    }));
+
+    // const instructions = [
+    //     web3.SystemProgram.transfer({
+    //         fromPubkey: new web3.PublicKey(txData.from),
+    //         toPubkey: new web3.PublicKey(txData.to),
+    //         lamports: txData.amount,
+    //     }),
+    // ];
+    return getSerializedVersionedTransaction(txData.payer, txData.blockHash, instructions, privateKey);
 }
 
 export async function signTransferVersionedTransaction(txData: TxData, ...privateKey: string[]) {
@@ -336,6 +373,76 @@ export async function signTokenTransferVersionedTransaction(txData: TxData, ...p
     return createAndSignVersionedTransaction(txData.payer, txData.blockHash, instructions, privateKey);
 }
 
+export async function getSerializedTokenTransferVersionedTransaction(txData: TxData, ...privateKey: string[]) {
+    const tokenProgramId = txData.token2022 === true ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
+    const fromAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(txData.mint!), new web3.PublicKey(txData.from), false, tokenProgramId);
+    const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(txData.mint!), new web3.PublicKey(txData.to), false, tokenProgramId);
+
+    const instructions = [];
+    if (txData.needPriorityFee && txData.computeUnitLimit && txData.computeUnitPrice) {
+        const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+            units: txData.computeUnitLimit // default: 200000 =0.2 * 10^6
+        });
+
+        const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: txData.computeUnitPrice // 1 = 1*10-6 lamport default: 0
+        });
+        instructions.push(modifyComputeUnits);
+        instructions.push(addPriorityFee);
+    }
+
+    if (txData.createAssociatedAddress) {
+        instructions.push(
+            spl.createAssociatedTokenAccountInstruction(
+                new web3.PublicKey(txData.from),
+                new web3.PublicKey(toAssociatedAddress),
+                new web3.PublicKey(txData.to),
+                new web3.PublicKey(txData.mint!),
+                new web3.PublicKey(tokenProgramId),
+            )
+        );
+    }
+
+    instructions.push(
+        spl.createTransferInstruction(
+            new web3.PublicKey(fromAssociatedAddress),
+            new web3.PublicKey(toAssociatedAddress),
+            new web3.PublicKey(txData.from),
+            txData.amount,
+            [],
+            new web3.PublicKey(tokenProgramId),
+        )
+    );
+
+    return getSerializedVersionedTransaction(txData.payer, txData.blockHash, instructions, privateKey);
+}
+
+export async function getSerializedVersionedTransaction(payer: string, blockHash: string, instructions: TransactionInstruction[], privateKey: string[]) {
+    const messageV0 = new TransactionMessage({
+        payerKey: new PublicKey(payer),
+        recentBlockhash: blockHash,
+        instructions,
+    }).compileToV0Message();
+
+    const transaction = new VersionedTransaction(messageV0);
+
+    // const signers: Signer[] = [];
+    // privateKey.forEach(key => {
+    //     let keypair = Keypair.fromSecretKey(base.fromBase58(key));
+    //     signers.push({
+    //         publicKey: keypair.publicKey,
+    //         secretKey: keypair.secretKey,
+    //     });
+    // });
+    // transaction.sign(signers);
+    //
+    // if (!transaction.signature) {
+    //     return Promise.reject("sign error");
+    // }
+
+    return Promise.resolve(base.toBase58(transaction.serialize()));
+}
+
 export async function createAndSignVersionedTransaction(payer: string, blockHash: string, instructions: TransactionInstruction[], privateKey: string[]) {
     const messageV0 = new TransactionMessage({
         payerKey: new PublicKey(payer),
@@ -398,6 +505,44 @@ export async function signMplTransaction(payer: string, from: string, to: string
         lastValidBlockHeight: 0,
     });
 }
+
+export async function getSerializedMplTransaction(payer: string, from: string, to: string, mint: string, blockHash: string, privateKey: string, tokenStandard: TokenStandard = TokenStandard.ProgrammableNonFungible, computeUnitLimit?: number, computeUnitPrice?: number) {
+    const nft = {
+        tokenStandard,
+        address: new PublicKey(mint),
+    };
+
+    const authority = {
+        publicKey: new PublicKey(from),
+        secretKey: base.fromBase58(privateKey),
+    };
+
+    const builder = transferNftBuilder({
+        nftOrSft: nft,
+        authority,
+        fromOwner: new PublicKey(from),
+        toOwner: new PublicKey(to),
+    }, authority);
+
+    if (computeUnitLimit && computeUnitPrice) {
+        // set priority fee
+        const modifyComputeUnits = ComputeBudgetProgram.setComputeUnitLimit({
+            units: computeUnitLimit // default: 200000 =0.2 * 10^6
+        });
+
+        const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
+            microLamports: computeUnitPrice // 1 = 1*10-6 lamport default: 0
+        });
+        // todo solana mainnet
+        builder.add({instruction: modifyComputeUnits, signers: []});
+        builder.add({instruction: addPriorityFee, signers: []});
+    }
+    return getSerializedTransaction(builder, undefined, {
+        blockhash: blockHash,
+        lastValidBlockHeight: 0,
+    });
+}
+
 
 export function validSignedTransaction(tx: string, version: boolean, skipCheckSig: boolean) {
     if (version) {

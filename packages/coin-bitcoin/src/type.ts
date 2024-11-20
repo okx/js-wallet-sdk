@@ -54,13 +54,44 @@ type utxoTx = {
 
 // rune
 type RuneData = {
-    edicts: Edict[]
-    etching?: any
+    edicts?: Edict[]
+    etching?: Etching
     useDefaultOutput?:boolean
     defaultOutput?:number
     burn?: boolean
     mint?: boolean
     mintNum?: number
+    serialMint?:boolean
+    revealAddr?: string
+}
+
+
+type Etching = {
+    divisibility?: number //u8
+    premine?: bigint //u128, decimal 8
+    rune: Rune //u128
+    spacers?: number//u32
+    symbol?: string//char
+    terms?: Terms
+    turbo?: boolean
+    contentType?: string //"image/png" or "image/jpeg" or "text/plain"  or "audio/mpeg" ...
+    body?: string | Buffer  //
+}
+
+type Terms = {
+    amount?: bigint//u128
+    cap?: bigint,//u128 How many times can mint?
+    height?: Range
+    offset?: Range//
+}
+
+type Range = {
+    start?: bigint //u64
+    end?: bigint //u64
+}
+
+type Rune = {
+    value: bigint|string
 }
 
 type Edict = {
@@ -124,5 +155,6 @@ type signPsbtOptions = {
 }
 
 export {
-    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict, toSignInput, signPsbtOptions
+    utxoInput, utxoOutput, omniOutput, utxoTx, ListingData, BuyingData, RuneData, Edict,Etching,Terms,
+    Range,Rune,toSignInput, signPsbtOptions
 };

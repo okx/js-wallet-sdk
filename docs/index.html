@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Description">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <!-- Theme Add-on(s) -->
+  <link
+          rel="stylesheet"
+          href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/core-dark.min.css"
+          media="(prefers-color-scheme: dark)"
+          data-group="addon"
+          data-sheet="core-dark-auto"
+  />
+  <link
+          rel="stylesheet"
+          href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/core-dark.min.css"
+          data-group="addon"
+          data-sheet="core-dark"
+          disabled
+  />
+  <link
+          rel="stylesheet"
+          href="//cdn.jsdelivr.net/npm/docsify@5/dist/themes/addons/vue.min.css"
+          data-group="addon"
+          data-sheet="vue"
+          disabled
+  />
+
+  <!-- Site styles -->
+  <style>
+    /* Plugin: Carbon Ads */
+    #carbonads > :last-child {
+      margin-block: calc((1em * var(--line-height)) / 2);
+    }
+
+    /* UI Kit */
+    .ui-kit-color {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: var(--font-size-s);
+    }
+
+    .ui-kit-color figure {
+      flex-grow: 1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ui-kit-color figure div {
+      height: 4rem;
+      border-radius: var(--border-radius);
+    }
+
+    .ui-kit-color figcaption {
+      text-align: center;
+      padding: 0.5em 0;
+    }
+  </style>
+  <script>
+    // Set html "lang" attribute based on URL
+    (function () {
+      const lang = location.hash.match(/#\/(de-de|es|ru-ru|zh-cn)\//);
+
+      if (lang) {
+        document.documentElement.setAttribute('lang', lang[1]);
+      }
+    })();
+  </script>
+</head>
+<body class="loading sidebar-chevron-right sidebar-group-box">
+  <div id="app"></div>
+  <script>
+    window.$docsify = {
+      themeColor: '#50239f',
+      coverpage: true,
+      loadSidebar: true,
+      loadNavbar: true,
+      name: 'js-wallet-sdk',
+      repo: 'https://github.com/okx/js-wallet-sdk',
+      copyCode: {
+        buttonText: 'Copy to clipboard',
+        errorText: 'Error',
+        successText: 'Copied',
+      },
+    }
+  </script>
+  <!-- Docsify Copy Code Plugin -->
+  <script src="//unpkg.com/docsify-copy-code/dist/docsify-copy-code.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/dist/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/dist/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/dist/plugins/front-matter.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/dist/plugins/gtag.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/dist/plugins/matomo.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-markdown.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-nginx.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-php.min.js"></script>
+  <!-- Docsify v4 -->
+  <script src="//cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+</body>
+</html>

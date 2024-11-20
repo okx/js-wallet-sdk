@@ -118,6 +118,10 @@ export function loadCompressedPublicKey (first: number, xbuf: Buffer | Uint8Arra
     let y = xx.redSqr().redIMul(xx).redIAdd(ec.curve.b).redSqrt()
     if ((first === 0x03) !== y.isOdd()) y = y.redNeg()
 
+    // x*x*x + b = y*y
+    const x3 = xx.redSqr().redIMul(xx)
+    if (!y.redSqr().redISub(x3.redIAdd(ec.curve.b)).isZero()) return null
+
     return {x: xx, y: y}
 }
 

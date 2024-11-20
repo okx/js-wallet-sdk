@@ -15,7 +15,15 @@ import {
     sendMessages,
     sendToken,
     SignMessageData,
-    validateAddress, KavaWallet
+    validateAddress,
+    KavaWallet,
+    AtomWallet,
+    EvmosWallet,
+    AxelarWallet,
+    CronosWallet,
+    IrisWallet,
+    JunoWallet,
+    KujiraWallet, SecretWallet, StargazeWallet, TerraWallet, DydxWallet, CelestiaWallet, CosmosWallet
 } from '../src';
 import {SignTxParams} from "@okxweb3/coin-base";
 
@@ -29,6 +37,54 @@ describe("luna", () => {
 
         const v = validateAddress(address, prefix)
         console.info(v)
+    });
+
+    test("getNewAddress common2", async () => {
+        //sei137augvuewy625ns8a2age4sztl09hs7pk0ulte
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const wallet = new SeiWallet();
+        let expectedAddress = "sei137augvuewy625ns8a2age4sztl09hs7pk0ulte";
+        expect((await wallet.getNewAddress({privateKey:privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.getNewAddress({privateKey:'0x'+privateKey})).address).toEqual(expectedAddress)
+        expect((await wallet.getNewAddress({privateKey:'0X'+privateKey})).address).toEqual(expectedAddress)
+        expect((await wallet.getNewAddress({privateKey:'0X'+privateKey.toUpperCase()})).address).toEqual(expectedAddress)
+    });
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("0X");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new SeiWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            let  param = {privateKey: ps[i]}
+            try {
+                await wallet.getNewAddress(param);
+            } catch (e) {
+                j = j + 1
+                expect(param.privateKey).toEqual(ps[i])
+            }
+        }
+        expect(j).toEqual(ps.length+1);
+    });
+
+    test("validPrivateKey2", async () => {
+        const wallet = new CommonCosmosWallet();
+        const privateKey = (await wallet.getRandomPrivateKey()).slice(2);
+        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        expect(res.isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0x'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0X'+privateKey})).isValid).toEqual(true);
+        expect((await wallet.validPrivateKey({privateKey:'0X'+privateKey.toLowerCase()})).isValid).toEqual(true);
     });
 
     test("sendToken", async () => {
@@ -332,6 +388,116 @@ describe("injective", () => {
 });
 
 describe("common_wallet", () => {
+    test("getNewAddress", async () => {
+        //leap export 0xd7c51e968395a42dccef5c250f083c526a711d97e3723fff2bc6e250223a7815
+        //sei sei1gygujuyk00uxachg33x3eadtwq5cxqhs87arec
+        let privateHex = "d7c51e968395a42dccef5c250f083c526a711d97e3723fff2bc6e250223a7815";
+        {
+            const sei = new SeiWallet()
+            const address = await sei.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("sei1gygujuyk00uxachg33x3eadtwq5cxqhs87arec");
+        }
+        {
+            const wallet = new OsmoWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: '0x'+privateHex,
+            });
+            expect(address.address).toEqual("osmo1gygujuyk00uxachg33x3eadtwq5cxqhszfl9ft");
+        }
+        {
+            const wallet = new EvmosWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0x6a469518df93deadecef1c1ef668f2d168e1f80c3f3d1f985832b765d2a80916",
+            });
+            expect(address.address).toEqual("evmos19w2knpdgz87cuqk83j4xw8zedz9dlauny80xfs");
+        }
+        {
+            const wallet = new AxelarWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("axelar1gygujuyk00uxachg33x3eadtwq5cxqhswu6a5c");
+        }
+        {
+            const wallet = new CronosWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0x6a469518df93deadecef1c1ef668f2d168e1f80c3f3d1f985832b765d2a80916",
+            });
+            expect(address.address).toEqual("cro1tmf35ysa2u5kuv0upv3xus8fc0h7nqlfaxzup0");
+        }
+        {
+            const wallet = new IrisWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("iaa1gygujuyk00uxachg33x3eadtwq5cxqhslsvyag");
+        }
+        {
+            const wallet = new JunoWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("juno1gygujuyk00uxachg33x3eadtwq5cxqhsuq0wc9");
+        }
+        {
+            const wallet = new KavaWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0xe3c18b78724b9ae3b2ed54231192373ed030b677d224bd1fdc3a8b0313e7bb33",
+            });
+            expect(address.address).toEqual("kava1xud79am45d55qkt8v00zf3raqeqcz4us3xp4vy");
+        }
+        {
+            const wallet = new KujiraWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("kujira1gygujuyk00uxachg33x3eadtwq5cxqhsm6wdjn");
+        }
+        {
+            const wallet = new SecretWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0x61ab4f114f9918dc182558caac097381f6ca08007581d23d102004a05fa2021b",
+            });
+            expect(address.address).toEqual("secret1zy6wlu8f0evmnjrek2me3ww5xfx07w7sc8k2ku");
+        }
+        {
+            const wallet = new StargazeWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("stars1gygujuyk00uxachg33x3eadtwq5cxqhs7wmg5g");
+        }
+        {
+            const wallet = new TerraWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0xead09cd31b8680199e5281256a090183d87217698fc98c4c7fbbddcc3bb1818f",
+            });
+            expect(address.address).toEqual("terra14psgu3ted0mxn3p353965geppt39r8aezfcp3c");
+        }
+        {
+            const wallet = new DydxWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("dydx1gygujuyk00uxachg33x3eadtwq5cxqhsrtz3lw");
+        }
+        {
+            const wallet = new InjectiveWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: "0x6a469518df93deadecef1c1ef668f2d168e1f80c3f3d1f985832b765d2a80916",
+            });
+            expect(address.address).toEqual("inj19w2knpdgz87cuqk83j4xw8zedz9dlaunv0fvpq");
+        }
+        {
+            const wallet = new CelestiaWallet()
+            const address = await wallet.getNewAddress({
+                privateKey: privateHex,
+            });
+            expect(address.address).toEqual("celestia1gygujuyk00uxachg33x3eadtwq5cxqhsmca995");
+        }
+    })
     test("address", async () => {
         {
             const sei = new SeiWallet()
@@ -343,7 +509,6 @@ describe("common_wallet", () => {
 
             console.info(await sei.getAddressByPublicKey({publicKey: "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e"}));
         }
-
         {
             const hrp = "sei";
             const sei = new CommonCosmosWallet()
