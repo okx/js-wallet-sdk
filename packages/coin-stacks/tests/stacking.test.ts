@@ -5,10 +5,59 @@ import {
     delegateStx,
     revokeDelegateStx,
     stacks,
-    tokenTransfer
+    tokenTransfer, StxWallet
 } from '../src';
 import Assert from 'assert';
 
+test('getNewAddress', async () => {
+    const wallet = new StxWallet();
+    const privateKey = '33c4ad314d494632a36c27f9ac819e8d2986c0e26ad63052879f631a417c8adf';
+    const expectedAddress = "SP2XYBM8MD5T50WAMQ86E8HKR85BAEKBECNE1HHVY";
+    expect((await wallet.getNewAddress({privateKey:privateKey})).address).toEqual(expectedAddress);
+    expect((await wallet.getNewAddress({privateKey:privateKey.toUpperCase()})).address).toEqual(expectedAddress);
+    expect((await wallet.getNewAddress({privateKey:'0x'+privateKey})).address).toEqual(expectedAddress);
+    expect((await wallet.getNewAddress({privateKey:'0X'+privateKey.toUpperCase()})).address).toEqual(expectedAddress);
+
+    expect((await wallet.validPrivateKey({privateKey:privateKey})).isValid).toEqual(true);
+    expect((await wallet.validPrivateKey({privateKey:privateKey.toUpperCase()})).isValid).toEqual(true);
+    expect((await wallet.validPrivateKey({privateKey:'0x'+privateKey})).isValid).toEqual(true);
+    expect((await wallet.validPrivateKey({privateKey:'0X'+privateKey.toUpperCase()})).isValid).toEqual(true);
+
+});
+
+const ps: any[] = [];
+ps.push("");
+ps.push("0x");
+ps.push("124699");
+ps.push("1dfi付");
+ps.push("9000 12");
+ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+ps.push("L1v");
+ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+test("edge test", async () => {
+    const wallet = new StxWallet();
+    let j = 1;
+    for (let i = 0; i < ps.length; i++) {
+        let param = {privateKey: ps[i]};
+        try {
+            await wallet.getNewAddress(param);
+        } catch (e) {
+            j = j + 1
+            expect(ps[i]).toEqual(param.privateKey)
+        }
+    }
+    expect(j).toEqual(ps.length+1);
+});
+
+test("validPrivateKey", async () => {
+    const wallet = new StxWallet();
+    const privateKey = await wallet.getRandomPrivateKey();
+    console.log(privateKey);
+    const res = await wallet.validPrivateKey({privateKey:privateKey});
+    expect(res.isValid).toEqual(true);
+});
 
 test('stack stx', async () => {
     const address = '';

@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-sui",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,8 +32,8 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "superstruct": "^1.0.3",
-    "@okxweb3/crypto-lib": "^1.0.0",
-    "@okxweb3/coin-base": "^1.0.0"
+    "@okxweb3/coin-base": "^1.0.0",
+    "@okxweb3/crypto-lib": "^1.0.4",
+    "superstruct": "^1.0.3"
   }
 }

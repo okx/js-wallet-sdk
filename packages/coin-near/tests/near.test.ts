@@ -1,31 +1,30 @@
 import {
-    createTransaction,
-    getAddress,
-    publicKeyFromSeed,
-    signTransaction,
-    functionCall,
-    transfer,
-    functionCallAccessKey,
-    validateAddress,
-    createAccount,
-    addKey,
-    NearWallet,
-    fullAccessKey,
-    NearTypes,
-    DAppTxParams,
-    ActionParams,
-    TransactionParams,
     AccessKey,
-    deployContract,
-    AccessKeyPermission,
-    FullAccessPermission,
+    addKey,
+    createAccount,
+    createTransaction,
     deleteAccount,
-    deleteKey, SCHEMA, stake,
+    deleteKey,
+    deployContract,
+    fullAccessKey,
+    functionCall,
+    functionCallAccessKey,
+    getAddress,
+    NearTypes,
+    NearWallet,
+    publicKeyFromSeed,
+    SCHEMA,
+    signTransaction,
+    stake,
+    transfer,
+    validateAddress,
 } from '../src';
 import {base, BN, signUtil} from '@okxweb3/crypto-lib';
 import {SignTxParams} from "@okxweb3/coin-base";
 import {serialize} from "borsh";
 import {PublicKey} from "../src/keypair";
+import {MessagePayload} from "../src/nearlib";
+import {base58} from "@scure/base";
 
 /*
 // send tx
@@ -43,7 +42,92 @@ describe("near", () => {
         let wallet = new NearWallet()
         let privateKey = await wallet.getRandomPrivateKey();
         let addr = await wallet.getNewAddress({privateKey: privateKey})
-        console.info(addr);
+        let p = Uint8Array.from(Array.from(Array(32).keys()))
+        let addr2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base58.encode(p)})
+    })
+
+
+    test("getNewAddress common2", async () => {
+        //sei137augvuewy625ns8a2age4sztl09hs7pk0ulte
+        const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
+        const wallet = new NearWallet();
+        let expectedAddress = "002a77b478bf1ed25a6e00d5a458c800541313c3d8502c5d7f8249f912f55f84";
+        expect((await wallet.getNewAddress({privateKey:privateKey})).address).toEqual(expectedAddress);
+        expect((await wallet.getNewAddress({privateKey:'0x'+privateKey})).address).toEqual(expectedAddress)
+        expect((await wallet.getNewAddress({privateKey:'0X'+privateKey})).address).toEqual(expectedAddress)
+        expect((await wallet.getNewAddress({privateKey:'0X'+privateKey.toUpperCase()})).address).toEqual(expectedAddress)
+
+        let p = Uint8Array.from(Array.from(Array(32).keys()))
+        const res2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base58.encode(p)});
+        expect(res2.address!='').toEqual(true);
+    });
+
+    const ps: any[] = [];
+    ps.push("");
+    ps.push("0x");
+    ps.push("124699");
+    ps.push("1dfi付");
+    ps.push("9000 12");
+    ps.push("548yT115QRHH7Mpchg9JJ8YPX9RTKuan=548yT115QRHH7Mpchg9JJ8YPX9RTKuan ");
+    ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYAr");
+    ps.push("L1v");
+    ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    test("edge test", async () => {
+        const wallet = new NearWallet();
+        let j = 1;
+        for (let i = 0; i < ps.length; i++) {
+            try {
+                await wallet.getNewAddress({privateKey: ps[i]});
+            } catch (e) {
+                j = j + 1
+            }
+        }
+        expect(j).toEqual(ps.length + 1);
+    });
+    test("validPrivateKey2", async () => {
+        const wallet = new NearWallet();
+        const privateKey = await wallet.getRandomPrivateKey();
+        const res = await wallet.validPrivateKey({privateKey: privateKey});
+        expect(res.isValid).toEqual(true);
+
+        let p = Uint8Array.from(Array.from(Array(32).keys()))
+        const res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base58.encode(p)});
+        expect(res2.isValid).toEqual(true);
+    });
+
+    test("signMessage", async () => {
+
+        const message = "log me in";
+        const nonce = Buffer.from(Array.from(Array(32).keys()));
+        const recipient = "http://localhost:3000";
+        const callbackUrl = "http://localhost:1234";
+        const payload = new MessagePayload({
+            message,
+            nonce,
+            recipient,
+            callbackUrl
+        });
+        let borshPayload = serialize(SCHEMA, payload);
+
+        expect(Buffer.from(borshPayload).toString('hex')).toEqual("9d010080090000006c6f67206d6520696e000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f15000000687474703a2f2f6c6f63616c686f73743a333030300115000000687474703a2f2f6c6f63616c686f73743a31323334");
+
+        const hash = base.sha256(borshPayload);
+        expect(Buffer.from(hash).toString('hex')).toEqual("35bbc2443c72cbc3997453cfef691f27740a397a8499aec87f4fddd9cb05ffee");
+
+        let wallet = new NearWallet()
+        let privateKey = "ed25519:5Y5W9HDZLWYi2vq2JFvwLNBue5z2RDyivs44T372T2XsxJwSttPzpuhwbnZnYyq7P7Ynb4GDdEQiQxHgzTLoLMUM";
+        let res = await wallet.signMessage({
+            privateKey: privateKey,
+            data: {
+                message,
+                recipient,
+                nonce,
+                callbackUrl,
+                state: ""
+            }
+        });
     })
 
     test("serialize", async () => {
@@ -61,7 +145,7 @@ describe("near", () => {
             console.info(base.toHex(message));
         }
         {
-            const action = addKey(newPublicKey, functionCallAccessKey("a",['a'], new BN(1)))
+            const action = addKey(newPublicKey, functionCallAccessKey("a", ['a'], new BN(1)))
             const message = serialize(SCHEMA, action)
             expect(base.toHex(message)).toEqual('050058064be4ab6a0097b6c794f5cf1983ef36c60ea82c17e8488107433f6386b5ba00000000000000000001010000000000000000000000000000000100000061010000000100000061')
             console.info(base.toHex(message));
@@ -109,7 +193,15 @@ describe("near", () => {
     test("getNewAddress", async () => {
         let wallet = new NearWallet()
         let addr = await wallet.getNewAddress({privateKey: "ed25519:FvKauCqp1Ch85NVoGCgJD2RqvEpvzSiBUzs4S8c9GYUDgDuxSjBv219YboJ9ckfzgBXS171ZSLJaNS2rjDfWMS3"});
-        console.info(addr);
+        expect(addr.address).toBe("c1f0f7bc0deed7d2151e7987ad2aca74b8e856c1f87efa93fec1ff4075b4d6e4");
+        addr = await wallet.getNewAddress({privateKey: "fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8"});
+        expect(addr.address).toBe("484bbda1d1ab3e89b83b423685a9d4cbe7a28b8b96bbbee51d0553b47e4db42f");
+        addr = await wallet.getNewAddress({privateKey: "0xfc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8"});
+        expect(addr.address).toBe("484bbda1d1ab3e89b83b423685a9d4cbe7a28b8b96bbbee51d0553b47e4db42f");
+        addr = await wallet.getNewAddress({privateKey: "0Xfc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8"});
+        expect(addr.address).toBe("484bbda1d1ab3e89b83b423685a9d4cbe7a28b8b96bbbee51d0553b47e4db42f");
+        addr = await wallet.getNewAddress({privateKey: "0XFC81E6F42150458F53D8C42551A8AB91978A55D0E22B1FD890B85139086B93F8"});
+        expect(addr.address).toBe("484bbda1d1ab3e89b83b423685a9d4cbe7a28b8b96bbbee51d0553b47e4db42f");
     })
 
     test("getDerivedPrivateKey", async () => {

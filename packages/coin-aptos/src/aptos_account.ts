@@ -77,6 +77,10 @@ export class AptosAccount {
    * If not specified, a new one will be generated from public key
    */
   constructor(privateKeyBytes?: Uint8Array | undefined, address?: MaybeHexString) {
+    // check private key length
+    if (!privateKeyBytes || (privateKeyBytes.length !== 32 && privateKeyBytes.length !== 64)) {
+      throw new Error('invalid key');
+    }
     if (privateKeyBytes) {
       this.signingKey = nacl.sign.keyPair.fromSeed(privateKeyBytes.slice(0, 32));
     } else {

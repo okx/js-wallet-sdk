@@ -1,34 +1,39 @@
 import {
+    BaseWallet,
+    CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    GetDerivedPathParam,
-    NewAddressParams,
-    SignTxParams,
-    ValidAddressParams,
-    CalcTxHashError,
-    NewAddressError,
-    SignTxError,
-    BaseWallet,
-    assertBufferLength,
-    GenPrivateKeyError,
-    ed25519_getRandomPrivateKey,
     ed25519_getDerivedPrivateKey,
-    NewAddressData,
-    SignMsgError, ValidAddressData
+    ed25519_getRandomPrivateKey,
+    GenPrivateKeyError,
+    GetDerivedPathParam,
+    NewAddressError,
+    NewAddressParams,
+    SignMsgError,
+    SignTxError,
+    SignTxParams,
+    ValidAddressData,
+    ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams
 } from '@okxweb3/coin-base';
 import {base, BN, signUtil} from '@okxweb3/crypto-lib';
 import {
     AccessKey,
-    addKey,
-    createTransaction, deleteKey,
+    addKey, checkPrivateKey,
+    createTransaction,
+    deleteKey,
     functionCall,
-    getAddress, getPubkey, publicKeyFromBase58,
-    publicKeyFromSeed, SignedTransaction,
+    getAddress,
+    getPubkey,
+    publicKeyFromBase58,
+    publicKeyFromSeed,
+    SCHEMA,
+    SignedTransaction,
     signTransaction,
     transfer,
     validateAddress
 } from "./index";
-import {PublicKey} from "./keypair";
+import {MessagePayload, SignMessageParamsNEP} from "./nearlib";
+import {serialize} from "borsh";
 
 export enum NearTypes {
     TransferNear = 0,
@@ -140,22 +145,25 @@ export class NearWallet extends BaseWallet {
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
         try {
-            if (param.privateKey == undefined || param.privateKey == null) {
+            // if (param.privateKey == undefined || param.privateKey == null) {
+            if (!param.privateKey) {
                 throw NewAddressError
             }
-            if (param.privateKey.startsWith("0x") && base.isHexString(param.privateKey)) {
+            if (param.privateKey.startsWith("0x") || param.privateKey.startsWith("0X")) {
+                let pri = param.privateKey.substring(2)
+                if (base.isHexString("0x" + pri)) {
+                    return Promise.resolve({
+                        address: getAddress(param.privateKey),
+                        publicKey: getPubkey(param.privateKey)
+                    });
+                }
+            }
+            if ((!param.privateKey.startsWith("0x")) && (!param.privateKey.startsWith("0X")) && base.isHexString('0x' + param.privateKey)) {
                 return Promise.resolve({
                     address: getAddress(param.privateKey),
                     publicKey: getPubkey(param.privateKey)
                 });
             }
-            if (!param.privateKey.startsWith("0x") && base.isHexString('0x' + param.privateKey)) {
-                return Promise.resolve({
-                    address: getAddress(param.privateKey),
-                    publicKey: getPubkey(param.privateKey)
-                });
-            }
-
             const parts = param.privateKey.split(':');
             if (parts.length != 2 || parts[0] != 'ed25519') {
                 throw NewAddressError
@@ -171,6 +179,29 @@ export class NearWallet extends BaseWallet {
             return Promise.reject(NewAddressError);
         }
     }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        const key = param.privateKey.startsWith('0x') ? param.privateKey : '0x' + param.privateKey
+        let isValid: boolean
+        if (base.isHexString(key)) {
+            isValid = checkPrivateKey(param.privateKey);
+        } else {
+            const parts = param.privateKey.split(':');
+            if (parts.length != 2 || parts[0] != 'ed25519') {
+                isValid = false
+            } else {
+                const pk = base.fromBase58(parts[1])
+                const seedHex = base.toHex(pk.slice(0, 32))
+                isValid = checkPrivateKey(seedHex)
+            }
+        }
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
+    }
+
 
     getBase58Address(privateKey: string) {
         const parts = privateKey.split(':');
@@ -202,7 +233,26 @@ export class NearWallet extends BaseWallet {
     }
 
     async signMessage(param: SignTxParams): Promise<string> {
-        throw new Error('Method not implemented.');
+        try {
+            const data = param.data as SignMessageParamsNEP;
+            const {message, nonce, recipient, callbackUrl, state} = data;
+            const nonceArray = Buffer.from(nonce);
+            if (nonceArray.length !== 32) {
+                throw Error('Expected nonce to be a 32 bytes buffer')
+            }
+            const payload = new MessagePayload({
+                message,
+                nonce: nonceArray, recipient, callbackUrl
+            });
+            const encodedPayload = serialize(SCHEMA, payload);
+            const hash = base.sha256(encodedPayload)
+            const prvHex = this.getPrvFromBase58(param.privateKey)
+            const privateKey = base.fromHex(prvHex)
+            const s = signUtil.ed25519.sign(hash, privateKey);
+            return Promise.resolve(Buffer.from(s).toString('base64'));
+        } catch (e) {
+            return Promise.reject(SignMsgError);
+        }
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
@@ -275,7 +325,6 @@ export class NearWallet extends BaseWallet {
                 return Promise.reject(SignTxError);
             }
         } catch (e) {
-            console.log(e)
             return Promise.reject(SignTxError);
         }
     }

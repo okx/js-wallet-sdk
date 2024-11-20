@@ -11,6 +11,9 @@ export function validateAddress(address: string) {
 }
 
 export function private2Public(privateHex: string): string {
-   const pk = signUtil.p256.publicKeyCreate(base.fromHex(privateHex), false)
+   if (!base.validateHexString(privateHex)) {
+      throw new Error('invalid key');
+   }
+   const pk = signUtil.p256.publicKeyCreate(base.fromHex(privateHex.toLowerCase()), false)
    return base.toHex(pk.slice(1))
 }

@@ -1,4 +1,4 @@
-import { BaseWallet } from "@okxweb3/coin-base";
+import {BaseWallet, ValidPrivateKeyData, ValidPrivateKeyParams} from "@okxweb3/coin-base";
 import {
     CalcTxHashParams,
     DerivePriKeyParams,
@@ -17,7 +17,7 @@ import {
     SignTxError,
 } from "@okxweb3/coin-base";
 import { base } from "@okxweb3/crypto-lib";
-import { getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey } from "./account";
+import {getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey, checkPrivateKey} from "./account";
 import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData } from "./transaction";
 
 export class AdaWallet extends BaseWallet {
@@ -54,6 +54,16 @@ export class AdaWallet extends BaseWallet {
             return Promise.reject(NewAddressError)
         }
     }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        let isValid = await checkPrivateKey(param.privateKey);
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
+    }
+
 
     async validAddress(param: ValidAddressParams): Promise<any> {
         let isValid: boolean;

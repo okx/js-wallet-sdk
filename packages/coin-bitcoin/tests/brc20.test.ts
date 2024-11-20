@@ -1,12 +1,13 @@
 import * as bitcoin from "../src";
 import {
-    extractPsbtTransaction,
+    createInscriptionTxCtxData,
     generateMPCSignedBuyingTx,
+    inscribeForMPCSigned,
     generateMPCSignedListingPSBT, generateMPCSignedPSBT, generateMPCUnsignedBuyingPSBT,
     generateMPCUnsignedListingPSBT, generateMPCUnsignedPSBT,
-    inscribe,
+    inscribe, inscribeRefundFee,
     InscribeTxs,
-    InscriptionData,
+    InscriptionData, InscriptionRefundFeeData, InscriptionRefundFeeRequest,
     InscriptionRequest,
     networks,
     PrevOutput,
@@ -16,15 +17,58 @@ import {
 import * as bscript from "../src/bitcoinjs-lib/script";
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams} from "@okxweb3/coin-base";
-import {mergeSignedBuyingPsbt} from "@okxweb3/coin-bitcoin";
-
 
 describe("brc20 test", () => {
+
+    test("inscription refund fee get middle address", async () => {
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+        const inscriptionRefundFeeData = {
+            contentType: "text/plain;charset=utf-8",
+            body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"100"}`,
+            revealAddr: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+        }
+        const {commitTxAddress} = createInscriptionTxCtxData(network, inscriptionRefundFeeData, privateKey);
+        console.log(commitTxAddress);
+    });
+
+    test("inscription refund fee", async () => {
+        let network = bitcoin.networks.testnet;
+        let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
+        const inputs: PrevOutput[] = [];
+        inputs.push({
+            txId: "831735bbc26229cdb3665a491378c0fd4047c366521492825aa20c5d180656a5",
+            vOut: 0,
+            amount: 1848,
+            address: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            privateKey: privateKey,
+        });
+
+        const inscriptionRefundFeeDataList: InscriptionRefundFeeData[] = [];
+        inscriptionRefundFeeDataList.push({
+            contentType: "text/plain;charset=utf-8",
+            body: `{"p":"brc-20","op":"mint","tick":"xcvb","amt":"100"}`,
+            revealAddr: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+        });
+
+        const request: InscriptionRefundFeeRequest = {
+            // max amount is 600, but final amount = min( input.length, maxAmountOfInput )
+            inputs,
+            feeRate: 2,
+            inscriptionRefundFeeDataList,
+            changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
+            // if null, get the middle address
+            // middleAddress: "tb1pdlc2c37vlaulc042krxsq37z3h4djhxnt3kxjh07xvqshzq869kqz5sgrc",
+            // default 100
+            maxAmountOfInput: 100
+        };
+        const txs = inscribeRefundFee(network, request);
+        console.log(txs);
+    });
 
     test("inscribe", async () => {
         let network = bitcoin.networks.testnet;
         let privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22"
-
         const commitTxPrevOutputList: PrevOutput[] = [];
         commitTxPrevOutputList.push({
             txId: "36cdb491d2b02c1668d02e42edd80af339e1195df4d58927ab9db9e4893509a5",
@@ -228,4 +272,38 @@ describe("brc20 psbt for mpc", () => {
         // const signedTx = extractPsbtTransaction(mergeSignedBuyingPsbt(signedBuyingPsbt, [signedListPsbt]).toHex(), network);
         // console.log(signedTx);
     });
+
+    test("inscribeForMPCSigned", async () => {
+        let request = {
+            "commitTxPrevOutputList": [
+                {
+                    "vOut": 0,
+                    "txId": "f54aa80d20bc387e7b0721c6350f5b7a23961fba12f21288c1fbf0f68ba3b31d",
+                    "amount": 200000000,
+                    "privateKey": "L4Ddc9niq1GhqKyxBzpEsLqTAS5wisHKu3WKS6U71pDNwpy3Hzo2",
+                    "publicKey": "036bc4abf22b4f3cf0238a64af3d5891c556f43bcca8750aec9fec2fc485b2a6c3",
+                    "address": "1C1ykNzKrsfTnQM4r1CNe5tWpv2NeQ9aJU"
+                }
+            ],
+            "commitFeeRate": 99,
+            "revealFeeRate": 99,
+            "inscriptionDataList": [
+                {
+                    "contentType": "text/plain;charset=utf-8",
+                    "body": "{\"p\":\"brc-20\",\"op\":\"mint\",\"tick\":\"12345678\",\"amt\":\"1000\"}",
+                    "revealAddr": "1C1ykNzKrsfTnQM4r1CNe5tWpv2NeQ9aJU"
+                }
+            ],
+            "revealOutValue": 546,
+            "changeAddress": "1C1ykNzKrsfTnQM4r1CNe5tWpv2NeQ9aJU",
+            "type": 1,
+            "commitTx": "02000000011db3a38bf6f0fbc18812f212ba1f96237a5b0f35c621077b7e38bc200da84af5000000002c0930060201000201000121036bc4abf22b4f3cf0238a64af3d5891c556f43bcca8750aec9fec2fc485b2a6c3fdffffff026f3900000000000022512088afd1f1b8d4501d889888745e6a5aa2f6e1f13518e4783c0367420b556bc491132eeb0b000000001976a91478d8c12018835d5816f8cc655e90b2086ed9407388ac00000000",
+            "signatureList": [
+                "bf294e788f717f32a50c69d4eea6895d8f950a04d51e57ab8f3bbb536b72b3081c2a11b61f3eea7dce74c6b4dd902cce22e0b7b4e995a4dfdc5f29e65c93d634"
+            ]
+        }
+
+        let result = inscribeForMPCSigned(request, bitcoin.networks.bitcoin);
+        console.info(result)
+    })
 });

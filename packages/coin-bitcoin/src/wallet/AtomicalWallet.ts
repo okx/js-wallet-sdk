@@ -9,6 +9,9 @@ export const ErrCodeVoutDust            = 2011402;
 export const ErrCodeCommon              = 2011403;
 export const ErrCodeUnknownAsset        = 2011404;
 export const ErrCodeMul                 = 2011420;
+export  const  ErrCodeSemiColorOuput    = 2011405
+export const ErrCodeAtomicalNotFullyAllocated = 2011406;
+export const ErrCodeInvalidInputAsset   = 2011407;
 
 export class AtomicalWallet extends BtcWallet {
 
@@ -35,13 +38,16 @@ export class AtomicalWallet extends BtcWallet {
                     
                     let atomicalId: string = data["atomicalId"];
                     let atomicalIdType :string = data["type"];
-                    let atomicalAmount: number = input.amount;
+                    let atomicalAmount: number = Number(data["amount"])
 
                     if (atomicalId == null || atomicalAmount == null  || atomicalIdType == null) {
                         continue
                     }
                     if (atomicalIdType != "FT" && atomicalIdType != "NFT" ){
                         continue
+                    }
+                    if (atomicalAmount > input.amount){
+                        throw new Error(JSON.stringify({ errCode:ErrCodeInvalidInputAsset }))
                     }
 
                     if (atomicalTypeMap.get(atomicalId) == null) {
@@ -66,23 +72,32 @@ export class AtomicalWallet extends BtcWallet {
 
         // Calculate the total asset output value for the 'output' field
         // and construct the 'output' field for the UTXO (Unspent Transaction Output).
-        // If there are assets that haven't been completely transferred,
-        // they will be automatically transferred back in the last transaction of their respective asset transfers.
         let outputs = clonedParamData.outputs;
+        let notFullyAllocated = 0
         for (const output of outputs) {
             let dataArray = output.data;
             if (dataArray != null && dataArray instanceof Array) {
-
                 for (const data of dataArray) {
                     let atomicalId: string = data["atomicalId"];
-                    let atomicalAmount: number = output.amount;
+                    let atomicalAmount: number = Number(data["amount"]);
+                    // let atomicalAmount: number = output.amount;
                     let atomicalIdType :string = data["type"];
+
+                    if (atomicalIdType == "FT" && atomicalAmount != output.amount && atomicalAmount > dustSize){
+                        throw new Error(JSON.stringify({ errCode:ErrCodeSemiColorOuput }))
+                    }
 
                     if (atomicalId == null || atomicalAmount == null  || atomicalIdType == null) {
                         continue
                     }
                     if (atomicalIdType != "FT" && atomicalIdType != "NFT" ){
                         continue
+                    }
+                    if (atomicalIdType == "FT" && atomicalAmount != output.amount){
+                        notFullyAllocated +=1 ;
+                        if( notFullyAllocated == 2){
+                            throw new Error(JSON.stringify({ errCode:ErrCodeSemiColorOuput }))
+                        }
                     }
 
                     if (atomicalTypeMap.get(atomicalId) != atomicalIdType){
@@ -110,50 +125,19 @@ export class AtomicalWallet extends BtcWallet {
             })
         }
 
-        // where isChange ? if input > output yes, Atomical change put last output
-        let isAtomicalChange = false;
         for (const atomicalId of atomicalInputMap.keys()) {
             let inputAmount = atomicalInputMap.get(atomicalId);
             let sendAmount = atomicalSendMap.get(atomicalId);
 
-            if (atomicalTypeMap.get(atomicalId) == "FT"){
-
-                // Disable signing if certain input assets lack corresponding outputs
-                if (sendAmount == null) { 
-                    throw new Error(JSON.stringify({ errCode:ErrCodeCommon })) 
-                }
-
-                if (inputAmount != null && sendAmount != null && inputAmount > sendAmount) {
-                    isAtomicalChange = true
-                    let changeAmount = inputAmount - sendAmount
-                    if (changeAmount < dustSize){
-                        throw new Error(JSON.stringify({ 
-                            errCode:ErrCodeAtomicalChangeFail,
-                            date:{
-                                atomicalId: atomicalId,
-                                amount: inputAmount-sendAmount
-                            }
-                        }))
+            if(inputAmount != sendAmount) {
+                throw new Error(JSON.stringify({
+                    errCode:ErrCodeAtomicalNotFullyAllocated,
+                    date:{
+                        atomicalId:atomicalId,
+                        inputAmount:inputAmount,
+                        sendAmount:sendAmount
                     }
-                    // auto change
-                    txOutput.push({
-                        address:clonedParamData.address,
-                        amount:changeAmount
-                    })
-                } else if (inputAmount != null && sendAmount != null && inputAmount < sendAmount){ 
-                    throw new Error(JSON.stringify({ 
-                        errCode:ErrCodeLessAtomicalAmt,
-                        date:{
-                            atomicalId: atomicalId,
-                            amount: inputAmount-sendAmount
-                        }
-                    }))
-                }
-            }else if (atomicalTypeMap.get(atomicalId) == "NFT"){
-                // Disable signing if certain input assets lack corresponding outputs
-                if (sendAmount == null) { 
-                    throw new Error(JSON.stringify({ errCode:ErrCodeCommon })) 
-                }
+                }))
             }
         }
 

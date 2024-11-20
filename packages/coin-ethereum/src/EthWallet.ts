@@ -1,31 +1,30 @@
 import {
-    CalcTxHashParams,
-    GetDerivedPathParam,
-    NewAddressParams,
-    SignTxParams,
-    TypedMessage,
-    ValidAddressParams,
-    VerifyMessageParams,
-    GetAddressParams,
-    MpcRawTransactionParam,
-    MpcTransactionParam,
-    HardwareRawTransactionParam,
-    ValidSignedTransactionParams,
-    MpcMessageParam,
+    assertBufferLength,
     BaseWallet,
-    NewAddressError,
-    SignTxError,
-    GetMpcRawTransactionError,
-    GetMpcTransactionError,
+    CalcTxHashParams,
+    GetAddressParams,
+    GetDerivedPathParam,
     GetHardwareRawTransactionError,
     GetHardwareSignedTransactionError,
+    GetMpcRawTransactionError,
+    GetMpcTransactionError,
+    HardwareRawTransactionParam,
+    jsonStringifyUniform,
+    MpcMessageParam,
+    MpcRawTransactionParam,
+    MpcTransactionParam,
+    NewAddressError,
+    NewAddressParams,
+    SignTxError,
+    SignTxParams,
+    TypedMessage,
+    ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
     validSignedTransactionError,
-    assertBufferLength,
-    jsonStringifyUniform
+    ValidSignedTransactionParams,
+    VerifyMessageParams
 } from '@okxweb3/coin-base';
-import { abi, base, BigNumber } from '@okxweb3/crypto-lib';
+import {abi, base, BigNumber} from '@okxweb3/crypto-lib';
 import * as eth from './index';
-
 
 export type EthEncryptedData = eth.sigUtil.EthEncryptedData
 
@@ -65,13 +64,27 @@ export class EthWallet extends BaseWallet {
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
+        let pri = param.privateKey;
+        let ok = eth.validPrivateKey(pri);
+        if(!ok){
+            throw new Error('invalid key')
+        }
         try {
-            const privateKey = base.fromHex(param.privateKey)
+            const privateKey = base.fromHex(pri.toLowerCase())
             assertBufferLength(privateKey, 32)
-            return Promise.resolve(eth.getNewAddress(param.privateKey));
+            return Promise.resolve(eth.getNewAddress(pri.toLowerCase()));
         } catch (e) {
         }
         return Promise.reject(NewAddressError)
+    }
+
+    async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
+        let isValid = eth.validPrivateKey(param.privateKey);
+        const data: ValidPrivateKeyData = {
+            isValid: isValid,
+            privateKey: param.privateKey
+        };
+        return Promise.resolve(data);
     }
 
     async validAddress(param: ValidAddressParams): Promise<any> {
@@ -80,7 +93,7 @@ export class EthWallet extends BaseWallet {
 
     convert2HexString(data: any): string {
         let n: BigNumber
-        if(BigNumber.isBigNumber(data)) {
+        if (BigNumber.isBigNumber(data)) {
             n = data
         } else {
             // number or string
@@ -132,14 +145,14 @@ export class EthWallet extends BaseWallet {
                         .call(abi.RawEncode(['address', 'uint256'], [toAddress, value],),
                             (x: number) => `00${x.toString(16)}`.slice(-2),
                         ).join('');
-                    if(!txParams.useValue) {
+                    if (!txParams.useValue) {
                         value = '0x0';
                     }
                     toAddress = tokenAddress;
                 } else {
                     data = txParams.data;
                 }
-                const txData =  {
+                const txData = {
                     nonce: nonce,
                     gasPrice: gasPrice,
                     gasLimit: txParams.gasLimit,
@@ -263,7 +276,7 @@ export class EthWallet extends BaseWallet {
     async getMPCRawMessage(param: MpcRawTransactionParam): Promise<any> {
         try {
             const msgHash = await this.signMessage(param as SignTxParams);
-            return Promise.resolve({ hash: msgHash });
+            return Promise.resolve({hash: msgHash});
         } catch (e) {
             return Promise.reject(GetMpcRawTransactionError);
         }
@@ -303,11 +316,11 @@ export class EthWallet extends BaseWallet {
 
     async validSignedTransaction(param: ValidSignedTransactionParams): Promise<any> {
         try {
-            const chainId = param.data? param.data.chainId : undefined
-            const publicKey = param.data? param.data.publicKey : undefined
+            const chainId = param.data ? param.data.chainId : undefined
+            const publicKey = param.data ? param.data.publicKey : undefined
             const ret = eth.validSignedTransaction(param.tx, chainId, publicKey)
             return Promise.resolve(jsonStringifyUniform(ret));
-        }  catch (e) {
+        } catch (e) {
             return Promise.reject(validSignedTransactionError);
         }
     }

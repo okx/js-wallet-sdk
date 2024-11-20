@@ -6,6 +6,7 @@ import {
   zksyncChangePubkey,
   zksyncTransfer,
 } from './index';
+import {BigNumber} from "@ethersproject/bignumber";
 
 
 export class ZksyncWallet extends EthWallet {
@@ -13,13 +14,12 @@ export class ZksyncWallet extends EthWallet {
     try {
       let result;
       const data: ZksyncSignParam = param.data
-      const fees_number=parseInt(data.fees)
-      const closeFees_number = getCloseFeeBylocal(data.fees);
-      if (closeFees_number != fees_number) {
+      const closeFees = getCloseFeeBylocal(data.fees);
+      if (!BigNumber.from(closeFees).eq(BigNumber.from(data.fees))) {
         let rejectParam = {
           code: '402',
           reason: 'Fee is not packable',
-          closeFees_number:closeFees_number
+          closeFees_number: BigNumber.from(closeFees)
         }
         return Promise.resolve(rejectParam);
       }
@@ -35,13 +35,13 @@ export class ZksyncWallet extends EthWallet {
         ) {
           return Promise.reject(SignTxError);
         }
-        const amounts_number = parseInt(data.amounts);
-        const closeAmount_number = getCloseAmountsByLocal(data.amounts);
-        if (closeAmount_number != amounts_number) {
+        const closeAmount = getCloseAmountsByLocal(data.amounts);
+
+        if (!BigNumber.from(closeAmount).eq(BigNumber.from(data.amounts))) {
           let rejectParam = {
             code: '401',
             reason: 'Amount is not packable',
-            closeAmount_number: closeAmount_number,
+            closeAmount_number: BigNumber.from(closeAmount),
           };
           return Promise.resolve(rejectParam);
         }
@@ -109,23 +109,19 @@ export type ZksyncSignParam = {
 
 // @ts-ignore
 function getCloseAmountsByLocal(amounts: string) {
-  const originAmounts=parseInt(amounts)
-  const hexString=closestPackableTransactionAmount(amounts)
-  // @ts-ignore
-  const closeAmounts = parseInt(hexString, 10);
-  if (closeAmounts > originAmounts) {
-    throw new Error('closeAmounts great than origin');
+  const originAmounts = BigNumber.from(amounts)
+  const closeAmounts=closestPackableTransactionAmount(amounts)
+  if (closeAmounts.gt(originAmounts)) {
+    throw new Error('closeAmounts greater than origin');
   }
-  return closeAmounts;
+  return closeAmounts.toString();
 }
 
-function getCloseFeeBylocal(fees: string) {
-  const originFee=parseInt(fees)
-  const hexString=closestPackableTransactionFee(fees)
-  // @ts-ignore
-  const closeFee = parseInt(hexString, 10);
-  if (closeFee > originFee) {
-    throw new Error('closeFee great than origin');
+function getCloseFeeBylocal(fees: string): string{
+  const originFees = BigNumber.from(fees)
+  const closeFees=closestPackableTransactionAmount(fees)
+  if (closeFees.gt(originFees)) {
+    throw new Error('closeFees greater than origin');
   }
-  return closeFee;
+  return closeFees.toString();
 }
