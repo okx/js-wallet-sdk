@@ -21,7 +21,7 @@ import {
     toTokenAddress,
     toTxOutpoint,
     tokenUtxoParse,
-    getDummyEcKey,
+    getDummyEcKey, getFee,
 } from "../utils";
 import {
     CAT20Proto,
@@ -204,7 +204,7 @@ export async function transfer(param: SignTxParams) {
         guardState: guardContract.state.data,
     };
 
-    const vsize = await calcVsizeTransfer(
+    let {vsize} = await calcVsizeTransfer(
         tokens,
         guardContract,
         revealTx,
@@ -219,30 +219,60 @@ export async function transfer(param: SignTxParams) {
         minterP2TR,
     );
 
-    if (txParams.estimateFee) {
-        if (mergeTx) {
-            return {
-                mergeTx:  mergeTx.getFee(),
-                commitTx: commitTx.getFee(),
-                revealTx: vsize * txParams.feeRate
-            }
-        }
-        return {
-            commitTx: commitTx.getFee(),
-            revealTx: vsize * txParams.feeRate
-        }
-    }
-
-    const satoshiChangeAmount = revealTx.inputAmount - vsize * txParams.feeRate - Postage.TOKEN_POSTAGE - (changeTokenState === null ? 0 : Postage.TOKEN_POSTAGE);
-
-    if (satoshiChangeAmount <= CHANGE_MIN_POSTAGE) {
-        throw new Error('Insufficient satoshis balance!');
-    }
 
     const satoshiChangeOutputIndex = changeTokenState === null ? 2 : 3;
 
-    // update change amount
-    revealTx.outputs[satoshiChangeOutputIndex].satoshis = satoshiChangeAmount;
+    let satoshiChangeAmount = revealTx.inputAmount - vsize * txParams.feeRate - Postage.TOKEN_POSTAGE - (changeTokenState === null ? 0 : Postage.TOKEN_POSTAGE);
+    let fee = vsize * txParams.feeRate
+
+    if (satoshiChangeAmount <= CHANGE_MIN_POSTAGE) {
+        // throw new Error('Insufficient satoshis balance!');
+
+        satoshiChangeAmount = 0
+        revealTx.removeOutput(satoshiChangeOutputIndex)
+        const {vsize: newVsize, fee: newFee}  = await calcVsizeTransfer(
+            tokens,
+            guardContract,
+            revealTx,
+            guardInfo,
+            tokenTxs,
+            tokenTapScript,
+            guardTapScript,
+            newState,
+            receiverTokenState,
+            changeTokenState,
+            satoshiChangeScript,
+            minterP2TR,
+        );
+        vsize = newVsize
+        fee = newFee
+    } else {
+        // update change amount
+        revealTx.outputs[satoshiChangeOutputIndex].satoshis = satoshiChangeAmount;
+    }
+
+    if (txParams.estimateFee) {
+        if (mergeTx) {
+            return {
+                mergeTx:  getFee(mergeTx),
+                commitTx: getFee(commitTx),
+                revealTx: fee
+            }
+        }
+        return {
+            commitTx: getFee(commitTx),
+            revealTx: fee
+        }
+    }
+
+    let changeInfo = null;
+    if (satoshiChangeAmount > BigInt(0)) {
+        changeInfo = {
+            script: toByteString(satoshiChangeScript.toHex()),
+            satoshis: int2ByteString(BigInt(satoshiChangeAmount), BigInt(8)),
+        } as ChangeInfo ;
+
+    }
 
     const txCtxs = getTxCtxMulti(
         revealTx,
@@ -252,11 +282,6 @@ export async function transfer(param: SignTxParams) {
             Buffer.from(guardTapScript, 'hex'),
         ],
     );
-
-    const changeInfo: ChangeInfo = {
-        script: toByteString(satoshiChangeScript.toHex()),
-        satoshis: int2ByteString(BigInt(satoshiChangeAmount), 8n),
-    };
 
     for (let i = 0; i < tokens.length; i++) {
         // ignore changeInfo when transfer token
@@ -393,9 +418,10 @@ export const calcVsizeTransfer = async (
     fakeEcKey.signTx(revealTx);
 
     const vsize = revealTx.vsize;
+    const fee = getFee(revealTx)
     resetTx(revealTx);
 
     // reset the script to original
     revealTx.inputs[feeUtxoIndex].output.setScript(originalFeeScript)
-    return vsize;
+    return {vsize, fee};
 };

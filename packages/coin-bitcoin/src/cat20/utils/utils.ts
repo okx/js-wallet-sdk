@@ -359,3 +359,7 @@ export function verifyContract(
 export function getDummyEcKey(){
     return new EcKeyService({privateKey: 'L4EpxBBbTqztn8Q9W73Cf7e36ttHhDWRSzr4sHazjUcCrucwEJLy'})
 }
+export function getFee(tx: btc.Transaction){
+    return tx.inputs.reduce((acc: number, i: any) => acc + i.output.satoshis, 0)
+        - tx.outputs.reduce((acc: number, o: any) => acc + o.satoshis, 0)
+}

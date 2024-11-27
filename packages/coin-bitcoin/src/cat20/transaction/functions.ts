@@ -217,7 +217,7 @@ export async function unlockGuard(
     revealTx: btc.Transaction,
     receiverTokenState: CAT20State,
     changeTokenState: null | CAT20State,
-    changeInfo: ChangeInfo,
+    changeInfo: ChangeInfo | null,
     txCtx: any,
     verify: boolean,
 ) {
@@ -244,9 +244,11 @@ export async function unlockGuard(
     await transferGuard.connect(getDummySigner());
 
     const outpointSatoshiArray = emptyTokenArray();
-    outpointSatoshiArray[satoshiChangeOutputIndex] = changeInfo.satoshis;
-    outputArray[satoshiChangeOutputIndex] = changeInfo.script;
-    tokenOutputIndexArray[satoshiChangeOutputIndex] = false;
+    if (changeInfo != null) {
+        outpointSatoshiArray[satoshiChangeOutputIndex] = changeInfo.satoshis;
+        outputArray[satoshiChangeOutputIndex] = changeInfo.script;
+        tokenOutputIndexArray[satoshiChangeOutputIndex] = false;
+    }
 
     const transferGuardCall = await transferGuard.methods.transfer(
         newState.stateHashList,
