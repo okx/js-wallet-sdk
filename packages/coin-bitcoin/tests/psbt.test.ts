@@ -1,15 +1,26 @@
 import {
     buildPsbt,
-    extractPsbtTransaction, generateMPCSignedPSBT,
+    extractPsbtTransaction,
     generateSignedBuyingTx,
     generateSignedListingPsbt,
-    networks, TBtcWallet, toSignInput,
+    networks,
+    TBtcWallet,
+    toSignInput,
     utxoInput,
     utxoOutput,
-    utxoTx
+    utxoTx,
+    BtcXrcTypes,
+    psbtSign,
+    BtcWallet,
+    wif2Public,
+    privateKeyFromWIF,
+    taprootTweakPubkey
 } from "../src";
-import {psbtSign} from "@okxweb3/coin-bitcoin";
+import * as bitcoin from '../src/bitcoinjs-lib'
 import {SignTxParams} from "@okxweb3/coin-base";
+import { tweakKey, tapleafHash, LEAF_VERSION_TAPSCRIPT} from "../src/bitcoinjs-lib/payments/bip341";
+import {signUtil} from "@okxweb3/crypto-lib";
+import {Tapleaf} from "../src/bitcoinjs-lib/types";
 
 describe("psbt test", () => {
     const network = networks.testnet;
@@ -178,7 +189,7 @@ describe("psbt test", () => {
     });
 
     test("psbt sign none fail", async () => {
-        const psbtBase64 ="cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEgwAAAAETQewp45rcGKVJsmfOE0pzg/qWwh+s56QX1rSmLdjrE/UPXQ4631wnPK0NC9pisk8gY+2dICGCFpD6fVxNQn5B1AWDARcgV7uy1KnLiiNXYz8gG5xRjCeV3taCt5E8a+7z/iO9bS8AAA=="
+        const psbtBase64 ="cHNidP8BAFMCAAAAAQZCRGL5uBebHNxiKaTiE/82KAYLKgp2gNrmdAQFzuNGAAAAAAD/////AaCGAQAAAAAAF6kU7wVRWgWV0V6vkNn2L7hYc6bYwLSHAAAAAAABASsiAgAAAAAAACJRILfuf4Omp/21EwQIVsVneKo6vqmkUeDJuwEvIqd+2ZshAQMEAgAAAAEXIFe7stSpy4ojV2M/IBucUYwnld7WgreRPGvu8/4jvW0vAAA="
         const privateKey = "cPnvkvUYyHcSSS26iD1dkrJdV7k1RoUqJLhn3CYxpo398PdLVE22";
         const signedPsbt = psbtSign(psbtBase64, privateKey, networks.testnet);
         console.log(signedPsbt);
@@ -273,4 +284,293 @@ describe("psbt test", () => {
         console.log(raw);
     });
 });
+describe('psbt key and script path', () => {
+    const wallet = new BtcWallet()
+    async function signPsbt(privKey: string, psbt: string, toSignInputs?: toSignInput[], autoFinalized = false) {
+        let signParams = {
+            privateKey: privKey,
+            data: {
+                type: BtcXrcTypes.PSBT_KEY_SCRIPT_PATH,
+                psbt,
+                toSignInputs,
+                autoFinalized,
+            },
+        };
 
+        return await wallet.signTransaction(signParams)
+    }
+
+    function prettyLog(obj: any, name?: string) {
+        const convertBuffers = (value: any): any => {
+            if (Buffer.isBuffer(value)) {
+                return value.toString('hex'); // Convert Buffer to hex string
+            } else if (Array.isArray(value)) {
+                return value.map(convertBuffers); // Recursively process arrays
+            } else if (value && typeof value === 'object') {
+                // @ts-ignore
+                return Object.fromEntries(
+                    Object.entries(value).map(([key, val]) => [key, convertBuffers(val)])
+                ); // Recursively process objects
+            }
+            return value; // Return the value as-is if it's neither a Buffer, array, nor object
+        };
+
+        console.log(`${name ? name + ':' : ''}`, JSON.stringify(convertBuffers(obj), null, 2)); // Pretty print with 2-space indentation
+    }
+
+    function getPubKeys(privKey: string) {
+        console.log('WIF:', privKey)
+        console.log("Private Key:", privateKeyFromWIF(privKey));
+
+        const pubKey = wif2Public(privKey)
+        const pubKeyX = pubKey.slice(1, 33)
+        console.log("Public Key:", pubKey.toString('hex'));
+
+        const tweakPubKeyX = tweakKey(pubKeyX, undefined)?.x!
+        console.log("Tweaked Public Key X:", tweakPubKeyX.toString('hex'));
+
+        const pubKeyXHash = bitcoin.crypto.hash160(pubKeyX);
+        console.log("PubKey Hash:", pubKeyXHash.toString('hex'));
+
+        return {pubKey, pubKeyX, pubKeyXHash, tweakPubKeyX}
+    }
+
+    type getWitnessFn = (signature: Buffer) => Buffer[]
+
+    async function testSignTapScript(
+        privKey: string,
+        tapScript: Buffer,
+        pubKeyX: Buffer,
+        getWitnessFn: getWitnessFn,
+        txid: string,
+        outputAmount = 1250,
+        verifyPubKey = pubKeyX,
+        useMerkleRoot = false,
+        disableTweakSigner?: boolean,
+        useTweakSigner?: boolean,
+        useKeySig = false,
+        network?: bitcoin.networks.Network
+    ) {
+
+        network = network || bitcoin.networks.testnet
+
+        console.log('TapScript:', tapScript.toString('hex'))
+        const tapLeaf: Tapleaf = {output: tapScript, version: LEAF_VERSION_TAPSCRIPT}
+        const leafHash = tapleafHash(tapLeaf)
+
+        const {
+            address,
+            output: inputScript,
+            hash: merkleRoot,
+        } = bitcoin.payments.p2tr({
+            internalPubkey: pubKeyX,
+            scriptTree: tapLeaf,
+            network,
+        });
+
+        const [tpk1, parity] = taprootTweakPubkey(pubKeyX, merkleRoot!)
+        const realTweakPubKeyX = Buffer.from(tpk1)
+        const controlBlock = Buffer.concat([
+            Buffer.from([LEAF_VERSION_TAPSCRIPT | parity]), // Tapleaf version
+            pubKeyX, // X-only public key
+        ]);
+
+        console.log("Taproot Address:", address);
+        console.log('Leaf Hash:', leafHash!.toString('hex'))
+        console.log('Merkle Root:', merkleRoot!.toString('hex')) // should be = leafHash as only one leaf in tree
+        console.log('Real Tweak Public Key X:', realTweakPubKeyX.toString('hex'))
+        console.log('Input Script:', inputScript!.toString('hex')) // should be '0x5120' + realTweakPubKeyX
+        console.log('Control Block:', controlBlock.toString('hex'))
+
+        // Create a transaction to spend the Taproot output
+        const psbt = new bitcoin.psbt.Psbt({network});
+
+        // Input
+        const vout = 0;
+        const inputValue = 1500;
+
+        // Output
+        // const recipientAddress = "bc1pnyd20hgcmte5seggdj98cy62eqa7ur7fy9lvx3k38qj85ttwdxpqft47ex";
+        const recipientAddress = "tb1qwdahu2zgp9t5768kececmrlssvk0vzk2rnr6ya";
+        // const amountToSend = 1400;
+        const amountToSend = outputAmount;
+        psbt.addOutput({
+            address: recipientAddress,
+            value: amountToSend,
+        });
+
+
+        const inputData: any = {
+            hash: txid,
+            index: vout,
+            witnessUtxo: {
+                script: inputScript!,
+                value: inputValue,
+            },
+            tapInternalKey: pubKeyX, // Required for spending from a Taproot output
+            tapLeafScript: [
+                {
+
+                    leafVersion: LEAF_VERSION_TAPSCRIPT,
+                    script: tapScript,
+                    controlBlock: controlBlock,
+                },
+            ],
+        }
+        if (useMerkleRoot) {
+            inputData.tapMerkleRoot = merkleRoot
+        }
+        psbt.addInput(inputData);
+
+        const psbtHex = psbt.toHex();
+        console.log("PSBT to be signed:", psbtHex);
+        prettyLog(psbt.data, 'Unsigned Psbt')
+
+        const inputIndex = 0
+        const toSignInputs = [{
+            index: inputIndex,
+            address: address,
+            disableTweakSigner,
+            useTweakSigner,
+        }]
+        const signedPsbtHex = await signPsbt(privKey, psbtHex, toSignInputs,)
+        const signedPsbt = bitcoin.psbt.Psbt.fromHex(signedPsbtHex)
+
+        console.log("Signed PSBT:", signedPsbtHex);
+        prettyLog(signedPsbt.data, 'Signed Psbt')
+
+        // Extracting the signatures and tx from the signed psbt
+        const tapKeySig = signedPsbt.data.inputs[0].tapKeySig
+        const tapScriptSig = signedPsbt.data.inputs[0].tapScriptSig
+        const tx = signedPsbt.finalizeAllInputs().extractTransaction();
+
+        // Add the signatures to the tx input witness
+        if (tapKeySig && useKeySig) {
+            tx.ins[inputIndex].witness = [tapKeySig]
+            console.log('TapKeySig added to witness')
+        } else if (tapScriptSig) {
+            tx.ins[inputIndex].witness = [
+                ...getWitnessFn(tapScriptSig[0].signature),
+                tapScript,
+                controlBlock,
+            ]
+            console.log('TapScriptSig added to witness')
+        } else {
+            console.log('No signature found')
+        }
+
+        prettyLog(tx, 'Final Tx')
+
+        console.log("Tx Id:", tx.getId());
+        console.log("Final Tx Hex:", tx.toHex());
+        console.log("Fee Rate:", signedPsbt.getFee() / tx.virtualSize())
+
+        const h = tx.hashForWitnessV1(
+            inputIndex,
+            psbt.data.inputs.map(i => i.witnessUtxo?.script!),
+            psbt.data.inputs.map(i => i.witnessUtxo?.value!),
+            0,
+            leafHash,
+        )
+        if (useMerkleRoot){
+            verifyPubKey = realTweakPubKeyX
+        }
+
+        console.log(verifyPubKey.toString('hex'))
+
+        const valid = signUtil.schnorr.secp256k1.schnorr.verify(tapScriptSig![0].signature, h, verifyPubKey)
+        console.log("Is Valid Schnorr Signature:", valid)
+        return valid
+    }
+
+    test('psbt script key path', async () => {
+        const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
+        const {pubKeyX} = getPubKeys(privKey)
+
+        const tapScript = bitcoin.script.compile([
+            pubKeyX,
+            bitcoin.script.OPS.OP_CHECKSIG,
+        ]);
+        const prevOutTxId = '3ca3765b28b9c23b1b13b3d63a8f295d9dc2e631fb49f99514564a42ef86be0f'
+        const valid = await testSignTapScript(
+            privKey,
+            tapScript,
+            pubKeyX,
+            (signature) => [signature],
+            prevOutTxId,
+            1250,
+            pubKeyX,
+            true, // Must use correct merkle root
+        )
+        expect(valid).toBeTruthy()
+    });
+
+    test('psbt script spend path pub key', async () => {
+        const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
+        const {pubKeyX} = getPubKeys(privKey)
+        const tapScript = bitcoin.script.compile([
+            pubKeyX,
+            bitcoin.script.OPS.OP_CHECKSIG,
+        ]);
+        const prevOutTxId = 'f44a99bd7c8e4f0439a9fb5aedda4a1fa954088145c0397e906df318fc3b9c88'
+        const valid = await testSignTapScript(
+            privKey,
+            tapScript,
+            pubKeyX,
+            (signature) => [signature],
+            prevOutTxId,
+
+        )
+        expect(valid).toBeTruthy()
+    });
+
+    test('psbt script spend path tweak pub key', async () => {
+        const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
+        const {pubKeyX, tweakPubKeyX} = getPubKeys(privKey)
+
+        const tapScript = bitcoin.script.compile([
+            tweakPubKeyX,
+            bitcoin.script.OPS.OP_CHECKSIG,
+        ]);
+
+        const prevOutTxId = '22c2ffa333f0838d593c58c758b59d8bfd5b7713347b194f8018f74f20db8d3d'
+        const valid = await testSignTapScript(
+            privKey,
+            tapScript,
+            pubKeyX,
+            (signature) => [signature],
+            prevOutTxId,
+            1250,
+            tweakPubKeyX,
+            false,
+            false,
+            true
+        )
+        expect(valid).toBeTruthy()
+    });
+
+    test('psbt script spend path pub key hash', async () => {
+        const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
+
+        const {pubKeyX, pubKeyXHash} = getPubKeys(privKey)
+
+        const tapScript = bitcoin.script.compile([
+            bitcoin.script.OPS.OP_DUP,
+            bitcoin.script.OPS.OP_HASH160,
+            pubKeyXHash,
+            bitcoin.script.OPS.OP_EQUALVERIFY,
+            bitcoin.script.OPS.OP_CHECKSIG,
+        ]);
+
+        const prevOutTxId = '22c2ffa333f0838d593c58c758b59d8bfd5b7713347b194f8018f74f20db8d3d'
+        const valid = await testSignTapScript(
+            privKey,
+            tapScript,
+            pubKeyX,
+            (signature) => [signature, pubKeyX],
+            prevOutTxId,
+        )
+        expect(valid).toBeTruthy()
+    });
+
+});
