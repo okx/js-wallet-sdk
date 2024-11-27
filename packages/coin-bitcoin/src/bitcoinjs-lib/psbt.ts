@@ -797,6 +797,7 @@ export class Psbt {
         inputIndex: number,
         keyPair: Signer,
         sighashTypes?: number[],
+        tapLeafHashToSign?: Buffer,
     ): this {
         if (!keyPair || !keyPair.publicKey)
             throw new Error('Need Signer to sign input');
@@ -808,7 +809,7 @@ export class Psbt {
                 inputIndex,
                 input,
                 keyPair,
-                undefined,
+                tapLeafHashToSign,
                 sighashTypes,
             );
         }
@@ -1846,7 +1847,7 @@ function getTaprootHashesForSig(
     }
 
     const tapLeafHashes = (input.tapLeafScript || [])
-        .filter(tapLeaf => pubkeyInScript(pubkey, tapLeaf.script))
+        // .filter(tapLeaf => pubkeyInScript(pubkey, tapLeaf.script))
         .map(tapLeaf => {
             const hash = tapleafHash({
                 output: tapLeaf.script,

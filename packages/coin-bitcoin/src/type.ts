@@ -65,7 +65,6 @@ type RuneData = {
     revealAddr?: string
 }
 
-
 type Etching = {
     divisibility?: number //u8
     premine?: bigint //u128, decimal 8
@@ -95,7 +94,7 @@ type Rune = {
 }
 
 type Edict = {
-    block?:number
+    block?: number
     id: number
     amount: bigint | string
     output: number
@@ -143,10 +142,12 @@ type toSignInputs = {
 
 type toSignInput = {
     index: number,
-    address: string,
+    address?: string,
     publicKey?: string,
     sighashTypes?: number[],
-    disableTweakSigner?: boolean
+    tapLeafHashToSign?: string,
+    disableTweakSigner?: boolean,
+    useTweakSigner?: boolean,
 }
 
 type signPsbtOptions = {
