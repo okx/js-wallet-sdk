@@ -1,4 +1,4 @@
-import {EcKeyService} from "../utils";
+import {EcKeyService, getDummySignature, toTokenAddress} from "../utils";
 import {btc, GuardContract, MinterType, OpenMinterTokenInfo, Postage, TokenContract, TokenMetadata,} from "../common";
 import {
     callToBufferList,
@@ -127,7 +127,7 @@ export async function unlockToken(
         isUserSpend: false,
         userPubKeyPrefix: toByteString(''),
         userPubKey: PubKey(ecKey.getXOnlyPublicKey()),
-        userSig: btc.crypto.Signature.fromString('E907831F80848D1069A5371B402410364BDF1C5F8307B0084C55F1CE2DCA821525F66A4A85EA8B71E482A74F382D2CE5EBEEE8FDB2172F477DF4900D310536C0').toString('hex'),
+        userSig: getDummySignature(),
         contractInputIndex: BigInt(contractInputIndex || 0),
     };
 
@@ -368,6 +368,92 @@ export async function unlockGuardMulti(
         );
         if (typeof res === 'string') {
             throw new Error(`unlocking guard contract at input ${guardInputIndex} failed! ${res}`);
+        }
+        return true;
+    }
+    return true;
+}
+
+export async function unlockSellCovenant(
+    ecKey: EcKeyService,
+    sellContract: SmartContract,
+    sellCblock: string,
+    sellUtxo: any,
+    tokenChange: BigInt,
+    receiver: string,
+    sellInputIndex: number,
+    newState: ProtocolState,
+    revealTx: btc.Transaction,
+    receiverTokenState: CAT20State,
+    changeInfo: ChangeInfo,
+    feeChangeInfo: ChangeInfo,
+    txCtx: any,
+    tokenInputIndex: number,
+    verify?: boolean,
+    cancel?: boolean,
+    signature?: string,
+) {
+    // amount check run verify
+
+    const {shPreimage, prevoutsCtx, spentScripts} = txCtx;
+
+    await sellContract.connect(getDummySigner());
+
+    let pubKeyPrefix = toByteString('')
+    let pubKey = PubKey(ecKey.getXOnlyPublicKey())
+
+    let sig = getDummySignature()
+
+    if (cancel) {
+        pubKey = PubKey(ecKey.getXOnlyPublicKey())
+        pubKeyPrefix = ecKey.getPubKeyPrefix()
+        if (!signature) {
+            throw new Error('Signature is required for cancel sell covenant')
+        }
+        sig = btc.crypto.Signature.fromString(signature).toString('hex')
+    }
+
+    const sellCall = await sellContract.methods.execute(
+        newState.stateHashList,
+        tokenInputIndex,//token input index
+        receiverTokenState.amount, //totalInputAmount
+        tokenChange,
+        receiver,
+        int2ByteString(BigInt(Postage.TOKEN_POSTAGE), 8n),
+        cancel,
+        pubKeyPrefix,
+        pubKey,
+        () => sig,
+        shPreimage,
+        prevoutsCtx,
+        spentScripts,
+        feeChangeInfo,
+        changeInfo,
+        {
+            fromUTXO: getDummyUTXO(),
+            verify: false,
+            exec: false,
+        } as MethodCallOptions<TransferGuard>,
+    );
+    const witnesses = [
+        ...callToBufferList(sellCall),
+        // taproot script + cblock
+        sellContract.lockingScript.toBuffer(),
+        //sellTapScript,
+        Buffer.from(sellCblock, 'hex'),
+    ];
+    revealTx.inputs[sellInputIndex].witnesses = witnesses;
+
+
+    if (verify) {
+        const res = verifyContract(
+            sellUtxo,
+            revealTx,
+            sellInputIndex,
+            witnesses,
+        );
+        if (typeof res === 'string') {
+            throw new Error(`unlocking sell contract at input ${sellInputIndex} failed! ${res}`)
         }
         return true;
     }
