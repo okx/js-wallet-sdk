@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-bitcoin",
-  "version": "1.0.36-beta.0",
+  "version": "1.0.36-beta.1",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -41,7 +41,7 @@
     "scrypt-ts": "1.4.3"
   },
   "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "^1.0.12-beta.0"
+    "@okxweb3/coin-base": "1.0.12-beta.0",
+    "@okxweb3/crypto-lib": "1.0.7-beta.0"
   }
 }
