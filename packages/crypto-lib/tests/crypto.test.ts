@@ -3,9 +3,18 @@ import {Buffer} from "buffer";
 import {base, bip32, bip39, signUtil} from "../src";
 import {randomBytes} from '../src/base';
 import {secp256k1} from "../src/signutil";
+import {publicKeyCreate} from "../src/signutil/ed25519";
 
 
 describe("crypto", () => {
+
+    test("publicKeyCreate", async () => {
+        const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
+        expect(base.toHex(publicKeyCreate(base.fromHex(privateKey)))).toEqual("fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32");
+        const invalidPrivateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b36";
+        expect(() => publicKeyCreate(base.fromHex(invalidPrivateKey))).toThrowError("invalid public key")
+    });
+
     test("base", async () => {
         const bytes = randomBytes(32);
         const hex = base.toHex(bytes);
