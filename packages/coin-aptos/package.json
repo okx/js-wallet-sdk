@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-aptos",
-  "version": "1.0.11-beta.2",
+  "version": "1.0.12",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
