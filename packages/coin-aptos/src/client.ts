@@ -153,6 +153,22 @@ export function transferCoin(tyArg: string, receiverAddress: string, amount: Any
     );
 }
 
+export function transferCoinV2(tyArg: string, receiverAddress: string, amount: AnyNumber) {
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(tyArg),
+    );
+
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            "0x1::aptos_account",
+            "transfer_coins",
+            [token],
+            [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(receiverAddress)), BCS.bcsSerializeUint64(amount)],
+        ),
+    );
+}
+
+
 // NFT
 // A name, the name of the asset, which must be unique within a collection
 // A description, the description of the asset

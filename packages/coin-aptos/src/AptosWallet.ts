@@ -34,7 +34,7 @@ import {
     offerNFTTokenPayload,
     offerNFTTokenPayloadObject,
     registerCoin,
-    transferCoin,
+    transferCoin, transferCoinV2,
     transferPayload,
 } from './index';
 import * as client from './client'
@@ -56,7 +56,7 @@ import { Deserializer as DeserializerBcs } from "./transaction_builder/bcs";
 export type AptosParam = {
     type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" |
         "offerNftObject" | "claimNft" | "offerNft_simulate" | "claimNft_simulate" | "simple_transaction" | "simulate_simple_transaction" |
-        "fungible_asset_transfer" | "simulate_fungible_asset_transfer",
+        "fungible_asset_transfer" | "simulate_fungible_asset_transfer" | "tokenTransferV2",
     base: AptosBasePram,
     data: any
 }
@@ -269,6 +269,14 @@ export class AptosWallet extends BaseWallet {
                     const baseParam = ap.base
                     const data = ap.data as AptosTokenTransferParam
                     const payload = transferCoin(data.tyArg, data.recipientAddress, BigInt(data.amount))
+                    const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSTransaction(account, rawTxn);
+                    break
+                }
+                case "tokenTransferV2": {
+                    const baseParam = ap.base
+                    const data = ap.data as AptosTokenTransferParam
+                    const payload = transferCoinV2(data.tyArg, data.recipientAddress, BigInt(data.amount))
                     const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
                     tx = generateBCSTransaction(account, rawTxn);
                     break

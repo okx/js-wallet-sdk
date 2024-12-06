@@ -117,6 +117,35 @@ describe("aptos", () => {
         expect(base.toHex(data)).toBe(expected)
     });
 
+   //test in mainnet https://explorer.aptoslabs.com/txn/1999229005?network=mainnet
+    test("tokenTransferV2", async () => {
+        let wallet = new AptosWallet()
+        const param: AptosParam = {
+            type: "tokenTransferV2",
+            base: {
+                sequenceNumber: "2",
+                chainId: 27,
+                maxGasAmount: "200000",
+                gasUnitPrice: "100",
+                expirationTimestampSecs: "1722391521",
+            },
+            data: {
+                tyArg: "0x275f508689de8756169d1ee02d889c777de1cebda3a7bbcce63ba8a27c563c6f::tokens::USDC",
+                recipientAddress: "0x259523c5dc9415e85d30d6f4109ebba32984df5ddc72707f9a863834291332e9",
+                amount: 800,
+            }
+        }
+        let signParams: SignTxParams = {
+            privateKey: "3c94d9e6f0207a2659b9a118d74f512b399b87bf468baf53e11938f7a34442f1",
+            data: param
+        };
+        let tx = await wallet.signTransaction(signParams);
+        const expected = "8857b69756dfef4cd27c8e4547fc7dc36ceba177d2c35e23e853c45fda41e16d02000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e740e7472616e736665725f636f696e730107275f508689de8756169d1ee02d889c777de1cebda3a7bbcce63ba8a27c563c6f06746f6b656e730455534443000220259523c5dc9415e85d30d6f4109ebba32984df5ddc72707f9a863834291332e9082003000000000000400d0300000000006400000000000000e19ba966000000001b00209d351559f1a1f703a73aa50474354a893ec58a08af2896dd3700fd2e97025c274025864c4a15d8fdf8f9e31aa0c5076399f7c3a8cde81e918d72c454bd4a7b047ab285888e535186363504aa7eb4c2e17acae073595014dd091c8b56ff9bdae103"
+        // https://blue.explorer.movementlabs.xyz/txn/0x18a0595993b264158c69bc8f63793c5ef11e2149e05f6e9339a87be9eb5703d6?network=testnet
+        expect(tx).toBe(expected)
+    });
+
+
     test("simulate", async () => {
         const account1 = new AptosAccount(base.fromHex("0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26"))
         const expirationTimestampSecs = Math.ceil(Date.now() / 1000) + 300
@@ -578,7 +607,7 @@ describe("official sdk v2", () => {
             data: param
         };
         const tx = await wallet.signTransaction(signParams);
-        const expected = "8e6d339ff6096080a4d91c291b297d3814ff9daa34e0f5562d4e7d442cafecdc0100000000000000020000000000000000000000000000000000000000000000000000000000000001167072696d6172795f66756e6769626c655f73746f7265087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010e66756e6769626c655f6173736574084d657461646174610003209a2c5e9515410f90502fedbbb2ee2deb6eb51571d295ead093dcea8588c66ddb200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd01080a00000000000000102700000000000064000000000000000399f36200000000870020312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc40c94630ea994cca51b7fac33654850a54ab4f0fcc504bd4339f7a1fe094eb62f3cdefacabd71e3413f3ca7502825bb294294ecaf9c54a848eae4f1564e20e320d"
+        const expected = "7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c190100000000000000020000000000000000000000000000000000000000000000000000000000000001167072696d6172795f66756e6769626c655f73746f7265087472616e73666572010700000000000000000000000000000000000000000000000000000000000000010e66756e6769626c655f6173736574084d657461646174610003209a2c5e9515410f90502fedbbb2ee2deb6eb51571d295ead093dcea8588c66ddb200163f9f9f773f3b0e788559d9efcbe547889500d0891fe024e782c7224defd01080a00000000000000102700000000000064000000000000000399f36200000000870020067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc2640ad8f15f58e020a0233dda36af20818722fa1ebaf30e5a7d3b8fb6f58a801187821b58c4f6b482d3c0fcf90824e8926ace17c2eb977674fe5bb22719116522702"
         expect(tx).toBe(expected)
     });
 
@@ -600,7 +629,7 @@ describe("official sdk v2", () => {
             }
         }
         const signParams: SignTxParams = {
-            privateKey: "0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26",
+            privateKey: "f4118e8a1193bf164ac2223f7d0e9c625d6d5ca19d2fbfea7c55d3c0d0284cd0312a81c872aad3a910157ca7b05e70fe2e62aed55b4a14ad033db4556c1547dc",
             data: param
         };
         const tx = await wallet.signTransaction(signParams);
@@ -609,7 +638,7 @@ describe("official sdk v2", () => {
     });
 
 
-    test("fungible asset transfer", async () => {
+    test("fungible asset transfer test", async () => {
         let wallet = new AptosWallet()
         const param: AptosParam = {
             type: "fungible_asset_transfer",
@@ -627,7 +656,7 @@ describe("official sdk v2", () => {
             }
         }
         let signParams: SignTxParams = {
-            privateKey: "0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26",
+            privateKey: "fbfdf86582998a7cf3b56f4a9026d3190e539d74fa27ddec23698f13a27c9ed7",
             data: param
         };
         let tx = await wallet.signTransaction(signParams);
@@ -681,7 +710,7 @@ describe("official sdk v2", () => {
             }
         }
         let signParams: SignTxParams = {
-            privateKey: "0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26",
+            privateKey: "fbfdf86582998a7cf3b56f4a9026d3190e539d74fa27ddec23698f13a27c9ed7",
             data: param
         };
         let tx = await wallet.signTransaction(signParams);
