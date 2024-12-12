@@ -9,6 +9,5 @@ coverage
 .DS_Store
 *.tsbuildinfo
 *.tgz
-package-lock.json
 .eslintcache
 yarn.lock
