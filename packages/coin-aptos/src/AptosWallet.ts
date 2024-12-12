@@ -275,6 +275,14 @@ export class AptosWallet extends BaseWallet {
                     tx = generateBCSTransaction(account, rawTxn);
                     break
                 }
+                case "tokenTransferV2": {
+                    const baseParam = ap.base
+                    const data = ap.data as AptosTokenTransferParam
+                    const payload = transferCoinV2(data.tyArg, data.recipientAddress, BigInt(data.amount))
+                    const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSTransaction(account, rawTxn);
+                    break
+                }
                 case "tokenMint": {
                     const baseParam = ap.base
                     const data = ap.data as AptosTokenMintParam
