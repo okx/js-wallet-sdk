@@ -1,5 +1,12 @@
 import { base, BigNumber } from '@okxweb3/crypto-lib';
 
+
+
+export function buildCommonSignMsg(publicKey:string, walletId:string) {
+  return `OKX Wallet Sign In\n\npublicKey: ${publicKey}\nwalletId: ${walletId}\nhost: api.wallet.okx\nOKX Wallet Sign In`;
+}
+
+
 export function convert2Number(data: any) {
   if(data == undefined) {
     return undefined

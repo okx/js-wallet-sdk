@@ -1,4 +1,4 @@
-import {NotImplementedError, GenPrivateKeyError} from "./error";
+import {NotImplementedError, GenPrivateKeyError, SignCommonMsgError} from "./error";
 import {
     DerivePriKeyParams,
     GetDerivedPathParam,
@@ -14,9 +14,9 @@ import {
     HardwareRawTransactionParam,
     CalcTxHashParams,
     GetRawTransactionParams,
-    ValidSignedTransactionParams, MpcMessageParam,
+    ValidSignedTransactionParams, MpcMessageParam, SignCommonMsgParams, SignType,
 } from './common';
-import {bip39, bip32, base, signUtil} from "@okxweb3/crypto-lib";
+import {bip39, bip32, base, signUtil, BN} from "@okxweb3/crypto-lib";
 
 export function secp256k1SignTest(privateKey: Buffer) {
     const msgHash = base.sha256("secp256k1-test");
@@ -24,6 +24,62 @@ export function secp256k1SignTest(privateKey: Buffer) {
     const {signature, recovery} = signUtil.secp256k1.sign(Buffer.from(msgHash), privateKey);
     return signUtil.secp256k1.verify(msgHash, signature, recovery, publicKey);
 }
+
+
+export function makeSignature(v: number, r: Buffer, s: Buffer): string {
+    const rSig = fromSigned(r);
+    const sSig = fromSigned(s);
+    const vSig = v;
+    const rStr = padWithZeroes(toUnsigned(rSig).toString('hex'), 64);
+    const sStr = padWithZeroes(toUnsigned(sSig).toString('hex'), 64);
+    const vStr = base.stripHexPrefix(intToHex(vSig));
+    return vStr.concat(rStr,sStr);
+}
+
+export function intToHex(i: Number) {
+    const hex = i.toString(16); // eslint-disable-line
+
+    return `0x${hex}`;
+}
+export const toUnsigned = function(num: BN): Buffer {
+    return Buffer.from(num.toTwos(256).toArray())
+}
+
+export function padWithZeroes(hexString: string, targetLength: number): string {
+    if (hexString !== '' && !/^[a-f0-9]+$/iu.test(hexString)) {
+        throw new Error(
+            `Expected an unprefixed hex string. Received: ${hexString}`,
+        );
+    }
+
+    if (targetLength < 0) {
+        throw new Error(
+            `Expected a non-negative integer target length. Received: ${targetLength}`,
+        );
+    }
+
+    return String.prototype.padStart.call(hexString, targetLength, '0');
+}
+
+export const fromSigned = function(num: Buffer): BN {
+    return new BN(num).fromTwos(256)
+}
+
+export function ecdsaSign(msgHash: Buffer, privateKey: Buffer, chainId?: number): {v: number, r: Buffer, s: Buffer} {
+    const {signature, recovery} = signUtil.secp256k1.sign(msgHash, privateKey) // { signature, recid: recovery }
+
+    const r = Buffer.from(signature.slice(0, 32))
+    const s = Buffer.from(signature.slice(32, 64))
+
+    if (chainId && !Number.isSafeInteger(chainId)) {
+        throw new Error(
+            'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+        )
+    }
+    const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+    return {v, r, s}
+}
+
 
 abstract class BaseWallet {
     // secp256k1 curve uses the default implementation, ed25519 curve, you need to use the basic/ed25519 implementation.
@@ -79,6 +135,34 @@ abstract class BaseWallet {
     // sign message
     signMessage(param: SignTxParams): Promise<string> {
         return Promise.reject(NotImplementedError);
+    }
+
+    signCommonMsg(params: SignCommonMsgParams) : Promise<any> {
+        if (!params.signType){
+            return Promise.reject(SignCommonMsgError)
+        }
+        if (typeof params.message !== 'string') {
+            return Promise.reject(SignCommonMsgError)
+        }
+        let hash = base.magicHash(params.message);
+        let privateKey = base.fromHex(params.privateKey);
+        var sig;
+        switch (params.signType) {
+            case SignType.Secp256k1:
+                const {v, r, s} = ecdsaSign(Buffer.from(hash), privateKey)
+                return Promise.resolve(makeSignature(v,r,s));
+            case SignType.ECDSA_P256:
+                sig= signUtil.p256.sign(Buffer.from(hash), privateKey).signature
+                return Promise.resolve(base.toHex(sig));
+            case SignType.ED25519:
+                sig= signUtil.ed25519.sign(hash, privateKey)
+                return Promise.resolve(base.toHex(sig));
+            case SignType.StarknetSignType:
+                sig=  signUtil.schnorr.stark.sign(hash, privateKey).toCompactRawBytes();
+                return Promise.resolve(base.toHex(sig));
+            case SignType.TezosSignType:
+                return Promise.reject("not support");
+        }
     }
 
     // verify message
@@ -149,4 +233,18 @@ abstract class BaseWallet {
     }
 }
 
-export {BaseWallet}
+//just for test
+class SimpleWallet extends BaseWallet{
+    getNewAddress(param: NewAddressParams): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+    validAddress(param: ValidAddressParams): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+    signTransaction(param: SignTxParams): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+}
+
+
+export {BaseWallet, SimpleWallet}
