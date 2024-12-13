@@ -6,7 +6,7 @@ import {
     isHexString,
     isValidAddress,
     makeSignature,
-    privateToPublic,
+    privateToPublic, privateToPublicRaw,
     publicToAddress,
     recoverFromSignature,
     toChecksumAddress,
@@ -23,8 +23,8 @@ export function getNewAddress(privateKeyHex: string) {
         throw new Error('invalid key');
     }
     const privateKey = base.fromHex(privateKeyHex)
-    const publicKey = privateToPublic(privateKey)
-    const address = publicToAddress(publicKey)
+    const publicKey = privateToPublicRaw(privateKey)
+    const address = publicToAddress(publicKey.slice(1))
     return {
         address: base.toHex(address, true),
         publicKey: base.toHex(publicKey, true)

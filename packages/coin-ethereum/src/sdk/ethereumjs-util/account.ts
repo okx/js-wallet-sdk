@@ -80,6 +80,11 @@ export const privateToPublic = function(privateKey: Buffer): Buffer {
   // skip the type flag and use the X, Y points
   return signUtil.secp256k1.publicKeyCreate(privateKey, false).slice(1)
 }
+export const privateToPublicRaw = function(privateKey: Buffer): Buffer {
+  assertIsBuffer(privateKey)
+  // skip the type flag and use the X, Y points
+  return signUtil.secp256k1.publicKeyCreate(privateKey, false)
+}
 
 /**
  * Returns the ethereum address of a given private key.
