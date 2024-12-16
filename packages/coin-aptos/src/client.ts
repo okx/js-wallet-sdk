@@ -24,7 +24,8 @@ import {
     generateSignedTransaction,
     getFunctionParts,
     Network,
-    Transaction
+    Transaction,
+    SignedTransaction as SignedTransactionV2, Serializer
 } from "./v2";
 declare const TextEncoder: any;
 
@@ -439,9 +440,10 @@ export function createRawTransactionByABIV2(sender: Account,
             rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
             senderSignature: senderSignature.bcsToHex().toString(),
         };
-
-        tx = generateBCSSimulateTransaction(account, rawTx.rawTransaction);
-        return raw;
+        let signedTx = new SignedTransactionV2(rawTx.rawTransaction, senderSignature);
+        let buffer = new Serializer();
+        signedTx.serialize(buffer)
+        return base.toHex(buffer.toUint8Array());
     });
     return rawTxn;
 }
