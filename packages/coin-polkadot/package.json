@@ -37,6 +37,6 @@
     "@polkadot/x-textencoder": "^9.5.1"
   },
   "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0"
+    "@okxweb3/crypto-lib": "1.0.7-beta.3"
   }
 }
