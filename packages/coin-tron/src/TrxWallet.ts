@@ -24,7 +24,7 @@ import {
     GetHardwareSignedTransactionError,
     GetHardWareMessageHashError,
     validSignedTransactionError,
-    jsonStringifyUniform, ValidPrivateKeyData, ValidPrivateKeyParams
+    jsonStringifyUniform, ValidPrivateKeyData, ValidPrivateKeyParams, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from '@okxweb3/coin-base';
 import {base} from '@okxweb3/crypto-lib';
 import * as tron from "./index";
@@ -128,6 +128,15 @@ export class TrxWallet extends BaseWallet {
         } catch (e) {
         }
         return Promise.reject(SignTxError);
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.Secp256k1})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

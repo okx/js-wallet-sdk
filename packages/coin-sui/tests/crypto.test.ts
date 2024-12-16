@@ -1,11 +1,20 @@
 import * as sui from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {encodeSuiPrivateKey, SuiWallet, tryDecodeSuiPrivateKey} from "../src";
+import {test} from "@jest/globals";
+import assert from "assert";
 
 declare const TextEncoder: any;
 const suiWallet = new sui.SuiWallet()
 
 describe("cryptography", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new SuiWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"c08a2f98a1aa88a301b6cb96a52567daf5af440735c00e2c5c7d1c303edab15b6fcc364fcde9e875ab029909036c6b02030ee81b53c7625ecf8f236d38ca6f08")
+    });
+
     test("tryDecodeSuiPrivateKey", async () => {
         const k = '0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a'
         const r1 = tryDecodeSuiPrivateKey(k)

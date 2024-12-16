@@ -20,6 +20,7 @@ import {
 import {TypedData} from '../src/utils/typedData';
 import {ETH, ETHBridge, StarknetChainId} from '../src/constants';
 import {encodeShortString} from "../src/utils/shortString";
+import assert from "assert";
 
 
 describe("tx", () => {
@@ -85,6 +86,18 @@ describe("tx", () => {
         expect((await wallet.validPrivateKey({privateKey: '0X'+privateKey.toUpperCase()})).isValid).toEqual(true);
     })
 
+    test("signCommonMsg", async () => {
+        const wallet = new StarknetWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"0x0028e2e382f4e68b24154142dece87d03b6214a34834aede41e100848826c16b",message:{walletId:"12345678901234567890"}});
+        let address = await wallet.getNewAddress({privateKey:"0x0028e2e382f4e68b24154142dece87d03b6214a34834aede41e100848826c16b"});
+        let addr = address.address;
+        let publicKey = address.publicKey;
+        let chainIndex = 9004;
+        let coinName = "starknet"
+        let actual = `{"coin_name":"${coinName}","data":"{\"pubKey\":\"${publicKey}\",\"name\":\"Account 01\",\"walletType\":1,\"accountId\":\"123456789\",\"addresses\":[{\"address\":\"${addr}\",\"chainPubKey\":\"${publicKey}\",\"chainSign\":\"${sig}\",\"chainIndexList\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
+        let expect = `{"coin_name":"starknet","data":"{"pubKey":"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55","name":"Account 01","walletType":1,"accountId":"123456789","addresses":[{"address":"0x027854ed5aa9f534c7aa0165c89b3915bc461f70e64ce9d64f4e2549037ebcf2","chainPubKey":"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55","chainSign":"0390d20f8112759e92e2664dca7baf2f9d9b3e045e5a87f94a21ea4c74a8041205a282e41cd960ca1539373cfda072bafa5b238a5d3b78f2776187ed5e3e01ed","chainIndexList":[9004]}]}","func_name":"verify_web_data"}`
+        assert.strictEqual(actual, expect);
+    })
     test("signMessage", async () => {
         const typedDataValidate: TypedData = {
             types: {

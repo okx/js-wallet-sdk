@@ -1,11 +1,20 @@
 import {NostrAssetsWallet, nsecFromPrvKey, CryptTextParams, verifySignature, nipOpType, decodeBytes} from "../src";
 import {bip39} from "@okxweb3/crypto-lib";
 import {base58} from "@scure/base";
+import {test} from "@jest/globals";
+import assert from "assert";
 
 const wallet = new NostrAssetsWallet();
 const prv = 'nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y'
 
 describe("nostr", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new NostrAssetsWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"1c4fe0c27c944b99630468c06fb9d37435c6f14e1537b1c8a725ff11c3fb35bfb6286ec3297553f45791d63fa828a957f752d357c8d58122862d5ba123dd5ee3cf")
+    });
+
     test("random", async () => {
         let prv = await wallet.getRandomPrivateKey();
         console.log(prv)

@@ -8,6 +8,15 @@ import {
     tokenTransfer, StxWallet
 } from '../src';
 import Assert from 'assert';
+import {test} from "@jest/globals";
+import assert from "assert";
+
+
+test("signCommonMsg", async () => {
+    let wallet = new StxWallet();
+    let sig = await wallet.signCommonMsg({privateKey:"33c4ad314d494632a36c27f9ac819e8d2986c0e26ad63052879f631a417c8adf", message:{walletId:"123456789"}});
+    assert.strictEqual(sig,"1b523031d0c4a2de1a88fb02015a0d1bd3c6ef6e6834f7a4ba72020b192f3a92291868a9838eccfacce84125ed97eec9255da9cf7137be02cb863fe6436dbdb5e3")
+});
 
 test('getNewAddress', async () => {
     const wallet = new StxWallet();

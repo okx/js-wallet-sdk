@@ -25,6 +25,8 @@ import {serialize} from "borsh";
 import {PublicKey} from "../src/keypair";
 import {MessagePayload} from "../src/nearlib";
 import {base58} from "@scure/base";
+import {test} from "@jest/globals";
+import assert from "assert";
 
 /*
 // send tx
@@ -38,6 +40,13 @@ curl -X POST -d '{ "jsonrpc": "2.0", "id": "1", "method": "query", "params": {"r
 */
 
 describe("near", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new NearWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"9cd25548cbd7af813b239a0aa0be329a3d1b053d6b84a63d1d7027d5459e864871b6eb259e9f74c752371f0348804be86e01ab26760a77eb071a7c9945e9b00a")
+    });
+
     test("getRandomPrivateKey", async () => {
         let wallet = new NearWallet()
         let privateKey = await wallet.getRandomPrivateKey();

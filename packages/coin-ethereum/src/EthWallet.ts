@@ -1,6 +1,6 @@
 import {
     assertBufferLength,
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     CalcTxHashParams,
     GetAddressParams,
     GetDerivedPathParam,
@@ -14,9 +14,9 @@ import {
     MpcRawTransactionParam,
     MpcTransactionParam,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     TypedMessage,
     ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
     validSignedTransactionError,
@@ -196,6 +196,15 @@ export class EthWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignTxError)
         }
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.Secp256k1})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

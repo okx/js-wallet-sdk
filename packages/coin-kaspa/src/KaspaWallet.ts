@@ -6,7 +6,7 @@ import {
     SignTxParams,
     SignTxError,
     CalcTxHashParams,
-    CalcTxHashError, ValidPrivateKeyParams, ValidPrivateKeyData
+    CalcTxHashError, ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from "@okxweb3/coin-base";
 import {
     addressFromPrvKey, checkPrvKey,
@@ -43,6 +43,15 @@ export class KaspaWallet extends BaseWallet {
         });
     }
 
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.Secp256k1})
+    }
     async signTransaction(param: SignTxParams): Promise<any> {
         try {
             return Promise.resolve(transfer(param.data, param.privateKey));

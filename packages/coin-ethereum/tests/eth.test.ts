@@ -11,6 +11,14 @@ const publicKey = '0x04c847f6dd9e4fd3ce75c61614c838d9a54a5482b46e439b99aec5ebe26
 const address = "0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b";
 
 describe("eth api", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new EthWallet();
+        console.log(await wallet.getNewAddress({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"}))
+        let sig = await wallet.signCommonMsg({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1b5a5bab2a414547358a95e63bfd4e7564831042bf57aa0303b072eec543aa1d4b51afb5c6f9889edb3dd6a50e8c957b296731021ba822819573d21093a8c06e46")
+    });
+
     test("address", async () => {
         const privateKey = randomBytes(32);
         const {address} = eth.getNewAddress(base.toHex(privateKey));
@@ -151,7 +159,7 @@ describe("eth api", () => {
 
 describe("eth walLet", () => {
 
-    const wallet = new eth.EthWallet()
+    let wallet = new eth.EthWallet()
 
     test("getNewAddress222", async () => {
         const path = await wallet.getDerivedPath({index: 0});

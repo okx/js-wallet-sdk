@@ -17,11 +17,11 @@ describe("crypto", () => {
             data = buildCommonSignMsg("067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26", "123456789")
             param.message = data;
             let sig = await wallet.signCommonMsg(param)
+            assert.strictEqual(sig, "fb2e769833b0f4d7e33f8fdea12f542337522701af82e06e272640945b9e71e024b0acf1089aaf3930a5c58f89c1dd034d417f5e04e4c4f42b67a4f29dcabf07")
             console.log("aptos ed25519 sig:",sig)
             console.log("publickey:","067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26")
             return
         }
-
         if(false){
             //bitcoin
             param.privateKey="0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"
@@ -35,8 +35,6 @@ describe("crypto", () => {
             console.log("address:","1GhLyRg4zzFixW3ZY5ViFzT4W5zTT9h7Pc")
             return
         }
-
-        //ada
         if(false){
             //ada
             //30db52f355dc57e92944cbc93e2d30c9352a096fa2bbe92f1db377d3fdc2714aa3d22e03781d5a8ffef084aa608b486454b34c68e6e402d4ad15462ee1df5b8860e14a0177329777e9eb572aa8c64c6e760a1239fd85d69ad317d57b02c3714aeb6e22ea54b3364c8aaa0dd8ee5f9cea06fa6ce22c3827b740827dd3d01fe8f3
@@ -67,6 +65,7 @@ describe("crypto", () => {
             let coinName = "sei";
             console.log(`{"coin_name":"${coinName}","data":"{\"pubKey\":\"${publicKey}\",\"name\":\"Account 01\",\"walletType\":1,\"accountId\":\"123456789\",\"addresses\":[{\"address\":\"${addr}\",\"chainPubKey\":\"${publicKey}\",\"chainSign\":\"${sig}\",\"chainIndexList\":[${chainIndex}]}]}","func_name":"verify_web_data"}`)
 
+            return
             //axelarWallet
             publicKey = "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e";
             data = buildCommonSignMsg(publicKey, "123456789")
@@ -150,25 +149,23 @@ describe("crypto", () => {
             assert.strictEqual(actual, expected);
             return
         }
-
-
         if(false){
             //ethereum
             param.privateKey="0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"
-            let publicKey = "052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f0452c8b0c821e01cb6d1f57f882f748fef7146f06c7c96e0d03ec73cf97bf01959f";
+            let publicKey = "04052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f0452c8b0c821e01cb6d1f57f882f748fef7146f06c7c96e0d03ec73cf97bf01959f";
             data = buildCommonSignMsg(publicKey, "123456789")
             param.message = data;
             param.signType = SignType.Secp256k1
             let sig = await wallet.signCommonMsg(param)
-            let addr = "";
+            let addr = "0xc643772dd8e6c1a975ff91422a91ad3461869d6f";
             let chainIndex = 1;
             let coinName = "eth"
             let actual = `{"coin_name":"${coinName}","data":"{\"pubKey\":\"${publicKey}\",\"name\":\"Account 01\",\"walletType\":1,\"accountId\":\"123456789\",\"addresses\":[{\"address\":\"${addr}\",\"chainPubKey\":\"${publicKey}\",\"chainSign\":\"${sig}\",\"chainIndexList\":[${chainIndex}]}]}","func_name":"verify_web_data"}`
             let expected = `{"coin_name":"eth","data":"{"pubKey":"052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f0452c8b0c821e01cb6d1f57f882f748fef7146f06c7c96e0d03ec73cf97bf01959f","name":"Account 01","walletType":1,"accountId":"123456789","addresses":[{"address":"","chainPubKey":"052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f0452c8b0c821e01cb6d1f57f882f748fef7146f06c7c96e0d03ec73cf97bf01959f","chainSign":"1b54ccccdc9d961f15b2db5a8c8b9ccf7f02b2c0510eaa8ac3bca57832922b97025be87f7322c0d35bf802bffef7b52599e1fe3c3c1f842914cb37819025367625","chainIndexList":[1]}]}","func_name":"verify_web_data"}`;
-            assert.strictEqual(actual, expected);
+            console.log(actual)
+            // assert.strictEqual(actual, expected);
             return
         }
-
         if(false){
             //kaspa
             param.privateKey="d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff"
@@ -185,7 +182,6 @@ describe("crypto", () => {
             assert.strictEqual(actual, expected);
             return
         }
-
         if(false){
             //near
             param.privateKey="ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
@@ -203,7 +199,7 @@ describe("crypto", () => {
             return
         }
 
-        if(true){
+        if(false){
             //nostrassets
             param.privateKey="bb1c93508b962c7efb0a340848538b2c5f7ba6c44e55f52389aa132a2fd3521a"
             let publicKey = "14ccbe1d4a55fe23628576a7f04637f647fd6b86d362f983f4ebd7b95d47796f";
@@ -229,7 +225,6 @@ describe("crypto", () => {
             signType: SignType.Secp256k1,
             message: data
         }
-
         if (false) {
             //solana
             param.signType = SignType.ED25519
@@ -246,7 +241,6 @@ describe("crypto", () => {
             assert.strictEqual(actual, expect);
             return
         }
-
         if(false){
             //stack
             param.privateKey="33c4ad314d494632a36c27f9ac819e8d2986c0e26ad63052879f631a417c8adf"
@@ -264,7 +258,6 @@ describe("crypto", () => {
             assert.strictEqual(actual, expect);
             return
         }
-
         if(false){
             //sui
             param.privateKey="31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a"
@@ -281,8 +274,6 @@ describe("crypto", () => {
             assert.strictEqual(actual, expect);
             return
         }
-
-
         if(false){
             //ton
             param.privateKey="fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8"

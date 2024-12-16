@@ -1,11 +1,11 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     DerivePriKeyParams,
     GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressData,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignTxError,
     SignTxParams,
     ValidAddressData,
@@ -17,7 +17,7 @@ import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 
 import {
     CalculateContractAddressFromHash,
-    Call,
+    Call, computeHashOnElements,
     constants,
     CreateContractCall,
     CreateMultiContractCall,
@@ -32,6 +32,9 @@ import {
     validateAndParseAddress,
     verifyMessage
 } from "./index";
+import {encodeShortString} from "./utils/shortString";
+import {starkCurve} from "./utils/ec";
+import {BigNumberish, hexToDecimalString} from "./utils/num";
 
 export type StarknetTransactionType =
     "transfer"
@@ -220,6 +223,23 @@ export class StarknetWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignTxError + ":" + e);
         }
+    }
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        console.log(addr.publicKey, params.message.walletId)
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        let msgHash = base.magicHash(data);
+        let msgHashFirst = msgHash.slice(0,16)
+        let msgHashEnd = msgHash.slice(16);
+        let hash = computeHashOnElements([hexToDecimalString(base.toHex(msgHashFirst)), hexToDecimalString(base.toHex(msgHashEnd))]);
+        if(hash.startsWith("0x")) {
+            hash = hash.slice(2)
+        }
+        let sig = starkCurve.sign(hash, params.privateKey);
+        return Promise.resolve(base.toHex(sig.toCompactRawBytes()));
     }
 
     verifyMessage(param: VerifyMessageParams): Promise<any> {

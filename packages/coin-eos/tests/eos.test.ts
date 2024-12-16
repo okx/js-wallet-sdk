@@ -15,8 +15,17 @@ import {
     verifySignature, signSerializedTransaction,
 } from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
+import {test} from "@jest/globals";
+import assert from "assert";
 
 describe("eos", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new EosWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK", message:{walletId:"123456789"}});
+        let address = await wallet.getNewAddress({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK"})
+        assert.strictEqual(sig,"1b6bd88a148fbcf1bda468d0913b78bbf9b13365dda6ebb476fa0392b80b1b1da132f48968a3f13abbf1dc0c6e73328417a80e484c3e3ee45b86f1e54b9cd99f03");
+    });
     test('private key getNewAddress', async () => {
         const privateKey = "5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK"
         let wallet = new EosWallet()

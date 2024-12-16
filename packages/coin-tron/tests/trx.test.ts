@@ -12,8 +12,16 @@ import {
     verifySignatureV2,
 } from '../src';
 import {NewAddressParams, SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
+import {test} from "@jest/globals";
+import assert from "assert";
 
 describe("address", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new TrxWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"1b5662ca72b121ddd4abd1f39b2e22fd86b0a3e274761abbf182e955f073efd47b1139781a288af743683535258f4bd6ab3ea2ffe43404cb8c948e5bad23bbbdd7")
+    });
 
     test("validPrivateKey", async () => {
         const wallet = new TrxWallet();

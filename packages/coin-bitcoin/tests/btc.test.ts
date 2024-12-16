@@ -19,6 +19,8 @@ import {Transaction,} from '../src/bitcoinjs-lib'
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
 import {countAdjustedVsize} from "../src/sigcost";
+import {test} from "@jest/globals";
+import assert from "assert";
 
 describe("bitcoin", () => {
 
@@ -27,6 +29,13 @@ describe("bitcoin", () => {
         const res = await wallet.validPrivateKey({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"});
         expect(res.isValid).toEqual(true);
     });
+
+    test("signCommonMsg", async () => {
+        let wallet = new BtcWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02")
+    });
+
 
     test("getNewAddress", async () => {
         const wallet = new BtcWallet();

@@ -1,7 +1,17 @@
 import {KaspaWallet} from "../src";
+import {test} from "@jest/globals";
+import assert from "assert";
 const wallet = new KaspaWallet();
 
 describe("kaspa", () => {
+
+
+    test("signCommonMsg", async () => {
+        let wallet = new KaspaWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff", message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"1ca64e53306b181d26888429d9cdaa22cebd4b4fd84f5d0aaa0699df7d996299587fea8ba53890ebe09f55a9ac4ae867059b496bd8feabb97f8a4e20a34b73bc21")
+    });
+
     test("derive privateKey", async () => {
         const privateKey = await wallet.getDerivedPrivateKey({
             mnemonic: "reopen vivid parent want raw main filter rotate earth true fossil dream",

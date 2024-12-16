@@ -1,15 +1,15 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
     GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignMsgError,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     ValidAddressData,
     ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams
 } from '@okxweb3/coin-base';
@@ -228,6 +228,16 @@ export class NearWallet extends BaseWallet {
         const pk = base.fromBase58(parts[1])
         const seedHex = base.toHex(pk.slice(0, 32))
         return publicKeyFromSeed(seedHex)
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.ED25519})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

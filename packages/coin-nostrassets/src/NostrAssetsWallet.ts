@@ -9,7 +9,7 @@ import {
     secp256k1SignTest,
     GenPrivateKeyError,
     DerivePriKeyParams,
-    ValidPrivateKeyParams, ValidPrivateKeyData,
+    ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType,
 } from "@okxweb3/coin-base";
 import {
     base, bip32, bip39
@@ -124,6 +124,16 @@ export class NostrAssetsWallet extends BaseWallet {
             address: param.address
         };
         return Promise.resolve(data);
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        const [c, d] = base.fromBech32(params.privateKey);
+        return super.signCommonMsg({privateKey:base.toHex(d, false), message:data, signType:SignType.Secp256k1})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

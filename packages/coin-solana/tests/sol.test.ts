@@ -2,11 +2,22 @@ import {web3, spl, api, SolWallet} from "../src"
 import {PublicKey, ComputeBudgetProgram} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
 import {base,signUtil} from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import {TOKEN_2022_PROGRAM_ID} from "../src/sdk/spl";
 import {deserializeMessages} from "../src/api";
+import {test} from "@jest/globals";
+import assert from "assert";
+
 const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
 const privateKeyBase58 = base.toBase58(base.fromHex(privateKey)); // 548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePK
 describe("address", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new SolWallet();
+        let sig = await wallet.signCommonMsg({privateKey:privateKeyBase58, message:{walletId:"123456789"}});
+        assert.strictEqual(sig,"10a3e37d8d1eb5aea9b3936c7f99fe6997d5f8b575dd3b200cd273e2a72e19072e2f2312e3cdbead467307dbafb5f7aac29bb445454b9b497d6c4e385ffe5205")
+    });
+
     test('private key', async () => {
         let key = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'hex')
         let key1 = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'base58')

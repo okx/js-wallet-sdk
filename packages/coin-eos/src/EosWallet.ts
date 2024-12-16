@@ -9,7 +9,7 @@ import {
     NewAddressError,
     SignTxError,
     BaseWallet,
-    assertBufferLength, ValidPrivateKeyParams, ValidPrivateKeyData
+    assertBufferLength, ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from '@okxweb3/coin-base';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
@@ -86,6 +86,16 @@ export class EosWallet extends BaseWallet {
 
     validAddress(param: ValidAddressParams): Promise<any> {
         throw new Error('Method not implemented.');
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        if(addr.publicKey.startsWith("0x")) {
+            addr.publicKey = addr.publicKey.substring(2);
+        }
+        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        const privateKey = stringToPrivateKey(params.privateKey);
+        return super.signCommonMsg({privateKey:base.toHex(privateKey.data), message:data, signType:SignType.Secp256k1})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
