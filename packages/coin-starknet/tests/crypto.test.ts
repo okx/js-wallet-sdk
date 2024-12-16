@@ -94,10 +94,11 @@ describe("tx", () => {
         let publicKey = address.publicKey;
         let chainIndex = 9004;
         let coinName = "starknet"
-        let actual = `{"coin_name":"${coinName}","data":"{\"pubKey\":\"${publicKey}\",\"name\":\"Account 01\",\"walletType\":1,\"accountId\":\"123456789\",\"addresses\":[{\"address\":\"${addr}\",\"chainPubKey\":\"${publicKey}\",\"chainSign\":\"${sig}\",\"chainIndexList\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
-        let expect = `{"coin_name":"starknet","data":"{"pubKey":"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55","name":"Account 01","walletType":1,"accountId":"123456789","addresses":[{"address":"0x027854ed5aa9f534c7aa0165c89b3915bc461f70e64ce9d64f4e2549037ebcf2","chainPubKey":"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55","chainSign":"0390d20f8112759e92e2664dca7baf2f9d9b3e045e5a87f94a21ea4c74a8041205a282e41cd960ca1539373cfda072bafa5b238a5d3b78f2776187ed5e3e01ed","chainIndexList":[9004]}]}","func_name":"verify_web_data"}`
+        let actual = `{"coin_name":"${coinName}","data":"{\\"pubKey\\":\\"${publicKey}\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"${addr}\\",\\"chainPubKey\\":\\"${publicKey}\\",\\"chainSign\\":\\"${sig}\\"}\\",\\"chainIndexList\\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
+        let expect = `{"coin_name":"starknet","data":"{\\"pubKey\\":\\"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"0x027854ed5aa9f534c7aa0165c89b3915bc461f70e64ce9d64f4e2549037ebcf2\\",\\"chainPubKey\\":\\"0x1a78bff4c0b69619fe061f540c6fd89f8c33a0364970c77334aa558ed7fce55\\",\\"chainSign\\":\\"7b227075626c69634b6579223a22316137386266663463306236393631396665303631663534306336666438396638633333613033363439373063373733333461613535386564376663653535222c227075626c69634b657959223a22373063663835626131376161363562346665633664643439613631333337633362313864383937363664376366663736636365623732653839383838636564222c227369676e65644461746152223a22333930643230663831313237353965393265323636346463613762616632663964396233653034356535613837663934613231656134633734613830343132222c227369676e65644461746153223a22356132383265343163643936306361313533393337336366646130373262616661356232333861356433623738663237373631383765643565336530316564227d\\"}\\",\\"chainIndexList\\":[9004]}]}","func_name":"verify_web_data"}`
         assert.strictEqual(actual, expect);
     })
+
     test("signMessage", async () => {
         const typedDataValidate: TypedData = {
             types: {

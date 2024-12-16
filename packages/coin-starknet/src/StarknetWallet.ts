@@ -2,7 +2,7 @@ import {
     BaseWallet, buildCommonSignMsg,
     DerivePriKeyParams,
     GenPrivateKeyError,
-    GetDerivedPathParam,
+    GetDerivedPathParam, jsonStringifyUniform,
     NewAddressData,
     NewAddressError,
     NewAddressParams, SignCommonMsgParams,
@@ -229,17 +229,18 @@ export class StarknetWallet extends BaseWallet {
         if(addr.publicKey.startsWith("0x")) {
             addr.publicKey = addr.publicKey.substring(2);
         }
-        console.log(addr.publicKey, params.message.walletId)
         let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         let msgHash = base.magicHash(data);
         let msgHashFirst = msgHash.slice(0,16)
         let msgHashEnd = msgHash.slice(16);
         let hash = computeHashOnElements([hexToDecimalString(base.toHex(msgHashFirst)), hexToDecimalString(base.toHex(msgHashEnd))]);
         if(hash.startsWith("0x")) {
-            hash = hash.slice(2)
+            hash = hash.substring(2)
         }
         let sig = starkCurve.sign(hash, params.privateKey);
-        return Promise.resolve(base.toHex(sig.toCompactRawBytes()));
+        let point = starkCurve.ProjectivePoint.fromHex(base.toHex(starkCurve.getPublicKey(params.privateKey)));
+        let res = {publicKey:point.x.toString(16),publicKeyY:point.y.toString(16),signedDataR:sig.r.toString(16),signedDataS:sig.s.toString(16)};
+        return Promise.resolve(base.toHex(base.toUtf8(jsonStringifyUniform(res))));
     }
 
     verifyMessage(param: VerifyMessageParams): Promise<any> {
