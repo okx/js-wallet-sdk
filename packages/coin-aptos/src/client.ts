@@ -17,7 +17,15 @@ import {
 import {AnyNumber, bcsToBytes, Deserializer, Uint64, Uint8} from './transaction_builder/bcs';
 import {EntryFunctionId, MoveModuleBytecode, MoveType} from './transaction_builder/move_types';
 import { base, signUtil } from '@okxweb3/crypto-lib';
-import {Account, AccountAddress, AptosConfig, getFunctionParts, Network, Transaction} from "./v2";
+import {
+    Account,
+    AccountAddress,
+    AptosConfig,
+    generateSignedTransaction,
+    getFunctionParts,
+    Network,
+    Transaction
+} from "./v2";
 declare const TextEncoder: any;
 
 /**
@@ -431,8 +439,9 @@ export function createRawTransactionByABIV2(sender: Account,
             rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
             senderSignature: senderSignature.bcsToHex().toString(),
         };
-        // tx = generateBCSSimulateTransaction(account, rawTx.rawTransaction);
-        return raw.rawTransaction;
+
+        tx = generateBCSSimulateTransaction(account, rawTx.rawTransaction);
+        return raw;
     });
     return rawTxn;
 }
