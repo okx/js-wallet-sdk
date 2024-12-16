@@ -436,10 +436,6 @@ export function createRawTransactionByABIV2(sender: Account,
         },
     }).then(rawTx => {
         const senderSignature = transaction.sign({signer: sender, transaction: rawTx});
-        const raw = {
-            rawTransaction: rawTx.rawTransaction.bcsToHex().toString(),
-            senderSignature: senderSignature.bcsToHex().toString(),
-        };
         let signedTx = new SignedTransactionV2(rawTx.rawTransaction, senderSignature);
         let buffer = new Serializer();
         signedTx.serialize(buffer)
