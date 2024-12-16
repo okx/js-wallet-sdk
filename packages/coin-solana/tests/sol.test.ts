@@ -1,17 +1,15 @@
 import {web3, spl, api, SolWallet} from "../src"
 import {PublicKey, ComputeBudgetProgram} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
-import {base} from "@okxweb3/crypto-lib";
-import {ed25519_getRandomPrivateKey} from "@okxweb3/coin-base";
+import {base,signUtil} from "@okxweb3/crypto-lib";
 import {TOKEN_2022_PROGRAM_ID} from "../src/sdk/spl";
 import {deserializeMessages} from "../src/api";
-
 const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
 const privateKeyBase58 = base.toBase58(base.fromHex(privateKey))
 describe("address", () => {
     test('private key', async () => {
-        let key = ed25519_getRandomPrivateKey(true, 'hex')
-        let key1 = ed25519_getRandomPrivateKey(true, 'base58')
+        let key = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'hex')
+        let key1 = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'base58')
         console.log(key)
         console.log(key1)
     })

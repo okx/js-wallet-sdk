@@ -32,9 +32,29 @@ export function publicKeyCreate(secretKey: Uint8Array | Buffer): Uint8Array {
     if (pk.length == 64) {
         pk = pk.slice(0, 32)
     }
-
     const key = ed25519.keyFromSecret(Array.from(pk));
-    return Uint8Array.from(key.getPublic())
+    let pubKey = key.getPublic();
+    if (secretKey.length == 64 && !areUint8ArraysEqual(secretKey.slice(32,64), pubKey)){
+        throw new Error("invalid public key")
+    }
+    return Uint8Array.from(pubKey)
+}
+
+function areUint8ArraysEqual(arr1: Uint8Array, arr2: Uint8Array): boolean {
+    // 检查长度是否相等
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    // 逐字节比较
+    for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i] !== arr2[i]) {
+            return false;
+        }
+    }
+
+    // 如果所有字节都相等，返回 true
+    return true;
 }
 
 export function publicKeyVerify(pubkey: Uint8Array | Buffer) {
