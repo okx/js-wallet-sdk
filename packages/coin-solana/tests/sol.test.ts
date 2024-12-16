@@ -2,7 +2,6 @@ import {web3, spl, api, SolWallet} from "../src"
 import {PublicKey, ComputeBudgetProgram} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
 import {base,signUtil} from "@okxweb3/crypto-lib";
-import {base, signUtil} from "@okxweb3/crypto-lib";
 import {TOKEN_2022_PROGRAM_ID} from "../src/sdk/spl";
 import {deserializeMessages} from "../src/api";
 import {test} from "@jest/globals";
