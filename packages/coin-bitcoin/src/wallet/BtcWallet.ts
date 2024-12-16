@@ -46,7 +46,7 @@ import {
     RuneMainWallet,
     RuneMainTestWallet,
     CatWallet,
-    psbtDecode
+    psbtDecode, privateKeyFromWIF
 } from "../index";
 
 
@@ -454,7 +454,8 @@ export class BtcWallet extends BaseWallet {
             addr.publicKey = addr.publicKey.substring(2);
         }
         let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.Secp256k1})
+        let privateKey = privateKeyFromWIF(params.privateKey, this.network())
+        return super.signCommonMsg({privateKey:privateKey, message:data, signType:SignType.Secp256k1})
     }
 
     async verifyMessage(param: VerifyMessageParams): Promise<boolean> {
