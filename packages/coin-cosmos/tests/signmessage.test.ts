@@ -13,8 +13,8 @@ import assert from "assert";
 describe("sign message with tx", ()=> {
 
     test("signCommonMsg", async () => {
-        let wallet = new SeiWallet();
-        let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}});
+        let wallet = new CommonCosmosWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}, hrp:"sei"});
         assert.strictEqual(sig,"1ca38adcea509ddd27018907ca6e10995230993ddd7e03d6c98cdca9e99c42b9bb74a6e57147bc066884d1bef0f997d4bc8ba9dd1de5e90e4f9c8c3f79ec7adb18")
     });
 

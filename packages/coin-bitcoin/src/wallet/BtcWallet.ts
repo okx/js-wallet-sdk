@@ -449,7 +449,7 @@ export class BtcWallet extends BaseWallet {
     }
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let addr = await this.getNewAddress({privateKey:params.privateKey});
+        let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
         if(addr.publicKey.startsWith("0x")) {
             addr.publicKey = addr.publicKey.substring(2);
         }
