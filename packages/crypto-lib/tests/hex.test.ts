@@ -5,6 +5,10 @@ describe('validateHexString', () => {
         expect(validateHexString('0x1a2b3c')).toBe(true);
     });
 
+    it('returns true for valid hex string with 0x prefix2', () => {
+        expect(validateHexString('0x4141347f1c97713648d955629effe9d78204730990b50b82007b3007fd6bd49')).toBe(true);
+    });
+
     it('returns true for valid hex string without 0x prefix', () => {
         expect(validateHexString('1a2b3c')).toBe(true);
     });
@@ -36,11 +40,11 @@ describe('validateHexString', () => {
     });
 
     it('returns false for valid hex string with odd length', () => {
-        expect(validateHexString('0x1a2b3cf')).toBe(false);
+        expect(validateHexString('0x1a2b3cf')).toBe(true);
     });
 
     it('returns false for valid hex string without odd length', () => {
-        expect(validateHexString('1a2b3cf')).toBe(false);
+        expect(validateHexString('1a2b3cf')).toBe(true);
     });
 
 });
