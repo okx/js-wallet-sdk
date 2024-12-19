@@ -15,7 +15,9 @@ import assert from "assert";
 test("signCommonMsg", async () => {
     let wallet = new StxWallet();
     let sig = await wallet.signCommonMsg({privateKey:"33c4ad314d494632a36c27f9ac819e8d2986c0e26ad63052879f631a417c8adf", message:{walletId:"123456789"}});
-    assert.strictEqual(sig,"1b523031d0c4a2de1a88fb02015a0d1bd3c6ef6e6834f7a4ba72020b192f3a92291868a9838eccfacce84125ed97eec9255da9cf7137be02cb863fe6436dbdb5e3")
+    assert.strictEqual(sig,"1b523031d0c4a2de1a88fb02015a0d1bd3c6ef6e6834f7a4ba72020b192f3a92291868a9838eccfacce84125ed97eec9255da9cf7137be02cb863fe6436dbdb5e3");
+    sig = await wallet.signCommonMsg({privateKey:"9af2f610c9b84f4e88a33c1c707a499ee58638655cc2c7e18942c89b7c54213601", message:{"walletId":"E1222E1B-035A-424E-97EF-88FF296B73BC"}})
+    assert.strictEqual(sig,"1b182c85a550a32f562da2c4b22bc6947f4ca21369628dd24cd0072b8bd121450234ed4fd1392b4e35b65c7ae9e1962926ffa6fcb774cbec1616ae86533b0c6c00");
 });
 
 test('getNewAddress', async () => {

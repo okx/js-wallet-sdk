@@ -1,4 +1,10 @@
-import {BaseWallet, ValidPrivateKeyData, ValidPrivateKeyParams} from "@okxweb3/coin-base";
+import {
+    BaseWallet,
+    buildCommonSignMsg,
+    SignCommonMsgParams,
+    ValidPrivateKeyData,
+    ValidPrivateKeyParams
+} from "@okxweb3/coin-base";
 import {
     CalcTxHashParams,
     DerivePriKeyParams,
@@ -15,9 +21,9 @@ import {
     NewAddressError,
     SignTxError,
 } from "@okxweb3/coin-base";
-import { base,signUtil } from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import {getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey, checkPrivateKey} from "./account";
-import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData } from "./transaction";
+import {calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData} from "./transaction";
 
 export class AdaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -120,6 +126,17 @@ export class AdaWallet extends BaseWallet {
     async signMessage(param: SignTxParams): Promise<any> {
         try {
             return signData(param.data.address, param.data.message, param.data.privateKey || param.privateKey);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async signCommonMsg(param: SignCommonMsgParams): Promise<any> {
+        try {
+            const addr = await this.getNewAddress({privateKey:param.privateKey})
+            let data = buildCommonSignMsg(addr.publicKey, param.message.walletId);
+            let hash = base.magicHash(data);
+            return signData(param.message.address, base.toHex(hash), param.privateKey);
         } catch (e) {
             return Promise.reject(SignTxError);
         }

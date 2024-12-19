@@ -61,6 +61,7 @@ export class EosWallet extends BaseWallet {
             const privateKey = stringToPrivateKey(param.privateKey);
             assertBufferLength(privateKey.data, privateKeyDataSize);
             const publicKey = signUtil.secp256k1.publicKeyCreate(privateKey.data, true);
+            console.log(base.toHex(publicKey))
             return Promise.resolve({
                 address: "",
                 publicKey: publicKeyToLegacyString({
@@ -93,9 +94,12 @@ export class EosWallet extends BaseWallet {
         if(addr.publicKey.startsWith("0x")) {
             addr.publicKey = addr.publicKey.substring(2);
         }
-        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         const privateKey = stringToPrivateKey(params.privateKey);
-        return super.signCommonMsg({privateKey:base.toHex(privateKey.data), message:data, signType:SignType.Secp256k1})
+        const publicKey = signUtil.secp256k1.publicKeyCreate(privateKey.data, true);
+        let publicKeyHex = base.toHex(publicKey);
+        let data = buildCommonSignMsg(publicKeyHex, params.message.walletId);
+        let sig = await super.signCommonMsg({privateKey:base.toHex(privateKey.data), message:data, signType:SignType.Secp256k1});
+        return Promise.resolve(`${sig},${publicKeyHex}`)
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

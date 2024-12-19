@@ -45,6 +45,9 @@ describe("near", () => {
         let wallet = new NearWallet();
         let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}});
         assert.strictEqual(sig,"9cd25548cbd7af813b239a0aa0be329a3d1b053d6b84a63d1d7027d5459e864871b6eb259e9f74c752371f0348804be86e01ab26760a77eb071a7c9945e9b00a")
+
+        sig = await wallet.signCommonMsg({privateKey:"ed25519:4ZBavqnpvLM5m96gvuSK5iGTFSo253TDzdcuiVUdyDY7njHADF5tv5LNHyfFnJiSNt7wthdxGjYNFL89vDAtqkmh", message:{walletId:"7FC4E090-2B10-4F0C-94B0-AC7014B8CCC5"}});
+        assert.strictEqual(sig,"4ab8ba7079680447aaa2e44dc2a4c60bf35bfe4f1417db8e18d51fd9287a67be6b9f5134024dced167f36deeb4f957109dbe9c740f6881d1e3d18eb6f0f80f0c")
     });
 
     test("getRandomPrivateKey", async () => {

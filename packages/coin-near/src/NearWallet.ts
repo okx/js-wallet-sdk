@@ -237,7 +237,16 @@ export class NearWallet extends BaseWallet {
             addr.publicKey = addr.publicKey.substring(2);
         }
         let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.ED25519})
+        let privateKey = params.privateKey.startsWith("0x") || params.privateKey.startsWith("0X") ?params.privateKey.substring(2):params.privateKey;
+        if ((!params.privateKey.startsWith("0x")) && (!params.privateKey.startsWith("0X")) && !base.isHexString('0x' + params.privateKey)) {
+            const parts = params.privateKey.split(':');
+            if (parts.length != 2 || parts[0] != 'ed25519') {
+                throw Error("invalid privateKey")
+            }
+            const pk = base.fromBase58(parts[1])
+            privateKey = base.toHex(pk.slice(0, 32))
+        }
+        return super.signCommonMsg({privateKey:privateKey, message:data, signType:SignType.ED25519})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {
