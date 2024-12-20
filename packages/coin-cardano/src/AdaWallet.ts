@@ -1,6 +1,6 @@
 import {
     BaseWallet,
-    buildCommonSignMsg,
+    buildCommonSignMsg, jsonStringifyUniform,
     SignCommonMsgParams,
     ValidPrivateKeyData,
     ValidPrivateKeyParams
@@ -136,7 +136,7 @@ export class AdaWallet extends BaseWallet {
             const addr = await this.getNewAddress({privateKey:param.privateKey})
             let data = buildCommonSignMsg(addr.publicKey, param.message.walletId);
             let hash = base.magicHash(data);
-            return signData(param.message.address, base.toHex(hash), param.privateKey);
+            return Promise.resolve(jsonStringifyUniform(await signData(param.message.address, base.toHex(hash), param.privateKey)));
         } catch (e) {
             return Promise.reject(SignTxError);
         }
