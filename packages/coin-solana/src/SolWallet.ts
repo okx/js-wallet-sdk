@@ -28,7 +28,6 @@ import {base,signUtil} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
 import {ComputeBudgetProgram} from "./sdk/web3/programs/compute-budget";
 import {TokenStandard} from "./sdk/metaplex";
-import {getSerializedMplTransaction, getSerializedTokenTransferVersionedTransaction} from "./api";
 
 export type TransactionType = "transfer" | "tokenTransfer" | "mplTransfer"
 export type SolSignParam = {
@@ -122,11 +121,16 @@ export class SolWallet extends BaseWallet {
 
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let addr = await this.getNewAddress({privateKey:params.privateKey});
-        if(addr.publicKey.startsWith("0x")) {
-            addr.publicKey = addr.publicKey.substring(2);
+        let data;
+        if(params.message.text){
+            data = params.message.text
+        } else {
+            let addr = await this.getNewAddress({privateKey:params.privateKey});
+            if(addr.publicKey.startsWith("0x")) {
+                addr.publicKey = addr.publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
-        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         const buf = base.fromBase58(params.privateKey)
         return super.signCommonMsg({privateKey:base.toHex(buf), message:data, signType:SignType.ED25519})
     }

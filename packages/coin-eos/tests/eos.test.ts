@@ -23,10 +23,9 @@ describe("eos", () => {
     test("signCommonMsg", async () => {
         let wallet = new EosWallet();
         let sig = await wallet.signCommonMsg({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK", message:{walletId:"123456789"}});
-        console.log(sig)
-        let address = await wallet.getNewAddress({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK"})
-        console.log(address)
-        // assert.strictEqual(sig,"1b6bd88a148fbcf1bda468d0913b78bbf9b13365dda6ebb476fa0392b80b1b1da132f48968a3f13abbf1dc0c6e73328417a80e484c3e3ee45b86f1e54b9cd99f03");
+        assert.strictEqual(sig,"1b50854615dc25d0c856181f433789d6c2f8f88d1a15a95f14149d1e77ddd36761125dc2071414f3dc0281fb9c570392624309a3f83292ab2e874ef123f7c97b03,02afeca27ce8ad8627872e1b8dc2dfd2890520e07d90c0e06cc2c49fea358be9e2");
+        sig = await wallet.signCommonMsg({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK", message:{text:"123456789"}});
+        assert.strictEqual(sig,"1cc3ff3944439377583fd953ab2d90b2ededc64fe172092128cdc86764212f30c46d56e282047d34a2d0e8167e8cf3bb875b7f4547d939e2de929e958cadc227de,02afeca27ce8ad8627872e1b8dc2dfd2890520e07d90c0e06cc2c49fea358be9e2");
     });
     test('private key getNewAddress', async () => {
         const privateKey = "5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK"

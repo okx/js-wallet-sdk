@@ -48,6 +48,9 @@ describe("near", () => {
 
         sig = await wallet.signCommonMsg({privateKey:"ed25519:4ZBavqnpvLM5m96gvuSK5iGTFSo253TDzdcuiVUdyDY7njHADF5tv5LNHyfFnJiSNt7wthdxGjYNFL89vDAtqkmh", message:{walletId:"7FC4E090-2B10-4F0C-94B0-AC7014B8CCC5"}});
         assert.strictEqual(sig,"4ab8ba7079680447aaa2e44dc2a4c60bf35bfe4f1417db8e18d51fd9287a67be6b9f5134024dced167f36deeb4f957109dbe9c740f6881d1e3d18eb6f0f80f0c")
+
+        sig = await wallet.signCommonMsg({privateKey:"ed25519:4ZBavqnpvLM5m96gvuSK5iGTFSo253TDzdcuiVUdyDY7njHADF5tv5LNHyfFnJiSNt7wthdxGjYNFL89vDAtqkmh", message:{text:"7FC4E090-2B10-4F0C-94B0-AC7014B8CCC5"}});
+        assert.strictEqual(sig,"e35d274f5be9dd222a5b0a3896db128bff02e7c8576deefe71a40af099abd531df68e081c639dcbec206fdf9ddb2942fec2049bb6ec3c80253d0a4231aa6560c")
     });
 
     test("getRandomPrivateKey", async () => {

@@ -225,11 +225,16 @@ export class StarknetWallet extends BaseWallet {
         }
     }
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let addr = await this.getNewAddress({privateKey:params.privateKey});
-        if(addr.publicKey.startsWith("0x")) {
-            addr.publicKey = addr.publicKey.substring(2);
+        let data;
+        if(params.message.text){
+            data=params.message.text;
+        } else {
+            let addr = await this.getNewAddress({privateKey:params.privateKey});
+            if(addr.publicKey.startsWith("0x")) {
+                addr.publicKey = addr.publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
-        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         let msgHash = base.magicHash(data);
         let msgHashFirst = msgHash.slice(0,16)
         let msgHashEnd = msgHash.slice(16);

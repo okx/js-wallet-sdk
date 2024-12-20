@@ -15,6 +15,8 @@ describe("address", () => {
         let wallet = new SolWallet();
         let sig = await wallet.signCommonMsg({privateKey:privateKeyBase58, message:{walletId:"123456789"}});
         assert.strictEqual(sig,"10a3e37d8d1eb5aea9b3936c7f99fe6997d5f8b575dd3b200cd273e2a72e19072e2f2312e3cdbead467307dbafb5f7aac29bb445454b9b497d6c4e385ffe5205")
+        sig = await wallet.signCommonMsg({privateKey:privateKeyBase58, message:{text:"123456789"}});
+        assert.strictEqual(sig,"5631301793ff16f0f2966e1671b8cd178018812e6fb6cde954729bd50c68e42aa662e297654d8037b43fc009fd1a4179f91cf876b5c99ffe3ae3672d8237ae07")
     });
 
     test('private key', async () => {

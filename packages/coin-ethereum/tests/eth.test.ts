@@ -14,9 +14,10 @@ describe("eth api", () => {
 
     test("signCommonMsg", async () => {
         let wallet = new EthWallet();
-        console.log(await wallet.getNewAddress({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"}))
         let sig = await wallet.signCommonMsg({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353", message:{walletId:"123456789"}});
         expect(sig).toEqual("1b5a5bab2a414547358a95e63bfd4e7564831042bf57aa0303b072eec543aa1d4b51afb5c6f9889edb3dd6a50e8c957b296731021ba822819573d21093a8c06e46")
+        sig = await wallet.signCommonMsg({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353", message:{text:"123456789"}});
+        expect(sig).toEqual("1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
     });
 
     test("address", async () => {

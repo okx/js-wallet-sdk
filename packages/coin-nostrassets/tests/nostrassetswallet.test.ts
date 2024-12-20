@@ -13,6 +13,8 @@ describe("nostr", () => {
         let wallet = new NostrAssetsWallet();
         let sig = await wallet.signCommonMsg({privateKey:"nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y", message:{walletId:"123456789"}});
         assert.strictEqual(sig,"1c4fe0c27c944b99630468c06fb9d37435c6f14e1537b1c8a725ff11c3fb35bfb6286ec3297553f45791d63fa828a957f752d357c8d58122862d5ba123dd5ee3cf")
+        sig = await wallet.signCommonMsg({privateKey:"nsec1hvwfx5ytjck8a7c2xsyys5ut930hhfkyfe2l2guf4gfj5t7n2gdqxvh70y", message:{text:"123456789"}});
+        assert.strictEqual(sig,"1c543e650db66566470f2e1588a4a7e00c1c0de445c3cf900d380f02747a8bb8d32c6f5265b332e0a825083c0abee38d3e0a0515fafd191c149905f4a92750ee98")
     });
 
     test("random", async () => {

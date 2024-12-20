@@ -656,11 +656,16 @@ export class AptosWallet extends BaseWallet {
     }
 
    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
-        if(addr.publicKey.startsWith("0x")) {
-            addr.publicKey = addr.publicKey.substring(2);
+        let data;
+        if (params.message.text){
+            data=params.message.text;
+        } else {
+            let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+            if(addr.publicKey.startsWith("0x")) {
+                addr.publicKey = addr.publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
-        let data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.ED25519})
     }
 
