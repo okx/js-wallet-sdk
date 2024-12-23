@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-cardano",
-  "version": "1.0.9-beta.10",
+  "version": "1.0.9-beta.11",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
