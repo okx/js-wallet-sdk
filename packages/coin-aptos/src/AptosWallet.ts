@@ -26,7 +26,7 @@ import {
     burnCoin,
     claimNFTTokenPayload,
     createRawTransaction,
-    createRawTransactionByABI,
+    createRawTransactionByABI, createRawTransactionByABIV2,
     generateBCSSimulateTransaction,
     generateBCSTransaction,
     HexString,
@@ -52,6 +52,8 @@ import {Network} from "./v2/utils/apiEndpoints";
 import {signTransaction} from "./v2/internal/transactionSubmission";
 import {TransactionPayload} from "./transaction_builder/aptos_types";
 import { Deserializer as DeserializerBcs } from "./transaction_builder/bcs";
+import {ed25519} from "@noble/curves/ed25519";
+import {hexToBytes} from "@noble/hashes/utils";
 
 export type AptosParam = {
     type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" |
@@ -321,10 +323,12 @@ export class AptosWallet extends BaseWallet {
                             BigInt(baseParam.gasUnitPrice),
                             BigInt(baseParam.expirationTimestampSecs))
                         tx = generateBCSTransaction(account, rawTxn);
-                    }else {
-                        const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
-                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
-                        tx = generateBCSTransaction(account, rawTxn);
+                    } else {
+                        // const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        //     BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
+                        // tx = generateBCSTransaction(account, rawTxn);
+                        return createRawTransactionByABIV2(senderAccount, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi);
                     }
                     break
                 }
@@ -345,10 +349,12 @@ export class AptosWallet extends BaseWallet {
                             BigInt(baseParam.expirationTimestampSecs))
                         tx = generateBCSSimulateTransaction(account, rawTxn);
 
-                    }else {
-                        const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
-                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
-                        tx = generateBCSSimulateTransaction(account, rawTxn);
+                    } else {
+                        return createRawTransactionByABIV2(senderAccount, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi);
+                        // const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        //     BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
+                        // tx = generateBCSSimulateTransaction(account, rawTxn);
                     }
 
                     break

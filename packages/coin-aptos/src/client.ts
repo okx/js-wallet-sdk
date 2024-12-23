@@ -8,13 +8,8 @@ import {
     buildRawTransactionByABI,
     ABIBuilderConfig,
     TransactionBuilder,
-    fetchABI,
-    TransactionBuilderABI,
 } from './transaction_builder';
 import {
-    AccountAddress,
-    ModuleId,
-    RawTransaction,
     SignedTransaction, StructTag,
     TransactionAuthenticatorEd25519,
     TransactionPayload, TypeTag, TypeTagParser,
@@ -22,7 +17,16 @@ import {
 import {AnyNumber, bcsToBytes, Deserializer, Uint64, Uint8} from './transaction_builder/bcs';
 import {EntryFunctionId, MoveModuleBytecode, MoveType} from './transaction_builder/move_types';
 import { base, signUtil } from '@okxweb3/crypto-lib';
-import {ArgumentABI, EntryFunctionABI, TypeArgumentABI} from "./transaction_builder/aptos_types/abi";
+import {
+    Account,
+    AccountAddress,
+    AptosConfig,
+    generateSignedTransaction,
+    getFunctionParts,
+    Network,
+    Transaction,
+    SignedTransaction as SignedTransactionV2, Serializer
+} from "./v2";
 declare const TextEncoder: any;
 
 /**
@@ -390,6 +394,56 @@ export function createRawTransactionByABI(sender: HexString,
     data.arguments || data.functionArguments
   );
 }
+
+
+export function createRawTransactionByABIV2(sender: Account,
+                                          sequenceNumber: Uint64,
+                                          chainId: Uint8,
+                                          maxGasAmount: Uint64,
+                                          gasUnitPrice: Uint64,
+                                          expirationTimestampSecs: Uint64,
+                                          callData: string,
+                                          moduleAbi: string) {
+    const dataP = JSON.parse(callData)
+    const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
+    const { moduleAddress, moduleName, functionName } = getFunctionParts(dataP.function);
+    let moceModule = modules.find((item)=>{
+        if(moduleAddress === item.abi?.address && moduleName == item.abi.name ) {
+            let res = item.abi?.exposed_functions.find((func) => {
+                return functionName == func.name
+            });
+            if (res){
+                return item;
+            }
+        }
+    });
+    const aptosConfig = new AptosConfig({network: Network.CUSTOM, moveModule: JSON.stringify(moceModule)});
+    const transaction = new Transaction(aptosConfig);
+    const rawTxn = transaction.build.simple({
+        sender: sender.accountAddress,
+        withFeePayer: false,
+        data: {
+            function: dataP.function,
+            typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
+            functionArguments: dataP.arguments || dataP.functionArguments,
+        },
+        options: {
+            maxGasAmount: Number(maxGasAmount),
+            gasUnitPrice: Number(gasUnitPrice),
+            expireTimestamp: Number(expirationTimestampSecs),
+            chainId: Number(chainId),
+            accountSequenceNumber: Number(sequenceNumber),
+        },
+    }).then(rawTx => {
+        const senderSignature = transaction.sign({signer: sender, transaction: rawTx});
+        let signedTx = new SignedTransactionV2(rawTx.rawTransaction, senderSignature);
+        let buffer = new Serializer();
+        signedTx.serialize(buffer)
+        return base.toHex(buffer.toUint8Array());
+    });
+    return rawTxn;
+}
+
 
 export async function signMessage(message: string, privateKey: string): Promise<string> {
     const textEncoder = new TextEncoder();
