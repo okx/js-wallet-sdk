@@ -141,7 +141,7 @@ export class AdaWallet extends BaseWallet {
                data = buildCommonSignMsg(addr.publicKey, param.message.walletId);
             }
             let hash = base.magicHash(data);
-            return Promise.resolve(jsonStringifyUniform(await signData(param.message.address, base.toHex(hash), param.privateKey)));
+            return Promise.resolve(jsonStringifyUniform(await signData(addr.address, base.toHex(hash), param.privateKey)));
         } catch (e) {
             return Promise.reject(SignTxError);
         }
