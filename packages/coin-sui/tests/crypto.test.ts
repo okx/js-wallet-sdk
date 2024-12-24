@@ -16,6 +16,9 @@ describe("cryptography", () => {
 
         sig = await wallet.signCommonMsg({privateKey:"31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a", message:{text:"123456789"}});
         assert.strictEqual(sig,"dbd5c3595938a31d0507e20e823e317a52d8e750edd3eb0d4b0068a91b48f37cd5b84c1ed897e1c969ed3c99b34de854bb66ab4129a9a2d6f2f7ce1b1cca160a")
+
+        console.log(await wallet.getNewAddress({privateKey:"suiprivkey1qqvegc25e2rx3de999cfs3ftvu55e572cxwwsen06qg752y3gdvlq4gzdkt"}))
+        console.log(await wallet.signCommonMsg({privateKey:"suiprivkey1qqvegc25e2rx3de999cfs3ftvu55e572cxwwsen06qg752y3gdvlq4gzdkt", message:{walletId:"5E0D82CE-F00B-43AD-8576-2ADF6B51A67C"}}))
     });
 
     test("tryDecodeSuiPrivateKey", async () => {

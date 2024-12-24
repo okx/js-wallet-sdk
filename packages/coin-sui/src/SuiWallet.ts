@@ -109,7 +109,8 @@ export class SuiWallet extends BaseWallet {
             }
             data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
-        return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.ED25519})
+        const pri = tryDecodeSuiPrivateKey(params.privateKey)
+        return super.signCommonMsg({privateKey:pri, message:data, signType:SignType.ED25519})
     }
 
 
