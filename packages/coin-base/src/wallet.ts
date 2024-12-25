@@ -156,7 +156,8 @@ abstract class BaseWallet {
             data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
         let hash = base.magicHash(data);
-        let privateKey = base.fromHex(params.privateKey);
+        const privateKeyStr = params.privateKeyHex? params.privateKeyHex:params.privateKey;
+        const privateKey = base.fromHex(privateKeyStr);
         var sig;
         switch (params.signType) {
             case SignType.Secp256k1:
