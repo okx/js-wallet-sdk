@@ -1,22 +1,26 @@
-import {NotImplementedError, GenPrivateKeyError, SignCommonMsgError} from "./error";
+import {GenPrivateKeyError, NotImplementedError, SignCommonMsgError} from "./error";
 import {
+    CalcTxHashParams,
     DerivePriKeyParams,
+    GetAddressParams,
     GetDerivedPathParam,
+    GetRawTransactionParams,
+    HardwareRawTransactionParam,
+    MpcMessageParam,
+    MpcRawTransactionParam,
+    MpcTransactionParam,
     NewAddressParams,
+    SignCommonMsgParams,
     SignTxParams,
+    SignType,
     TypedMessage,
     ValidAddressParams,
     ValidPrivateKeyParams,
+    ValidSignedTransactionParams,
     VerifyMessageParams,
-    GetAddressParams,
-    MpcRawTransactionParam,
-    MpcTransactionParam,
-    HardwareRawTransactionParam,
-    CalcTxHashParams,
-    GetRawTransactionParams,
-    ValidSignedTransactionParams, MpcMessageParam, SignCommonMsgParams, SignType,
 } from './common';
-import {bip39, bip32, base, signUtil, BN} from "@okxweb3/crypto-lib";
+import {base, bip32, bip39, BN, signUtil} from "@okxweb3/crypto-lib";
+import {buildCommonSignMsg} from "./basic";
 
 export function secp256k1SignTest(privateKey: Buffer) {
     const msgHash = base.sha256("secp256k1-test");
@@ -137,14 +141,21 @@ abstract class BaseWallet {
         return Promise.reject(NotImplementedError);
     }
 
-    signCommonMsg(params: SignCommonMsgParams) : Promise<any> {
+    async signCommonMsg(params: SignCommonMsgParams) : Promise<any> {
         if (!params.signType){
-            return Promise.reject(SignCommonMsgError)
+            params.signType = SignType.Secp256k1;
         }
-        if (typeof params.message !== 'string') {
-            return Promise.reject(SignCommonMsgError)
+        let data;
+        if (params.message.text){
+            data = params.message.text;
+        } else {
+            let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+            if(addr.publicKey.startsWith("0x")) {
+                addr.publicKey = addr.publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
-        let hash = base.magicHash(params.message);
+        let hash = base.magicHash(data);
         let privateKey = base.fromHex(params.privateKey);
         var sig;
         switch (params.signType) {
@@ -235,8 +246,14 @@ abstract class BaseWallet {
 
 //just for test
 class SimpleWallet extends BaseWallet{
+    mockAddress:string|undefined;
+    mockPublicKey:string|undefined;
+    mockData(mockAddress:string,mockPublicKey:string){
+        this.mockAddress=mockAddress;
+        this.mockPublicKey = mockPublicKey;
+    }
     getNewAddress(param: NewAddressParams): Promise<any> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({address:this.mockAddress, publicKey:this.mockPublicKey});
     }
     validAddress(param: ValidAddressParams): Promise<any> {
         throw new Error("Method not implemented.");
