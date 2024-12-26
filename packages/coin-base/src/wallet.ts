@@ -37,7 +37,7 @@ export function makeSignature(v: number, r: Buffer, s: Buffer): string {
     const rStr = padWithZeroes(toUnsigned(rSig).toString('hex'), 64);
     const sStr = padWithZeroes(toUnsigned(sSig).toString('hex'), 64);
     const vStr = base.stripHexPrefix(intToHex(vSig));
-    return vStr.concat(rStr,sStr);
+    return vStr.concat(rStr, sStr);
 }
 
 export function intToHex(i: Number) {
@@ -45,7 +45,8 @@ export function intToHex(i: Number) {
 
     return `0x${hex}`;
 }
-export const toUnsigned = function(num: BN): Buffer {
+
+export const toUnsigned = function (num: BN): Buffer {
     return Buffer.from(num.toTwos(256).toArray())
 }
 
@@ -65,11 +66,11 @@ export function padWithZeroes(hexString: string, targetLength: number): string {
     return String.prototype.padStart.call(hexString, targetLength, '0');
 }
 
-export const fromSigned = function(num: Buffer): BN {
+export const fromSigned = function (num: Buffer): BN {
     return new BN(num).fromTwos(256)
 }
 
-export function ecdsaSign(msgHash: Buffer, privateKey: Buffer, chainId?: number): {v: number, r: Buffer, s: Buffer} {
+export function ecdsaSign(msgHash: Buffer, privateKey: Buffer, chainId?: number): { v: number, r: Buffer, s: Buffer } {
     const {signature, recovery} = signUtil.secp256k1.sign(msgHash, privateKey) // { signature, recid: recovery }
 
     const r = Buffer.from(signature.slice(0, 32))
@@ -91,7 +92,7 @@ abstract class BaseWallet {
         try {
             while (true) {
                 const privateKey = base.randomBytes(32)
-                if(secp256k1SignTest(privateKey)) {
+                if (secp256k1SignTest(privateKey)) {
                     return Promise.resolve(base.toHex(privateKey, true));
                 }
             }
@@ -106,7 +107,7 @@ abstract class BaseWallet {
         return bip39.mnemonicToSeed(param.mnemonic)
             .then((masterSeed: Buffer) => {
                 let childKey = bip32.fromSeed(masterSeed).derivePath(param.hdPath)
-                if(childKey.privateKey) {
+                if (childKey.privateKey) {
                     let privateKey = base.toHex(childKey.privateKey);
                     return Promise.resolve("0x" + privateKey);
                 } else {
@@ -141,40 +142,48 @@ abstract class BaseWallet {
         return Promise.reject(NotImplementedError);
     }
 
-    async signCommonMsg(params: SignCommonMsgParams) : Promise<any> {
-        if (!params.signType){
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        if (!params.signType) {
             params.signType = SignType.Secp256k1;
         }
         let data;
-        if (params.message.text){
+        if (params.message.text) {
             data = params.message.text;
         } else {
-            if (params.publicKey){
+            if (params.publicKey) {
+                if (params.publicKey.startsWith("0x")) {
+                    params.publicKey = params.publicKey.substring(2);
+                }
                 data = buildCommonSignMsg(params.publicKey, params.message.walletId);
             } else {
-                let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType,hrp: params.hrp,version:params.version});
-                if(addr.publicKey.startsWith("0x")) {
+                let addr = await this.getNewAddress({
+                    privateKey: params.privateKey,
+                    addressType: params.addressType,
+                    hrp: params.hrp,
+                    version: params.version
+                });
+                if (addr.publicKey.startsWith("0x")) {
                     addr.publicKey = addr.publicKey.substring(2);
                 }
                 data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
             }
         }
         let hash = base.magicHash(data);
-        const privateKeyStr = params.privateKeyHex? params.privateKeyHex:params.privateKey;
+        const privateKeyStr = params.privateKeyHex ? params.privateKeyHex : params.privateKey;
         const privateKey = base.fromHex(privateKeyStr);
         var sig;
         switch (params.signType) {
             case SignType.Secp256k1:
                 const {v, r, s} = ecdsaSign(Buffer.from(hash), privateKey)
-                return Promise.resolve(makeSignature(v,r,s));
+                return Promise.resolve(makeSignature(v, r, s));
             case SignType.ECDSA_P256:
-                sig= signUtil.p256.sign(Buffer.from(hash), privateKey).signature
+                sig = signUtil.p256.sign(Buffer.from(hash), privateKey).signature
                 return Promise.resolve(base.toHex(sig));
             case SignType.ED25519:
-                sig= signUtil.ed25519.sign(hash, privateKey)
+                sig = signUtil.ed25519.sign(hash, privateKey)
                 return Promise.resolve(base.toHex(sig));
             case SignType.StarknetSignType:
-                sig=  signUtil.schnorr.stark.sign(hash, privateKey).toCompactRawBytes();
+                sig = signUtil.schnorr.stark.sign(hash, privateKey).toCompactRawBytes();
                 return Promise.resolve(base.toHex(sig));
             case SignType.TezosSignType:
                 return Promise.reject("not support");
@@ -240,7 +249,7 @@ abstract class BaseWallet {
         return Promise.reject(NotImplementedError)
     }
 
-    validSignedTransaction(param: ValidSignedTransactionParams): Promise<any>  {
+    validSignedTransaction(param: ValidSignedTransactionParams): Promise<any> {
         return Promise.reject(NotImplementedError)
     }
 
@@ -250,19 +259,23 @@ abstract class BaseWallet {
 }
 
 //just for test
-class SimpleWallet extends BaseWallet{
-    mockAddress:string|undefined;
-    mockPublicKey:string|undefined;
-    mockData(mockAddress:string,mockPublicKey:string){
-        this.mockAddress=mockAddress;
+class SimpleWallet extends BaseWallet {
+    mockAddress: string | undefined;
+    mockPublicKey: string | undefined;
+
+    mockData(mockAddress: string, mockPublicKey: string) {
+        this.mockAddress = mockAddress;
         this.mockPublicKey = mockPublicKey;
     }
+
     getNewAddress(param: NewAddressParams): Promise<any> {
-        return Promise.resolve({address:this.mockAddress, publicKey:this.mockPublicKey});
+        return Promise.resolve({address: this.mockAddress, publicKey: this.mockPublicKey});
     }
+
     validAddress(param: ValidAddressParams): Promise<any> {
         throw new Error("Method not implemented.");
     }
+
     signTransaction(param: SignTxParams): Promise<any> {
         throw new Error("Method not implemented.");
     }
