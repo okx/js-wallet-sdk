@@ -152,7 +152,7 @@ abstract class BaseWallet {
             if (params.publicKey){
                 data = buildCommonSignMsg(params.publicKey, params.message.walletId);
             } else {
-                let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+                let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType,hrp: params.hrp,version:params.version});
                 if(addr.publicKey.startsWith("0x")) {
                     addr.publicKey = addr.publicKey.substring(2);
                 }
