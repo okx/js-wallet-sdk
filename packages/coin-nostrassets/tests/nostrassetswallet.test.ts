@@ -1,6 +1,5 @@
 import {NostrAssetsWallet, nsecFromPrvKey, CryptTextParams, verifySignature, nipOpType, decodeBytes} from "../src";
 import {bip39} from "@okxweb3/crypto-lib";
-import {base58} from "@scure/base";
 import {test} from "@jest/globals";
 import assert from "assert";
 

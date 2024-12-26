@@ -232,17 +232,6 @@ export class NearWallet extends BaseWallet {
 
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-
-        let data;
-        if(params.message.text){
-            data = params.message.text;
-        } else {
-            let addr = await this.getNewAddress({privateKey:params.privateKey});
-            if(addr.publicKey.startsWith("0x")) {
-                addr.publicKey = addr.publicKey.substring(2);
-            }
-            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        }
         let privateKey = params.privateKey.startsWith("0x") || params.privateKey.startsWith("0X") ?params.privateKey.substring(2):params.privateKey;
         if ((!params.privateKey.startsWith("0x")) && (!params.privateKey.startsWith("0X")) && !base.isHexString('0x' + params.privateKey)) {
             const parts = params.privateKey.split(':');
@@ -252,7 +241,7 @@ export class NearWallet extends BaseWallet {
             const pk = base.fromBase58(parts[1])
             privateKey = base.toHex(pk.slice(0, 32))
         }
-        return super.signCommonMsg({privateKey:privateKey, message:data, signType:SignType.ED25519})
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

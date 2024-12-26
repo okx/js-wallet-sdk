@@ -24,7 +24,6 @@ import {SignTxParams} from "@okxweb3/coin-base";
 import {serialize} from "borsh";
 import {PublicKey} from "../src/keypair";
 import {MessagePayload} from "../src/nearlib";
-import {base58} from "@scure/base";
 import {test} from "@jest/globals";
 import assert from "assert";
 
@@ -58,7 +57,7 @@ describe("near", () => {
         let privateKey = await wallet.getRandomPrivateKey();
         let addr = await wallet.getNewAddress({privateKey: privateKey})
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        let addr2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base58.encode(p)})
+        let addr2 = await wallet.getNewAddress({privateKey: 'ed25519:' +  base.toBase58(p)})
     })
 
 
@@ -73,7 +72,7 @@ describe("near", () => {
         expect((await wallet.getNewAddress({privateKey:'0X'+privateKey.toUpperCase()})).address).toEqual(expectedAddress)
 
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        const res2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base58.encode(p)});
+        const res2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base.base58.encode(p)});
         expect(res2.address!='').toEqual(true);
     });
 
@@ -108,7 +107,7 @@ describe("near", () => {
         expect(res.isValid).toEqual(true);
 
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        const res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base58.encode(p)});
+        const res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base.base58.encode(p)});
         expect(res2.isValid).toEqual(true);
     });
 
@@ -421,7 +420,6 @@ describe("near", () => {
             }
         }
         let result = await wallet.signTransaction(param)
-        console.info(result)
         expect(result).toEqual("QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN")
     });
 
@@ -509,7 +507,7 @@ describe("near", () => {
         }
         let result = await wallet.signTransaction(param)
         console.info(result)
-        expect(result).toEqual(["QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN",])
+        expect(result).toEqual(["QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN"])
     });
 
     test("createAccount", async () => {

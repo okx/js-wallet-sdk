@@ -121,18 +121,8 @@ export class SolWallet extends BaseWallet {
 
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let data;
-        if(params.message.text){
-            data = params.message.text
-        } else {
-            let addr = await this.getNewAddress({privateKey:params.privateKey});
-            if(addr.publicKey.startsWith("0x")) {
-                addr.publicKey = addr.publicKey.substring(2);
-            }
-            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        }
         const buf = base.fromBase58(params.privateKey)
-        return super.signCommonMsg({privateKey:base.toHex(buf), message:data, signType:SignType.ED25519})
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:base.toHex(buf), message:params.message, signType:SignType.ED25519})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

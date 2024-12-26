@@ -99,18 +99,8 @@ export class SuiWallet extends BaseWallet {
     }
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let data;
-        if(params.message.text){
-            data = params.message.text;
-        } else {
-            let addr = await this.getNewAddress({privateKey:params.privateKey});
-            if(addr.publicKey.startsWith("0x")) {
-                addr.publicKey = addr.publicKey.substring(2);
-            }
-            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        }
         const pri = tryDecodeSuiPrivateKey(params.privateKey)
-        return super.signCommonMsg({privateKey:pri, message:data, signType:SignType.ED25519})
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:pri, message:params.message, signType:SignType.ED25519})
     }
 
 

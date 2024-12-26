@@ -18,6 +18,8 @@ describe("eth api", () => {
         expect(sig).toEqual("1b5a5bab2a414547358a95e63bfd4e7564831042bf57aa0303b072eec543aa1d4b51afb5c6f9889edb3dd6a50e8c957b296731021ba822819573d21093a8c06e46")
         sig = await wallet.signCommonMsg({privateKey:"0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353", message:{text:"123456789"}});
         expect(sig).toEqual("1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
+        sig = await wallet.signCommonMsg({privateKey:"0xc20b289a5aef813a3767cbe601ef8a059e0c79fec117fd9cb1190676e5af1f1a", message:{text:"ed25519:G6mk3vRxgjFA4gjHDaNvxqdpofgkrkon6LqhsnLgmRVB"}});
+        expect(sig).toEqual("1bf6a3ec2cb2db1850acf1a4e4c736f559f016d19ab0db6690e679a9eddb20a98c5ea9dcdb4110823d079de1ac65ea14f2adc00ebe8db4cbdb6bf2191833b56011")
     });
 
     test("address", async () => {

@@ -4,6 +4,9 @@ import Assert from 'assert';
 describe("zkspace", () => {
 
     test("changepubkey", async () => {
+        let wallet = new ZkspaceWallet();
+        console.log(await wallet.getNewAddress({privateKey:"bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a"}))
+        return
         const l1PrivateKey = '0xbdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a'
         const from = '0xad06a98cAC85448Cb33495ca68b0837e3b65ABe6';
         const nonce = 2

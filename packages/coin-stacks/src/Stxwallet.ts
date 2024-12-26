@@ -278,20 +278,10 @@ export class StxWallet extends BaseWallet {
 
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        let data;
-        if(params.message.text){
-            data=params.message.text;
-        } else {
-            let addr = await this.getNewAddress({privateKey:params.privateKey, version:params.version});
-            if(addr.publicKey.startsWith("0x")) {
-                addr.publicKey = addr.publicKey.substring(2);
-            }
-            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        }
         let key = params.privateKey.toLowerCase().startsWith("0x")? params.privateKey.substring(2):params.privateKey
         const privateKey = createStacksPrivateKey(key.toLowerCase());
         const priKey = privateKey.compressed? base.toHex(privateKey.data.slice(0,32)):base.toHex(privateKey.data);
-        return super.signCommonMsg({privateKey:priKey, message:data, signType:SignType.Secp256k1})
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:priKey, message:params.message, signType:SignType.Secp256k1,version:params.version})
     }
 
     async signMessage(param: SignTxParams): Promise<any> {

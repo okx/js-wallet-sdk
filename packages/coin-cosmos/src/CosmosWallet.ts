@@ -202,17 +202,8 @@ export abstract class CosmosWallet extends BaseWallet {
   }
 
   async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-    let data;
-    if(params.message.text){
-      data=params.message.text;
-    } else {
-      let addr = await this.getNewAddress({privateKey:params.privateKey, hrp: params.hrp});
-      if(addr.publicKey.startsWith("0x")) {
-        addr.publicKey = addr.publicKey.substring(2);
-      }
-      data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-    }
-    return super.signCommonMsg({privateKey:params.privateKey, message:data, signType:SignType.Secp256k1})
+    let hrp = params.hrp? params.hrp:this.getPrefix();
+    return super.signCommonMsg({privateKey:params.privateKey, message:params.message,hrp:hrp, signType:SignType.Secp256k1})
   }
 
   async signMessage(param: SignTxParams): Promise<string> {

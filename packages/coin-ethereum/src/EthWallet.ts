@@ -198,19 +198,9 @@ export class EthWallet extends BaseWallet {
         }
     }
 
-    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
-        // let data;
-        // if(params.message.text) {
-        //     data = params.message.text;
-        // } else {
-        //     let addr = await this.getNewAddress({privateKey:params.privateKey});
-        //     if(addr.publicKey.startsWith("0x")) {
-        //         addr.publicKey = addr.publicKey.substring(2);
-        //     }
-        //     data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
-        // }
-        return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.Secp256k1})
-    }
+    // async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+    //     return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.Secp256k1})
+    // }
 
     async signMessage(param: SignTxParams): Promise<string> {
         let privateKey;

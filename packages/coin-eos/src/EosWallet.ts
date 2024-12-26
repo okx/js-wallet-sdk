@@ -93,16 +93,6 @@ export class EosWallet extends BaseWallet {
         const privateKey = stringToPrivateKey(params.privateKey);
         const publicKey = signUtil.secp256k1.publicKeyCreate(privateKey.data, true);
         let publicKeyHex = base.toHex(publicKey);
-        console.log()
-        // if (params.message.text){
-        //     data = params.message.text;
-        // } else {
-        //     let addr = await this.getNewAddress({privateKey:params.privateKey});
-        //     if(addr.publicKey.startsWith("0x")) {
-        //         addr.publicKey = addr.publicKey.substring(2);
-        //     }
-        //     data = buildCommonSignMsg(publicKeyHex, params.message.walletId);
-        // }
         let sig = await super.signCommonMsg({privateKey:base.toHex(privateKey.data),publicKey:publicKeyHex, message:params.message, signType:SignType.Secp256k1});
         return Promise.resolve(`${sig},${publicKeyHex}`)
     }

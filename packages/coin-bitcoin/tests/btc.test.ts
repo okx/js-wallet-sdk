@@ -37,6 +37,10 @@ describe("bitcoin", () => {
 
         sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{text:"123456789"}});
         assert.strictEqual(sig,"1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
+
+        // sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:"segwit_taproot", message:{walletId:"123456789"}});
+        // console.log(sig)
+        // console.log(await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:"segwit_taproot"}))
     });
 
     test("getNewAddress", async () => {
