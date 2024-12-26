@@ -150,11 +150,9 @@ abstract class BaseWallet {
         if (params.message.text) {
             data = params.message.text;
         } else {
+            let publicKey;
             if (params.publicKey) {
-                if (params.publicKey.startsWith("0x")) {
-                    params.publicKey = params.publicKey.substring(2);
-                }
-                data = buildCommonSignMsg(params.publicKey, params.message.walletId);
+                publicKey = params.publicKey;
             } else {
                 let addr = await this.getNewAddress({
                     privateKey: params.privateKey,
@@ -162,11 +160,12 @@ abstract class BaseWallet {
                     hrp: params.hrp,
                     version: params.version
                 });
-                if (addr.publicKey.startsWith("0x")) {
-                    addr.publicKey = addr.publicKey.substring(2);
-                }
-                data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+                publicKey = addr.publicKey;
             }
+            if (publicKey.startsWith("0x")) {
+                publicKey = publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(publicKey, params.message.walletId);
         }
         let hash = base.magicHash(data);
         const privateKeyStr = params.privateKeyHex ? params.privateKeyHex : params.privateKey;
