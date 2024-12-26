@@ -149,11 +149,15 @@ abstract class BaseWallet {
         if (params.message.text){
             data = params.message.text;
         } else {
-            let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
-            if(addr.publicKey.startsWith("0x")) {
-                addr.publicKey = addr.publicKey.substring(2);
+            if (params.publicKey){
+                data = buildCommonSignMsg(params.publicKey, params.message.walletId);
+            } else {
+                let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+                if(addr.publicKey.startsWith("0x")) {
+                    addr.publicKey = addr.publicKey.substring(2);
+                }
+                data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
             }
-            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
         }
         let hash = base.magicHash(data);
         const privateKeyStr = params.privateKeyHex? params.privateKeyHex:params.privateKey;

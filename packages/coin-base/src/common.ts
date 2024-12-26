@@ -121,6 +121,7 @@ export enum SignType {
 export type SignCommonMsgParams = {
   privateKey: string;
   privateKeyHex?: string;
+  publicKey?: string;
   signType?: SignType;
   message: any;
   addressType?: string;

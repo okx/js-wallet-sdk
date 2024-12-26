@@ -1,11 +1,11 @@
-import {BaseWallet, buildCommonSignMsg, SignType, SimpleWallet} from "../src";
+import {BaseWallet, buildCommonSignMsg, SignCommonMsgParams, SignType, SimpleWallet} from "../src";
 import assert from "assert";
 
 describe("crypto", () => {
     test("magicHash", async () => {
         let wallet = new SimpleWallet();
         let data = buildCommonSignMsg("0x067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26", "123456789")
-        let param = {
+        let param:SignCommonMsgParams = {
             privateKey: "aa2b47a2d76ddce0a9d2d11d03baa1d60c90aa97e0e7064287c2268e85637e80",
             signType: SignType.Secp256k1,
             message: {}
@@ -26,27 +26,26 @@ describe("crypto", () => {
             let actual = `{"coin_name":"${coinName}","data":"{\\"pubKey\\":\\"${publicKey}\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"${publicKey}\\",\\"chainSign\\":\\"${sig}\\",\\"chainIndexList\\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
             let expected = `{"coin_name":"aptos","data":"{\\"pubKey\\":\\"067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26\\",\\"chainSign\\":\\"fb2e769833b0f4d7e33f8fdea12f542337522701af82e06e272640945b9e71e024b0acf1089aaf3930a5c58f89c1dd034d417f5e04e4c4f42b67a4f29dcabf07\\",\\"chainIndexList\\":[637]}]}","func_name":"verify_web_data"}`
             assert.strictEqual(actual, expected);
+            // return
+        }
+        if(true){
+            //bitcoin
+            param.privateKey="0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"
+            // data = buildCommonSignMsg("03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045", "123456789")
+            let addr = "1GhLyRg4zzFixW3ZY5ViFzT4W5zTT9h7Pc";
+            let publicKey = "03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045";
+            wallet.mockData(addr,publicKey);
+            param.message = {walletId:"123456789"};
+            param.signType = SignType.Secp256k1
+            param.publicKey = publicKey;
+            let sig = await wallet.signCommonMsg(param)
+            let coinName="bitcoin";
+            let chainIndex = 0;
+            let actual = `{"coin_name":"${coinName}","data":"{\\"pubKey\\":\\"${publicKey}\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"${publicKey}\\",\\"chainSign\\":\\"${sig}\\",\\"chainIndexList\\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
+            let expected=`{"coin_name":"bitcoin","data":"{\\"pubKey\\":\\"03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045\\",\\"chainSign\\":\\"1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02\\",\\"chainIndexList\\":[0]}]}","func_name":"verify_web_data"}`
+            assert.strictEqual(actual,expected);
             return
         }
-        // if(false){
-        //     //bitcoin
-        //     param.privateKey="0743bf0e3864122edff9f143006f0a0d61b16df3f676c8070dac1d0f42d78353"
-        //     // data = buildCommonSignMsg("03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045", "123456789")
-        //     let addr = "1GhLyRg4zzFixW3ZY5ViFzT4W5zTT9h7Pc";
-        //     let publicKey = "03052b16e71e4413f24f8504c3b188b7edebf97b424582877e4993ef9b23d0f045";
-        //     wallet.mockData(addr,publicKey);
-        //     param.message = {walletId:"123456789"};
-        //     param.signType = SignType.Secp256k1
-        //     let sig = await wallet.signCommonMsg(param)
-        //     let coinName="bitcoin";
-        //     let chainIndex = 0;
-        //     let actual = `{"coin_name":"${coinName}","data":"{\\"pubKey\\":\\"${publicKey}\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"${publicKey}\\",\\"chainSign\\":\\"${sig}\\",\\"chainIndexList\\":[${chainIndex}]}]}","func_name":"verify_web_data"}`;
-        //
-        //     console.log(`{"coin_name":"${coinName}","data":"{\"pubKey\":\"${publicKey}\",\"name\":\"Account 01\",\"walletType\":1,\"accountId\":\"123456789\",\"addresses\":[{\"address\":\"${addr}\",\"chainPubKey\":\"${publicKey}\",\"chainSign\":\"${sig}\",\"chainIndexList\":[${chainIndex}]}]}","func_name":"verify_web_data"}`)
-        //     let expected=`{"coin_name":"aptos","data":"{\\"pubKey\\":\\"067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26\\",\\"name\\":\\"Account 01\\",\\"walletType\\":1,\\"accountId\\":\\"123456789\\",\\"addresses\\":[{\\"address\\":\\"TJUYRk7odiK3fvPRCGNu4cWGg7tCGHf7Jm\\",\\"chainPubKey\\":\\"067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26\\",\\"chainSign\\":\\"fb2e769833b0f4d7e33f8fdea12f542337522701af82e06e272640945b9e71e024b0acf1089aaf3930a5c58f89c1dd034d417f5e04e4c4f42b67a4f29dcabf07\\",\\"chainIndexList\\":[637]}]}","func_name":"verify_web_data"}`
-        //
-        //     return
-        // }
         if (false) {
             //ada
             //30db52f355dc57e92944cbc93e2d30c9352a096fa2bbe92f1db377d3fdc2714aa3d22e03781d5a8ffef084aa608b486454b34c68e6e402d4ad15462ee1df5b8860e14a0177329777e9eb572aa8c64c6e760a1239fd85d69ad317d57b02c3714aeb6e22ea54b3364c8aaa0dd8ee5f9cea06fa6ce22c3827b740827dd3d01fe8f3
