@@ -283,7 +283,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
             outputAmount,
             virtualSize
         } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
-        return (inputAmount - outputAmount - virtualSize * feePerB).toString();
+        return (inputAmount - outputAmount - Math.floor(virtualSize * feePerB)).toString();
     }
 
     let {
@@ -291,7 +291,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
         outputAmount,
         virtualSize
     } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
-    let changeAmount = inputAmount - outputAmount - virtualSize * feePerB;
+    let changeAmount = inputAmount - outputAmount - Math.floor(virtualSize * feePerB);
 
     // sign process
     let txBuild = new TxBuild(2, network, false, hardware);
@@ -588,7 +588,7 @@ export function estimateBtcFee(utxoTx: utxoTx, network?: bitcoin.Network) {
     // calc tx size
     const fakePrivateKey = private2Wif(base.fromHex("853fd8960ff34838208d662ecd3b9f8cf413e13e0f74f95e554f8089f5058db0"), network);
     let {virtualSize} = calculateTxSize(inputs, outputs, utxoTx.address, fakePrivateKey, network, dustSize, false, utxoTx.memo);
-    return virtualSize * feePerB;
+    return  Math.ceil(virtualSize * feePerB);
 }
 
 export function estimateBchFee(utxoTx: utxoTx, network?: bitcoin.Network) {

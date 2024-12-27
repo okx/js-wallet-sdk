@@ -187,24 +187,26 @@ describe("bitcoin", () => {
                 {
                     txId: "a7881146cc7671ad89dcd1d99015ed7c5e17cfae69eedd01f73f5ab60a6c1318",
                     vOut: 0,
-                    amount: 50000,
+                    amount: 100000,
                     address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst"
                 },
             ],
             outputs: [
                 {
                     address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst",
-                    amount: 10000
+                    amount: 9500
                 }
             ],
             address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst",
-            feePerB: 2
+            feePerB: 402.8
         };
 
         let signParams: SignTxParams = {
             privateKey: "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS",
             data: btcTxParams
         };
+      let txfee = await wallet.estimateFee(signParams);
+      console.info(txfee);
         let tx = await wallet.signTransaction(signParams);
         console.info(tx);
     })
