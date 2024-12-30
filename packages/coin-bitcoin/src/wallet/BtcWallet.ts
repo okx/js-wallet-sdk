@@ -450,11 +450,12 @@ export class BtcWallet extends BaseWallet {
 
     async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
         let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
-        if(addr.compressedPublicKey.startsWith("0x")) {
-            addr.compressedPublicKey = addr.compressedPublicKey.substring(2);
+        let publicKey = addr.compressedPublicKey? addr.compressedPublicKey : addr.publicKey;
+        if(publicKey.startsWith("0x")) {
+            publicKey = publicKey.substring(2);
         }
         let privateKey = privateKeyFromWIF(params.privateKey, this.network());
-        return super.signCommonMsg({privateKey:params.privateKey, privateKeyHex:privateKey,publicKey:addr.compressedPublicKey,
+        return super.signCommonMsg({privateKey:params.privateKey, privateKeyHex:privateKey,publicKey:publicKey,
             addressType:params.addressType, message:params.message, signType:SignType.Secp256k1})
     }
 

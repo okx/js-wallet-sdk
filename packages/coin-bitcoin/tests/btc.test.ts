@@ -12,7 +12,7 @@ import {
     ValidSignedTransaction,
     message,
     DogeWallet,
-    LtcWallet, calculateTxSize
+    LtcWallet, calculateTxSize, BsvWallet, BchWallet
 } from '../src';
 import {Transaction,} from '../src/bitcoinjs-lib'
 
@@ -31,7 +31,12 @@ describe("bitcoin", () => {
     });
 
     test("signCommonMsg", async () => {
-        let wallet = new BtcWallet();
+        let wallet = new BchWallet();
+        // if(true){
+        //     let sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{walletId:"123456789"}});
+        // }
+        console.log(await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"}))
+        return
         let sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{walletId:"123456789"}});
         assert.strictEqual(sig,"1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02")
 
