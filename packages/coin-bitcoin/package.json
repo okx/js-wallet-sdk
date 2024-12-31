@@ -34,8 +34,9 @@
   "dependencies": {
     "big-integer": "1.6.36",
     "@scure/btc-signer": "1.4.0",
-    "scrypt-ts": "1.4.3",
-    "@cat-protocol/cat-smartcontracts": "0.2.8",
+    "scrypt-ts": "1.4.4",
+    "@cat-protocol/cat-smartcontracts": "0.2.10",
+    "@ok/okx-cat-marketplace": "1.0.0",
     "@cmdcode/tapscript": "1.4.6",
     "decimal.js": "10.4.3"
   },

@@ -18,7 +18,7 @@ import {
 import {SignTxParams} from "@okxweb3/coin-base";
 
 const wallet = new BtcWallet()
-const privateKey = ""
+const privateKey = "L2HUVTx14aZnqiSpyyCd49WJmjiVUKiV62gEe9gouy6yCtgoe6K6"
 
 function decodeJSONStrings(obj: any) {
     for (const key in obj) {
