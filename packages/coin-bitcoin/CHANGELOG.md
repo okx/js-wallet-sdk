@@ -95,3 +95,9 @@ All notable changes to this project will be documented in this file.
 ### Feature
 
 - **coin-bitcoin:** refund fee for brc20 inscribe
+
+# [1.0.36] (2024-12-02)
+
+### Feature
+
+- **coin-bitcoin:**  add op-cat support

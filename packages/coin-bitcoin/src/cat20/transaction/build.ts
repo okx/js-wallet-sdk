@@ -1,30 +1,38 @@
-import {btc, GuardContract, TokenPrevTx, SupportedNetwork,  TokenMetadata} from "../common";
-import {FixedArray} from 'scrypt-ts';
+import {btc, GuardContract, SupportedNetwork, TokenMetadata, TokenPrevTx} from "../common";
+import {FixedArray, hash160, int2ByteString, toByteString} from 'scrypt-ts';
 import {
-    EcKeyService, getDummyEcKey,
+    EcKeyService,
+    getDummyEcKey,
     getGuardsP2TR,
+    getSellContractP2TR,
     getTokenContractP2TR,
     p2tr2Address,
+    pubKeyToAddress,
     tokenInfoParse,
     tokenUtxoParse,
     toP2tr,
     toStateScript,
     toTokenAddress,
     toTxOutpoint,
-    validatePrevTx
+    validatePrevTx,
+    validateSellCovenantOutputs
 } from "../utils";
-import {unlockGuardMulti, unlockToken} from "./functions";
+import {unlockGuardMulti, unlockSellCovenant, unlockToken} from "./functions";
 import {
     CAT20Proto,
     CAT20State,
+    ChangeInfo,
     getTxCtxMulti,
     getTxHeaderCheck,
-    GuardInfo, GuardProto,
-    MAX_INPUT, MAX_OUTPUT,
+    GuardInfo,
+    GuardProto,
+    MAX_INPUT,
+    MAX_OUTPUT,
     ProtocolState
 } from "@cat-protocol/cat-smartcontracts";
 import * as btcSigner from '@scure/btc-signer';
 import * as bitcoinjs from '../../bitcoinjs-lib'
+import {Address} from "@cmdcode/tapscript";
 import {toSignInput} from "../../type";
 
 export enum UtxoType {
@@ -49,7 +57,13 @@ export type GuardParams =  {
 }
 
 export type SellParams =  {
-
+    price: string
+    satoshiReceiver: string
+    tokenOwner: string
+    scalePrice: boolean
+    feeEnable: boolean
+    tokenInputIndex: number
+    cancel: boolean
 }
 
 export type BuildInput = {
@@ -102,7 +116,7 @@ export type MetadataInfo = {
 }
 
 export type PsbtInfo = {
-    toSign?: boolean,
+    address?: string,
     script?: string,
     cblock?: string,
 }
@@ -148,6 +162,7 @@ export function verifySignatures(signatures: string[], toSignInputs: toSignInput
         return true
     })
 }
+
 export async function build(params: BuildTxParams) {
     const tx =  new btc.Transaction()
     let verifyScript = params.verifyScript || false;
@@ -156,14 +171,15 @@ export async function build(params: BuildTxParams) {
         throw new Error(`Max input number is ${MAX_INPUT}`)
     }
 
-    if (params.outputs.length <= 0  || params.outputs.length > MAX_OUTPUT) {
-        throw new Error(`Max output number is ${MAX_OUTPUT}`)
+    if (params.outputs.length <= 0  || params.outputs.length > MAX_OUTPUT - 1) {
+        throw new Error(`Max output number is ${MAX_OUTPUT - 1}`)
     }
 
     const newState = ProtocolState.getEmptyState();
     const tokenStates: CAT20State[]  = new Array(MAX_INPUT).fill(undefined)
     const tapScripts: string[] = []
     const txCtxIndexes: number[] = []
+    let tokenChange = BigInt(0)
 
 
     // 1. parse token metadatas
@@ -206,15 +222,18 @@ export async function build(params: BuildTxParams) {
         }
 
         if (input.utxoType == UtxoType.FEE) {
-            if (!input.publicKey && !input.address && !input.script) {
-                throw new Error(`Fee input requires either script or address`)
+            if (!input.publicKey && !input.address) {
+                throw new Error(`Fee input requires either public key or address`)
             }
+
+            const address = input.address || pubKeyToAddress(input.publicKey!)
+
             if (!txInput.script) {
-                const ecKey = new EcKeyService({publicKey: input.publicKey})
-                txInput.script = btc.Script.fromAddress(ecKey.getAddress());
+                txInput.script = btc.Script.fromAddress(address);
             }
+
             psbtInfos.push({
-                toSign: true,
+                address: address,
             })
 
         }
@@ -240,8 +259,17 @@ export async function build(params: BuildTxParams) {
             } = metadatas[metadataIndex]
 
             txInput.script = txInput.script || tokenP2TR
+
+            let ownerAddress = ''
+            if (!tokenParams.isContractSpend ){
+                if (!input.publicKey) {
+                    throw new Error(`Token input ${i} without contractSpend requires publicKey`)
+                }
+                ownerAddress = pubKeyToAddress(input.publicKey)
+            }
+
             psbtInfos.push({
-                toSign: !tokenParams.isContractSpend,
+                address: ownerAddress,
                 script: tokenScript,
                 cblock: tokenCblock,
             })
@@ -316,8 +344,67 @@ export async function build(params: BuildTxParams) {
             throw new Error('Minter currently not supported')
         }
         else if (input.utxoType == UtxoType.SELL) {
-            // todo
-            throw new Error('Sell currently not supported')
+            if (!input.contractParams) {
+                throw new Error(`Sell input ${i} requires contractParams`)
+            }
+            const sellParams = JSON.parse(input.contractParams) as SellParams
+
+            const metadataIndex = input.tokenMetadataIndex
+            if (metadataIndex === undefined) {
+                throw new Error(`Token input ${i} requires tokenMetadataIndex`)
+            }
+            if (metadataIndex >= metadatas.length ) {
+                throw new Error(`Token input ${i} tokenMetadataIndex ${metadataIndex} out of metadatas' range ${metadatas.length}`)
+            }
+            const {tokenP2TR, tokenTapScript, tokenCblock, tokenScript} = metadatas[metadataIndex]
+
+            const  {
+                p2tr: sellP2TR,
+                cblock: sellCblock,
+                tapScript: sellTapScript,
+                script: sellScript,
+                contract: sellContract
+            } = getSellContractP2TR(
+                tokenP2TR,
+                toP2tr(sellParams.satoshiReceiver),
+                toTokenAddress(sellParams.tokenOwner),
+                BigInt(sellParams.price),
+                sellParams.scalePrice,
+                sellParams.feeEnable
+            );
+
+
+            txInput.script = txInput.script || sellP2TR
+
+            const sellAddress = Address.p2wpkh.encode(hash160(sellP2TR))
+            let ownerAddress = ''
+            if (sellParams.cancel ){
+                if (!input.publicKey) {
+                    throw new Error(`Sell input ${i} with cancel requires publicKey`)
+                } else {
+                    ownerAddress = pubKeyToAddress(input.publicKey)
+                }
+            } else {
+                // check valid outputs for this sell covenant
+                const {valid, errorMessage} = validateSellCovenantOutputs(params.outputs, sellParams.feeEnable)
+                if (!valid) {
+                    throw new Error(`Sell input ${i} has invalid outputs: ${errorMessage}`)
+                }
+            }
+
+
+
+            psbtInfos.push({
+                address: ownerAddress,
+                script: sellScript,
+                cblock: sellCblock,
+            })
+            tapScripts.push(sellTapScript)
+            txCtxIndexes.push(i)
+
+            if (!params.signedResults) {
+                return txInput
+            }
         }
         else if (input.utxoType == UtxoType.CONTRACT) {
             if (!input.script) {
@@ -326,6 +413,7 @@ export async function build(params: BuildTxParams) {
         }
         return txInput
     })
+
 
     tx.from(inputUtxos)
 
@@ -376,6 +464,11 @@ export async function build(params: BuildTxParams) {
             metadatas[metadataIndex].tokenIndexes.push(i)
             metadatas[metadataIndex].tokenStates.push(tokenState)
 
+            // token change (only applicable for sell)
+            if (i == 1) {
+                tokenChange = amount
+            }
+
         }
         else if (output.utxoType == UtxoType.GUARD) {
             txOutput.script = guardP2TR
@@ -406,9 +499,35 @@ export async function build(params: BuildTxParams) {
         }
         else if (output.utxoType == UtxoType.MINTER) {
             throw new Error('Minter currently not supported')
-        } else if (output.utxoType == UtxoType.SELL) {
-            // todo
-            throw new Error('Sell currently not supported')
+        }
+        else if (output.utxoType == UtxoType.SELL) {
+            if (!output.contractParams) {
+                throw new Error(`Sell input ${i} requires contractParams`)
+            }
+            const sellParams = JSON.parse(output.contractParams) as SellParams
+
+            const metadataIndex = output.tokenMetadataIndex
+            if (metadataIndex === undefined) {
+                throw new Error(`Token input ${i} requires tokenMetadataIndex`)
+            }
+            if (metadataIndex >= metadatas.length ) {
+                throw new Error(`Token input ${i} tokenMetadataIndex ${metadataIndex} out of metadatas' range ${metadatas.length}`)
+            }
+            const {tokenP2TR} = metadatas[metadataIndex]
+
+            const  {
+                p2tr: sellP2TR,
+            } = getSellContractP2TR(
+                tokenP2TR,
+                toP2tr(sellParams.satoshiReceiver),
+                toTokenAddress(sellParams.tokenOwner),
+                BigInt(sellParams.price),
+                sellParams.scalePrice,
+                sellParams.feeEnable
+            );
+
+            txOutput.script = sellP2TR
+            const sellAddress = Address.p2wpkh.encode(hash160(sellP2TR))
         }
         else if (output.utxoType == UtxoType.CONTRACT) {
             if (!output.script) {
@@ -450,9 +569,11 @@ export async function build(params: BuildTxParams) {
 
     // 7. return psbt for signing
     if (!params.signedResults) {
-        console.log('txid:', tx.id)
+        // console.log('txid:', tx.id)
         // console.log('inputs:', tx.inputs.map((i:any) => i.output.script.toBuffer().toString('hex')))
         // console.log('outputs:', tx.outputs.map((o:any) => o.script.toBuffer().toString('hex')))
+        // console.log('inputs:', tx.inputs.map((i:any) => i.output.satoshis))
+        // console.log('outputs:', tx.outputs.map((o:any) => o.satoshis))
 
         const btcSignerTx = btcSigner.Transaction.fromRaw(tx.toBuffer(), { allowUnknownOutputs: true })
         const psbt = bitcoinjs.psbt.Psbt.fromBuffer(Buffer.from(btcSignerTx.toPSBT()))
@@ -482,15 +603,18 @@ export async function build(params: BuildTxParams) {
 
             }
 
-            if (psbtInfo.toSign) {
+            if (psbtInfo.address) {
                 toSignInputs.push({
                     index: i,
-                    sighashTypes: [0],
+                    address: psbtInfo.address,
+                    // disableTweakSigner: false,
+                    useTweakSigner: true,
                 })
             }
         }
 
         return {
+            txId: tx.id,
             psbt: psbt.toHex(),
             toSignInputs,
         }
@@ -618,9 +742,123 @@ export async function build(params: BuildTxParams) {
         }
         else if (input.utxoType == UtxoType.MINTER) {
             throw new Error('Minter currently not supported')
-        } else if (input.utxoType == UtxoType.SELL) {
-            // todo
-            throw new Error('Sell currently not supported')
+        }
+        else if (input.utxoType == UtxoType.SELL) {
+            if (!input.contractParams) {
+                throw new Error(`Sell input ${i} requires contractParams`)
+            }
+            const sellParams = JSON.parse(input.contractParams) as SellParams
+
+            const metadataIndex = input.tokenMetadataIndex
+            if (metadataIndex === undefined) {
+                throw new Error(`Sell input ${i} requires tokenMetadataIndex`)
+            }
+            if (metadataIndex >= metadatas.length ) {
+                throw new Error(`Sell input ${i} tokenMetadataIndex ${metadataIndex} out of metadatas' range ${metadatas.length}`)
+            }
+            const {tokenP2TR} = metadatas[metadataIndex]
+
+            const  {
+                cblock: sellCblock,
+                contract: sellContract
+            } = getSellContractP2TR(
+                tokenP2TR,
+                toP2tr(sellParams.satoshiReceiver),
+                toTokenAddress(sellParams.tokenOwner),
+                BigInt(sellParams.price),
+                sellParams.scalePrice,
+                sellParams.feeEnable
+            );
+
+
+            const tokenOutputIndex = 0
+            let satoshiChangeOutputIndex = 2
+            let platformFeeOutputIndex = 2
+
+            let feeTokenInfo: ChangeInfo = {
+                script: '',
+                satoshis: int2ByteString(0n, 8n),
+            }
+            let changeTokenInfo: ChangeInfo = {
+                script: '',
+                satoshis: int2ByteString(0n, 8n),
+            }
+
+            if (!sellParams.cancel) {
+                if (tokenChange) {
+                    satoshiChangeOutputIndex += 1
+                    platformFeeOutputIndex += 1
+                }
+                // if there is change
+                if (sellParams.feeEnable) {
+                    satoshiChangeOutputIndex += 1
+                    if (!(
+                        platformFeeOutputIndex < params.outputs.length
+                        && params.outputs[platformFeeOutputIndex].utxoType === UtxoType.FEE
+                    )) {
+                        throw new Error(`Sell input ${i} with feeEnable=true requires fees at output ${platformFeeOutputIndex}`)
+                    }
+
+                    feeTokenInfo = {
+                        script: toByteString(tx.outputs[platformFeeOutputIndex+1].script.toBuffer().toString('hex')),
+                        satoshis: int2ByteString(BigInt(tx.outputs[platformFeeOutputIndex+1].satoshis), 8n),
+                    }
+                }
+
+                // if there is change
+                if (
+                    satoshiChangeOutputIndex < params.outputs.length
+                    && params.outputs[satoshiChangeOutputIndex].utxoType === UtxoType.FEE
+                ) {
+                    changeTokenInfo = {
+                        script: toByteString(tx.outputs[satoshiChangeOutputIndex+1].script.toBuffer().toString('hex')),
+                        satoshis: int2ByteString(BigInt(tx.outputs[satoshiChangeOutputIndex+1].satoshis), 8n),
+                    }
+                }
+            }
+
+            const buyerTokenParams = params.outputs[tokenOutputIndex].contractParams
+            if (!buyerTokenParams) {
+                throw new Error(`Token output ${tokenOutputIndex} requires contractParams`)
+            }
+
+            const tokenParams = JSON.parse(buyerTokenParams) as TokenParams
+            const buyerTokenAddress = toTokenAddress(tokenParams.tokenReceiver)
+
+            const receiverTokenState = tokenStates[tokenOutputIndex]
+
+            let signature = undefined
+            let ecKey = getDummyEcKey()
+            if (sellParams.cancel) {
+                ecKey = new EcKeyService({publicKey: input.publicKey})
+                if (!signatures || !signatures[i]) {
+                    throw new Error(`Sell input ${i} requires signature`)
+                }
+                signature = signatures[i]
+            }
+
+            const res = await unlockSellCovenant(
+                ecKey,
+                sellContract,
+                sellCblock,
+                inputUtxos[i],
+                tokenChange,
+                buyerTokenAddress,
+                i,
+                newState,
+                tx,
+                receiverTokenState,
+                changeTokenInfo,
+                feeTokenInfo,
+                txCtxs[i],
+                sellParams.tokenInputIndex,
+                params.verifyScript,
+                sellParams.cancel,
+                signature,
+            )
+            if (!res) {
+                throw new Error(`Building sell input ${i} failed`)
+            }
         }
         else if (input.utxoType == UtxoType.CONTRACT) {
             if (!contractUnlockWitnesses || !contractUnlockWitnesses[i]) {
@@ -632,6 +870,9 @@ export async function build(params: BuildTxParams) {
 
 
     // return tx
-    return tx.uncheckedSerialize().toString('hex')
+    return {
+        txId: tx.id,
+        signedTx: tx.uncheckedSerialize().toString('hex')
+    }
 
 }

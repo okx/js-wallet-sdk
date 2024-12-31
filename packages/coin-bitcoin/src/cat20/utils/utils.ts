@@ -9,6 +9,7 @@ import {
     TransferGuard,
     TxOutpoint,
 } from '@cat-protocol/cat-smartcontracts';
+import { CAT20Sell} from "@ok/okx-cat-marketplace";
 
 import {btc, MinterType, SupportedNetwork} from '../common';
 import {
@@ -144,6 +145,30 @@ export function getTokenContract(minterP2TR: string, guardsP2TR: string) {
 export function getTokenContractP2TR(minterP2TR: string) {
     const {p2tr: guardsP2TR} = getGuardsP2TR();
     return contract2P2TR(getTokenContract(minterP2TR, guardsP2TR));
+}
+
+export function getSellContract(
+    tokenP2TR: string,
+    sellerP2TR: string,
+    sellerAddr: ByteString,
+    price: int32,
+    scalePrice: boolean,
+    feeEnable: boolean
+) {
+    return new CAT20Sell(tokenP2TR, sellerP2TR, sellerAddr, price, scalePrice, feeEnable);
+}
+
+export function getSellContractP2TR(
+    tokenP2TR: string,
+    sellerP2TR: string,
+    sellerAddr: ByteString,
+    price: int32,
+    scalePrice: boolean,
+    feeEnable: boolean
+) {
+    return contract2P2TR(
+        getSellContract(tokenP2TR, sellerP2TR, sellerAddr, price, scalePrice, feeEnable),
+    );
 }
 
 export function getClosedMinterContract(
@@ -359,7 +384,16 @@ export function verifyContract(
 export function getDummyEcKey(){
     return new EcKeyService({privateKey: 'L4EpxBBbTqztn8Q9W73Cf7e36ttHhDWRSzr4sHazjUcCrucwEJLy'})
 }
+
+export function getDummySignature() {
+    return btc.crypto.Signature.fromString('E907831F80848D1069A5371B402410364BDF1C5F8307B0084C55F1CE2DCA821525F66A4A85EA8B71E482A74F382D2CE5EBEEE8FDB2172F477DF4900D310536C0').toString('hex')
+}
+
 export function getFee(tx: btc.Transaction){
     return tx.inputs.reduce((acc: number, i: any) => acc + i.output.satoshis, 0)
         - tx.outputs.reduce((acc: number, o: any) => acc + o.satoshis, 0)
+}
+
+export function pubKeyToAddress(pubKey:string): string {
+    return new EcKeyService({publicKey: pubKey}).getAddress().toString();
 }

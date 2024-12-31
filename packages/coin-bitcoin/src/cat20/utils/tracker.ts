@@ -6,14 +6,16 @@ import {byteString2Int} from "scrypt-ts";
 export type State = {address: string, amount: string}
 
 // additional functionality to get key state information from witness data as used in tracker
-export function getTokenUtxo(txhex:string, operation: string, address?: string) {
+export function getTokenUtxo(txhex:string, operation: string, address?: string, index?: number) {
 
     const tx = new btc.Transaction(txhex);
     let indexes: number[] = []
     let states: State[] = []
     let txoStateHashes : Buffer[]
+
     if (operation == 'transfer') {
-        const witness = tx.inputs[1].witnesses
+        index = index || 1
+        const witness = tx.inputs[index].witnesses
         const addrHash = toTokenAddress(address)
 
         // following packages/tracker/src/services/tx/tx.service.ts
@@ -39,7 +41,8 @@ export function getTokenUtxo(txhex:string, operation: string, address?: string) 
         }
         txoStateHashes =stateHashes.map((s: Buffer) => s.toString('hex'))
     } else if (operation == 'mint') {
-        const witness = tx.inputs[0].witnesses
+        index = index || 0
+        const witness = tx.inputs[index].witnesses
         const stateHashes = witness.slice(0, 5);
         const ownerPubKeyHash = witness[5];
         const tokenAmount = witness[6];

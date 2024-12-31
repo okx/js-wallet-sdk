@@ -21,7 +21,8 @@ import {
     toTokenAddress,
     toTxOutpoint,
     tokenUtxoParse,
-    getDummyEcKey, getFee,
+    getDummyEcKey,
+    getFee,
 } from "../utils";
 import {
     CAT20Proto,

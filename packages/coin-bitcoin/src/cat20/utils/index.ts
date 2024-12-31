@@ -4,4 +4,5 @@ export * from './prevTx';
 export * from './utils';
 export * from './utxo';
 export * from './tracker'
+export * from './sell'
 
