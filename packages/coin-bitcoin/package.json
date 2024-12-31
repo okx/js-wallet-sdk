@@ -40,5 +40,5 @@
     "@cat-protocol/cat-smartcontracts": "0.2.8",
     "@cmdcode/tapscript": "1.4.6",
     "decimal.js": "10.4.3"
-  },
+  }
 }
