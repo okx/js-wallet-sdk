@@ -36,6 +36,6 @@
   "dependencies": {
     "@polkadot/x-textencoder": "^9.5.1",
     "@okxweb3/crypto-lib": "^1.0.7-beta.10",
-    "@okxweb3/coin-base": "^1.0.12-beta.13"
+    "@okxweb3/coin-base": "^1.0.12-beta.20"
   }
 }
