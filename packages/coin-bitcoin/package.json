@@ -36,7 +36,7 @@
     "@scure/btc-signer": "1.4.0",
     "scrypt-ts": "1.4.4",
     "@cat-protocol/cat-smartcontracts": "0.2.10",
-    "@ok/okx-cat-marketplace": "1.0.0",
+    "@ok/okx-cat-marketplace": "1.0.1",
     "@cmdcode/tapscript": "1.4.6",
     "decimal.js": "10.4.3"
   },

@@ -330,8 +330,6 @@ export async function mint(param: SignTxParams) {
     }
 
     ecKey.signTx(revealTx);
-    console.log(revealTx.id)
-    console.log(revealTx.getFee())
     return revealTx.uncheckedSerialize()
 }
 const calcVsize = async (
