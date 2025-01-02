@@ -20,28 +20,6 @@ import {SignTxParams} from "@okxweb3/coin-base";
 const wallet = new BtcWallet()
 const privateKey = "L2HUVTx14aZnqiSpyyCd49WJmjiVUKiV62gEe9gouy6yCtgoe6K6"
 
-function decodeJSONStrings(obj: any) {
-    for (const key in obj) {
-        if (typeof obj[key] === 'string') {
-            try {
-                // Attempt to parse the string as JSON
-                const parsed = JSON.parse(obj[key]);
-                // If successful, replace the string with the parsed object
-                obj[key] = decodeJSONStrings(parsed);
-            } catch (e) {
-                // If parsing fails, it's not JSON - keep the original string
-            }
-        } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-            // Recursively decode nested objects
-            obj[key] = decodeJSONStrings(obj[key]);
-        }
-    }
-    return obj;
-}
-function printObj(obj: any) {
-    const copy = JSON.parse(JSON.stringify(obj));
-    console.log(JSON.stringify(decodeJSONStrings(copy), null, 2));
-}
 const checkTxid = (txHex: string, txid?: string) => {
     const tx = new btc.Transaction(txHex)
     if (txid) {
