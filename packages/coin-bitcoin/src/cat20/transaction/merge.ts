@@ -1,5 +1,5 @@
 import {UTXO} from "scrypt-ts";
-import {EcKeyService} from "../utils/eckey";
+import {EcKeyService} from "../utils";
 import {btc} from "../common";
 
 export function mergeFee(
