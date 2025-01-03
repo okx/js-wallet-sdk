@@ -1,17 +1,12 @@
 import {
     BurnGuard,
     CAT20,
-    ClosedMinter,
-    int32,
-    OpenMinter,
-    OpenMinterV2,
     ProtocolState,
     TransferGuard,
     TxOutpoint,
 } from '@cat-protocol/cat-smartcontracts';
-import { CAT20Sell} from "@ok/okx-cat-marketplace";
 
-import {btc, MinterType, SupportedNetwork} from '../common';
+import {btc, SupportedNetwork} from '../common';
 import {
     bsv,
     ByteString,
@@ -147,86 +142,6 @@ export function getTokenContractP2TR(minterP2TR: string) {
     return contract2P2TR(getTokenContract(minterP2TR, guardsP2TR));
 }
 
-export function getSellContract(
-    tokenP2TR: string,
-    sellerP2TR: string,
-    sellerAddr: ByteString,
-    price: int32,
-    scalePrice: boolean,
-    feeEnable: boolean
-) {
-    return new CAT20Sell(tokenP2TR, sellerP2TR, sellerAddr, price, scalePrice, feeEnable);
-}
-
-export function getSellContractP2TR(
-    tokenP2TR: string,
-    sellerP2TR: string,
-    sellerAddr: ByteString,
-    price: int32,
-    scalePrice: boolean,
-    feeEnable: boolean
-) {
-    return contract2P2TR(
-        getSellContract(tokenP2TR, sellerP2TR, sellerAddr, price, scalePrice, feeEnable),
-    );
-}
-
-export function getClosedMinterContract(
-    issuerAddress: string,
-    genesisId: ByteString,
-) {
-    return new ClosedMinter(issuerAddress, genesisId);
-}
-
-export function getOpenMinterContract(
-    genesisId: ByteString,
-    max: int32,
-    premine: int32,
-    limit: int32,
-    premineAddress: ByteString,
-    minterMd5: string = MinterType.OPEN_MINTER_V2,
-) {
-    if (minterMd5 === MinterType.OPEN_MINTER_V1) {
-        return new OpenMinter(genesisId, max, premine, limit, premineAddress);
-    }
-    const maxCount = max / limit;
-    const premineCount = premine / limit;
-    return new OpenMinterV2(
-        genesisId,
-        maxCount,
-        premine,
-        premineCount,
-        limit,
-        premineAddress,
-    );
-}
-
-export function getOpenMinterContractP2TR(
-    genesisId: ByteString,
-    max: int32,
-    premine: int32,
-    limit: int32,
-    premineAddress: ByteString,
-    minterMd5: string,
-) {
-    return contract2P2TR(
-        getOpenMinterContract(
-            genesisId,
-            max,
-            premine,
-            limit,
-            premineAddress,
-            minterMd5,
-        ),
-    );
-}
-
-export function getClosedMinterContractP2TR(
-    issuerAddress: string,
-    genesisId: ByteString,
-) {
-    return contract2P2TR(getClosedMinterContract(issuerAddress, genesisId));
-}
 
 export function toTxOutpoint(txid: string, outputIndex: number): TxOutpoint {
     const outputBuf = Buffer.alloc(4, 0);
@@ -394,6 +309,3 @@ export function getFee(tx: btc.Transaction){
         - tx.outputs.reduce((acc: number, o: any) => acc + o.satoshis, 0)
 }
 
-export function pubKeyToAddress(pubKey:string): string {
-    return new EcKeyService({publicKey: pubKey}).getAddress().toString();
-}
