@@ -1,25 +1,40 @@
 {
-  "name": "okxweb3",
-  "version": "1.0.0",
-  "description": "okx js sdk for web3",
-  "main": "index.js",
-  "scripts": {},
-  "author": "",
-  "license": "MIT",
+  "name": "js-wallet-sdk",
+  "version": "1.0.0", 
+  "description": "Your wallet SDK description",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "run-s clean build:main",
+    "build:main": "tsc -p tsconfig.json",
+    "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Okeamah/js-wallet-sdk"
+  },
+  "keywords": ["wallet", "sdk", "blockchain"],
+  "author": "Okeamah",
+  "license": "LGPL3.0",
   "files": [
     "dist"
   ],
   "devDependencies": {
-    "@types/jest": "^27.4.1",
+    "@types/jest": "^27.5.1",
     "@types/node": "^12.20.52",
     "jest": "^27.5.1",
     "npm-run-all": "^4.1.5",
     "prettier": "2.6.2",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.1.4",
-    "ts-node": "^10.9.2",
+    "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
   },
   "dependencies": {
+    "@okxweb3/coin-ethereum": "1.0.3",
+    "@okxweb3/crypto-lib": "^1.0.0",
+    "@okxweb3/coin-base": "^1.0.0"
   }
 }
+
