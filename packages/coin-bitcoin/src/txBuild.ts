@@ -283,7 +283,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
             outputAmount,
             virtualSize
         } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
-        return (inputAmount - outputAmount - Math.floor(virtualSize * feePerB)).toString();
+        return (inputAmount - outputAmount - Math.ceil(virtualSize * feePerB)).toString();
     }
 
     let {
@@ -291,7 +291,7 @@ export function signBtc(utxoTx: utxoTx, privateKey: string, network?: bitcoin.Ne
         outputAmount,
         virtualSize
     } = calculateTxSize(inputs, outputs, changeAddress, fakePrivateKey, network, dustSize, false, utxoTx.memo, utxoTx.memoPos);
-    let changeAmount = inputAmount - outputAmount - Math.floor(virtualSize * feePerB);
+    let changeAmount = inputAmount - outputAmount - Math.ceil(virtualSize * feePerB);
 
     // sign process
     let txBuild = new TxBuild(2, network, false, hardware);
