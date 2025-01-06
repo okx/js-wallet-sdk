@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-bitcoin",
-  "version": "1.0.38-beta.3",
+  "version": "1.0.39-beta.6",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

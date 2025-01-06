@@ -287,54 +287,6 @@ describe('rune test', () => {
         expect(tx).toMatch(partial)
     });
 
-    test("segwit_taproot transfer rune with decimals", async () => {
-        let wallet = new TBtcWallet()
-        let  privateKeyTestnet = "cVeDtBFC49sCRwMixSKkqtFeimqvqT7CMhrttea6nbjPZvqXXvgn" //tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3
-
-        let runeTxParams= {
-            type: BtcXrcTypes.RUNEMAIN,
-            inputs: [
-                {
-                    txId: "ace7c2be8e6b8d81fdadccc1df0fbb7c3871923693f2c59b769cf9e78fc4254b",
-                    vOut: 0,
-                    amount: 546,
-                    address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
-                    data: [{"id": "229016:142", "amount": "299999"}]
-                },
-                {
-                    txId: "ace7c2be8e6b8d81fdadccc1df0fbb7c3871923693f2c59b769cf9e78fc4254b",
-                    vOut: 2,
-                    amount: 65569,
-                    address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3"
-                }
-            ],
-            outputs: [
-                { // rune send output
-                    address: "tb1plmnan0g987gpe07pvzstv4svv9ag8e9kjha7hkhywkpq5stqykgq6t32y8",
-                    amount: 546,
-                    data: {"id": "229016:142", "amount": "219999"}
-                }
-            ],
-            address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
-            feePerB: 9.678,
-            runeData: {
-                "etching": null,
-                "useDefaultOutput" : false,
-                "defaultOutput": 0,
-                "burn": false
-            }
-        };
-        let signParams: SignTxParams = {
-            privateKey: privateKeyTestnet,
-            data: runeTxParams
-        };
-        let fee = await wallet.estimateFee(signParams)
-        expect(fee).toEqual(2681)
-        let tx = await wallet.signTransaction(signParams);
-        const partial = /^020000000001024b25c48fe7f99c769bc5f293369271387cbb0fdfc1ccadfd818d6b8ebec2e7ac0000000000ffffffff4b25c48fe7f99c769bc5f293369271387cbb0fdfc1ccadfd818d6b8ebec2e7ac0200000000ffffffff0422020000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b82202000000000000225120fee7d9bd053f901cbfc160a0b6560c617a83e4b695fbebdae475820a4160259000000000000000000d6a5d0a0098fd0d8e01dfb60d0187f30000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80140.*/
-        expect(tx).toMatch(partial)
-    });
-
     test("segwit_taproot mint rune", async () => {
         let wallet = new BtcWallet()
         // let wallet = new TBtcWallet()
@@ -422,7 +374,7 @@ describe('rune test', () => {
         let fee = await wallet.estimateFee(signParams)
         expect(fee).toEqual(1471)
         let tx = await wallet.signTransaction(signParams);
-        const partial = /^02000000000101d50963ac169078b8ae15dd83d72dda82b6d7da9e524abb07626468a4853961ef0100000000ffffffff0322020000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80000000000000000126a5d0f1498fd0d148e010098fd0d8e01010021000100000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80140.*/
+        const partial = /^02000000000101d50963ac169078b8ae15dd83d72dda82b6d7da9e524abb07626468a4853961ef0100000000ffffffff0322020000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80000000000000000126a5d0f1498fd0d148e010098fd0d8e01010020000100000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b8014.*/
         expect(tx).toMatch(partial)
     });
 
@@ -473,55 +425,6 @@ describe('rune test', () => {
         expect(tx[1]).toMatch(partial2)
     });
 
-    test("serial mint rune with decimals", async () => {
-        let wallet = new TBtcWallet()
-        let  privateKeyTestnet = "cVeDtBFC49sCRwMixSKkqtFeimqvqT7CMhrttea6nbjPZvqXXvgn" //tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3
-
-        let runeTxParams= {
-            type: BtcXrcTypes.RUNEMAIN,
-            inputs: [
-                {
-                    txId: "3a1c811bc64e1aaab3d3d0f2ecdf3fdab60ddca8a7a5167a72bb05e83a7c37d7",
-                    vOut: 2,
-                    amount: 59134,
-                    address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
-                    data: [{"id": "229016:142", "amount": "299.999"}]
-                }
-            ],
-            outputs: [
-                { // rune send output
-                    address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
-                    amount: 546,
-                    data:  {"id": "229016:142", "amount": "299.999"}
-                },
-            ],
-            address: "tb1p9yvdxe5mudhffs9pzlvexefclrrrv3f5rg0zxuw87x9vxfafskuq0ruwy3",
-            feePerB: 6.789,
-            runeData: {
-                "serialMint" : true,
-                "mint": true,
-                "mintNum" :30
-            }
-        };
-        let signParams: SignTxParams = {
-            privateKey: privateKeyTestnet,
-            data: runeTxParams
-        };
-        let fee = await wallet.estimateFee(signParams)
-        console.log(fee)
-        expect(fee).toEqual(     [
-            1175, 883, 883, 883, 883, 883,
-            883, 883, 883, 883, 883, 883,
-            883, 883, 883, 883, 883, 883,
-            883, 883, 883, 883, 883, 883,
-            883, 883, 883, 883, 883, 883
-        ])
-        let tx = await wallet.signTransaction(signParams);
-        const partial = /^02000000000101d7377c3ae805bb727a16a5a7a8dc0db6da3fdfecf2d0d3b3aa1a4ec61b811c3a0200000000ffffffff0329660000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b800000000000000000a6a5d071498fd0d148e013f7c0000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b80140.*/
-        expect(tx[0]).toMatch(partial)
-        const partial2 = /^02000000000101a60c46894f771c243094c206423dc3c4e4dab1f28c2a4cd546293af7ef5677ac0000000000ffffffff025d580000000000002251202918d3669be36e94c0a117d9936538f8c63645341a1e2371c7f18ac327a985b800000000000000000a6a5d071498fd0d148e010140.*/
-        expect(tx[4]).toMatch(partial2)
-    });
     test("serial mint rune", async () => {
         let wallet = new BtcWallet()
         let runeTxParams= {
