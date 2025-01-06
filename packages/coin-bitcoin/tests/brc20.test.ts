@@ -54,7 +54,7 @@ describe("brc20 test", () => {
         const request: InscriptionRefundFeeRequest = {
             // max amount is 600, but final amount = min( input.length, maxAmountOfInput )
             inputs,
-            feeRate: 2,
+            feeRate: 2.1,
             inscriptionRefundFeeDataList,
             changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
             // if null, get the middle address
@@ -123,8 +123,8 @@ describe("brc20 test", () => {
 
         const request: InscriptionRequest = {
             commitTxPrevOutputList,
-            commitFeeRate: 2,
-            revealFeeRate: 2,
+            commitFeeRate: 2.1,
+            revealFeeRate: 2.2,
             revealOutValue: 546,
             inscriptionDataList,
             changeAddress: "tb1pklh8lqax5l7m2ycypptv2emc4gata2dy28svnwcp9u32wlkenvsspcvhsr",
@@ -132,7 +132,7 @@ describe("brc20 test", () => {
 
         const txs: InscribeTxs = inscribe(network, request);
         console.log(txs);
-        expect(txs.commitTxFee).toEqual(1180)
+        expect(txs.commitTxFee).toEqual(1239)
     });
 
     test("inscribe", async () => {
