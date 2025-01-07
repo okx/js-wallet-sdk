@@ -243,7 +243,9 @@ describe("address", () => {
             blockhash: "8MnQifmv14ELwdkK5NJso9cofN8iNpHy6n6Nnxy7pn8v",
             lastValidBlockHeight: 181854107,
         });
-        console.log(signedTx);
+
+        const expected = 'VUbTXcDhjhX8TBAwKNR5GEWt5cr2SjAERYeQgMuNYRbRKQbkCQ8Wd3HyCeykPcKJ6TJ7juTh6CJgLtuD6NkmVm2JGAaKzswmKpmsr57kLVqJr8w1XrZVdHT4Dk6hooGwWLNr5txevF7fScW2zmiXWLMQg76woMhgokZL7AugCnZd8XtDyGaUxVR4ZruiRGrSGpvSW3aZzR5t6SCA5DuXfbRPiwC7rArF32H6Edjvba9FYaY8GL1uGy68r6WbZpKDD6EMZPG7G3GV85cJEACkfgbpSsMsyXj7L5qagTVQyKnHLfemqc5kbyVETLGKSLd8uCjXUNj6swNoX2y4NgA1Zdk6oEXibG65eDx4AKgr74NWZY6PMwnoE6YcuSi8G5B4rfAhJ2hTUUr3X9SjD53qMEazZKXcrdku4wjWX21m3xZ619aEAzx7jUx5rJb2hTufktZPV15R6DRzJHUeJfLagqm8sjd9M36oEJCGs5JMUPyswt13WMuhAvHjysqXp3TjSXVs58yuoYFwRs7H2TbbUhH1v9bXAG26coDivSx22aeiuFfK5CbcNtRCwa83ky1NvjTkM8XQuaTtCwiAJbzJYDs1qv1R9jpf8JJLwsgPAMaXjxC8DgJdxbdrnSHYGZzk72Zuxcd84jNkSgnHwfpZXDNDag54z3F8tZPAzAvf3D7nfuSGbFFBmdBW7uD6dQBgcw6tGkpgH4ntwC52pDLhdbqCwRg66WVqhjgETQRDacLE9cPEFFtZz6ghDPCrFBg7pKqLnFi8Qw5XRchB61462cLfiQdqGX6HkACKi347JdXoTQKXgfEDRxNu3e5LAw2yF33ttpVV8NQ3wGmW825nksHBkRhWRJofvQspjeew4c1SpD53ExHYiVng77WjxHR8xgu468r1GWb';
+        expect(signedTx).toEqual(expected);
     });
 
     test("mplTransfer", async () => {
