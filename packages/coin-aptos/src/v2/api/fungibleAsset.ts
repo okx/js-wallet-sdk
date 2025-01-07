@@ -24,7 +24,7 @@ import { ProcessorType } from "../utils/const";
 import { AptosConfig } from "./aptosConfig";
 // import { waitForIndexerOnVersion } from "./utils";
 import { Account } from "../account";
-import { AccountAddressInput } from "../core";
+import {AccountAddress, AccountAddressInput} from "../core";
 import { InputGenerateTransactionOptions } from "../transactions";
 import { SimpleTransaction } from "../transactions/instances/simpleTransaction";
 
@@ -162,7 +162,7 @@ export class FungibleAsset {
    * @returns A SimpleTransaction that can be simulated or submitted to chain.
    */
   async transferFungibleAsset(args: {
-    sender: Account;
+    senderAddress: AccountAddress;
     fungibleAssetMetadataAddress: AccountAddressInput;
     recipient: AccountAddressInput;
     amount: AnyNumber;

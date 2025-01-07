@@ -366,6 +366,19 @@ export function generateBCSSimulateTransaction(
     );
     return txnBuilder.sign(rawTxn);
 }
+export function generateBCSSimulateTransactionWithPublicKey(
+    publicKey: Uint8Array,
+    rawTxn: TxnBuilderTypes.RawTransaction
+): Uint8Array {
+    const txnBuilder = new TransactionBuilderEd25519(
+        (signingMessage: TxnBuilderTypes.SigningMessage) => {
+            const signature = new Uint8Array(64)
+            return new TxnBuilderTypes.Ed25519Signature(signature);
+        },
+        publicKey
+    );
+    return txnBuilder.sign(rawTxn);
+}
 
 export function createRawTransactionByABI(sender: HexString,
                                           sequenceNumber: Uint64,
