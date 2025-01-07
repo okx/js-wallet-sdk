@@ -23,8 +23,7 @@ import {countAdjustedVsize} from "../src/sigcost";
 describe("bitcoin", () => {
 
     test("validPrivateKey", async () => {
-        const wallet = new TBtcWallet();
-        console.log(await wallet.getNewAddress({privateKey:"cVeDtBFC49sCRwMixSKkqtFeimqvqT7CMhrttea6nbjPZvqXXvgn"}))
+        const wallet = new BtcWallet();
         const res = await wallet.validPrivateKey({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"});
         expect(res.isValid).toEqual(true);
     });
