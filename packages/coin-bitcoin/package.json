@@ -1,21 +1,47 @@
 {
   "name": "@okxweb3/coin-bitcoin",
-  "version": "1.0.38",
-  "description": "",
+  "version": "1.1.0",
+  "description": "@okxweb3/coin-bitcoin is a Bitcoin SDK for building Web3 wallets and applications. It supports BTC, BSV, DOGE, LTC, and TBTC, enabling private key management, transaction signing, address generation, and inscriptions like BRC-20, Runes, CAT, and Atomicals.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "run-s clean build:main",
     "build:main": "tsc -p tsconfig.json",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
-    "prepublishOnly": "node ../../scripts/dep-verison-check.js",
     "test": "jest"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/okx/js-wallet-sdk"
   },
-  "keywords": [],
+  "keywords": ["bitcoin",
+    "btc",
+    "bsv",
+    "doge",
+    "ltc",
+    "tbtc",
+    "wallet",
+    "web3",
+    "crypto",
+    "blockchain",
+    "sdk",
+    "transaction",
+    "signing",
+    "address",
+    "private-key",
+    "mnemonic",
+    "taproot",
+    "segwit",
+    "psbt",
+    "utxo",
+    "brc20",
+    "runes",
+    "atomicals",
+    "doginals",
+    "inscription",
+    "ordinals",
+    "CAT"
+  ],
   "author": "okx",
   "license": "MIT",
   "files": [
@@ -33,13 +59,15 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@okxweb3/crypto-lib": "^1.0.6",
-    "@okxweb3/coin-base": "^1.0.11",
     "big-integer": "1.6.36",
     "@scure/btc-signer": "1.4.0",
-    "scrypt-ts": "1.4.4",
-    "@cat-protocol/cat-smartcontracts": "0.2.10",
+    "scrypt-ts": "1.4.3",
+    "@cat-protocol/cat-smartcontracts": "0.2.8",
     "@cmdcode/tapscript": "1.4.6",
     "decimal.js": "10.4.3"
+  },
+  "peerDependencies": {
+    "@okxweb3/crypto-lib": "1.0.7-beta.0",
+    "@okxweb3/coin-base": "1.0.12-beta.0"
   }
 }

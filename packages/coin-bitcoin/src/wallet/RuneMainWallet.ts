@@ -569,7 +569,7 @@ export class RuneMainWallet extends BtcWallet {
                 virtualSize
             } = calculateTxSize(runeTx.inputs,runeTx.outputs,runeTx.address,fakeAddr,network,runeTx.dustSize)
             // @ts-ignore
-            let changeAmount = inputAmount - outputAmount - virtualSize * runeTx.feePerB;
+            let changeAmount = inputAmount - outputAmount - Math.ceil(virtualSize * runeTx.feePerB);
 
             if (changeAmount > runeTx.dustSize) {
                 runeTx.outputs.push({ address:runeTx.address,amount:changeAmount} as never)
