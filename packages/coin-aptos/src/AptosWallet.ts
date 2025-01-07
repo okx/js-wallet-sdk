@@ -26,7 +26,7 @@ import {
     burnCoin,
     claimNFTTokenPayload,
     createRawTransaction,
-    createRawTransactionByABI, createRawTransactionByABIV2,
+    createRawTransactionByABI, createRawTransactionByABIV2, createSimulateRawTransactionByABIV2,
     generateBCSSimulateTransaction, generateBCSSimulateTransactionWithPublicKey,
     generateBCSTransaction,
     HexString,
@@ -179,7 +179,7 @@ export type BuildSimulateTxParams = {
 };
 
 export type AptosSimulateParam = {
-    type: "simulate_transfer" | "simulate_token_transfer" | "simulate_fungible_asset_transfer",
+    type: "simulate_transfer" | "simulate_token_transfer" | "simulate_fungible_asset_transfer" | "simulate_dapp",
     base: AptosBasePram,
     data: any
 }
@@ -274,6 +274,25 @@ export class AptosWallet extends BaseWallet {
                 const payload = transferCoinV2(tokenData.tyArg, tokenData.recipientAddress, BigInt(tokenData.amount))
                 const rawTxn = createRawTransaction(HexString.fromUint8Array(sender.toUint8Array()), payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
                 tx = generateBCSSimulateTransactionWithPublicKey(publicKey, rawTxn);
+                break
+            case "simulate_dapp":
+                const dappData = simulateParam.data as AptosCustomParam
+                if (dappData.type == 2) {
+                    const deserializer = new DeserializerBcs(base.fromHex(dappData.data));
+                    const payload = TransactionPayload.deserialize(deserializer);
+                    const rawTxn = createRawTransaction(
+                        HexString.fromUint8Array(sender.toUint8Array()),
+                        payload,
+                        BigInt(baseParam.sequenceNumber),
+                        baseParam.chainId,
+                        BigInt(baseParam.maxGasAmount),
+                        BigInt(baseParam.gasUnitPrice),
+                        BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSSimulateTransactionWithPublicKey(publicKey, rawTxn);
+                } else {
+                    return createSimulateRawTransactionByABIV2(sender,pubKey, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), dappData.data, dappData.abi);
+                }
                 break
             case "simulate_fungible_asset_transfer":
                 const faData = simulateParam.data as AptosFungibleTokenTransferParam

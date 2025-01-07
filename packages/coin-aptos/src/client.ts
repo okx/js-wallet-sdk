@@ -25,7 +25,7 @@ import {
     getFunctionParts,
     Network,
     Transaction,
-    SignedTransaction as SignedTransactionV2, Serializer
+    SignedTransaction as SignedTransactionV2, Serializer, generateSignedTransactionForSimulation, PublicKey
 } from "./v2";
 declare const TextEncoder: any;
 
@@ -456,7 +456,54 @@ export function createRawTransactionByABIV2(sender: Account,
     });
     return rawTxn;
 }
-
+export function createSimulateRawTransactionByABIV2(sender: AccountAddress,
+                                                    signerPublicKey:PublicKey,
+                                            sequenceNumber: Uint64,
+                                            chainId: Uint8,
+                                            maxGasAmount: Uint64,
+                                            gasUnitPrice: Uint64,
+                                            expirationTimestampSecs: Uint64,
+                                            callData: string,
+                                            moduleAbi: string) {
+    const dataP = JSON.parse(callData)
+    const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
+    const { moduleAddress, moduleName, functionName } = getFunctionParts(dataP.function);
+    let moceModule = modules.find((item)=>{
+        if(moduleAddress === item.abi?.address && moduleName == item.abi.name ) {
+            let res = item.abi?.exposed_functions.find((func) => {
+                return functionName == func.name
+            });
+            if (res){
+                return item;
+            }
+        }
+    });
+    const aptosConfig = new AptosConfig({network: Network.CUSTOM, moveModule: JSON.stringify(moceModule)});
+    const transaction = new Transaction(aptosConfig);
+    const rawTxn = transaction.build.simple({
+        sender: sender,
+        withFeePayer: false,
+        data: {
+            function: dataP.function,
+            typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
+            functionArguments: dataP.arguments || dataP.functionArguments,
+        },
+        options: {
+            maxGasAmount: Number(maxGasAmount),
+            gasUnitPrice: Number(gasUnitPrice),
+            expireTimestamp: Number(expirationTimestampSecs),
+            chainId: Number(chainId),
+            accountSequenceNumber: Number(sequenceNumber),
+        },
+    }).then(rawTx => {
+        const signedTx = generateSignedTransactionForSimulation({
+            transaction: rawTx,
+            signerPublicKey: signerPublicKey,
+        });
+        return base.toHex(signedTx);
+    });
+    return rawTxn;
+}
 
 export async function signMessage(message: string, privateKey: string): Promise<string> {
     const textEncoder = new TextEncoder();
