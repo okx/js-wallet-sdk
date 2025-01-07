@@ -8,6 +8,7 @@
     "build": "run-s clean build:main && cp src/libs/*/*.wasm dist/",
     "build:main": "tsc -p tsconfig.json",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
+    "prepublishOnly": "node ../../scripts/dep-verison-check.js",
     "test": "jest"
   },
   "repository": {

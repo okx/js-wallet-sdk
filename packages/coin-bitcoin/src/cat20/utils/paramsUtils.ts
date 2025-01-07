@@ -9,8 +9,6 @@ import {
     UtxoInput,
 } from "../common";
 import {
-    OpenMinterState,
-    OpenMinterV2State,
     ProtocolState,
     ProtocolStateList
 } from "@cat-protocol/cat-smartcontracts";
@@ -102,101 +100,6 @@ export function tokenUtxoParse(tokenUtxos: string): Array<TokenContract> {
     })
 }
 
-export function minterParse(minterStr: string, metadata: TokenMetadata, rawTx: string): OpenMinterContract {
-    const minter = JSON.parse(minterStr);
-    const protocolState = ProtocolState.fromStateHashList(
-        minter.txoStateHashes as ProtocolStateList,
-    );
-
-    const data = getOpenMinterState(
-        metadata,
-        minter.utxo.txId,
-        minter.utxo.outputIndex,
-        rawTx,
-    );
-
-    if (data === null) {
-        throw new Error(
-            `get open minter state failed, minter: ${metadata.minterAddr}, txId: ${minter.utxo.txId}`,
-        );
-    }
-
-    if (typeof minter.utxo.satoshis === 'string') {
-        minter.utxo.satoshis = parseInt(minter.utxo.satoshis);
-    }
-
-    return {
-        utxo: minter.utxo,
-        state: {
-            protocolState,
-            data,
-        },
-    } as OpenMinterContract;
-}
-
-const getOpenMinterState = function (
-    metadata: TokenMetadata,
-    txId: string,
-    vout: number,
-    txhex: string
-): OpenMinterState | OpenMinterV2State | null {
-    const minterP2TR = toP2tr(metadata.minterAddr);
-    const tokenP2TR = toP2tr(metadata.tokenAddr);
-    const info = metadata.info as OpenMinterTokenInfo;
-    const scaledInfo = scaleConfig(info);
-
-    // first mint
-    if (txId === metadata.revealTxid) {
-        if (metadata.info.minterMd5 == MinterType.OPEN_MINTER_V2) {
-            return {
-                isPremined: false,
-                remainingSupplyCount:
-                    (scaledInfo.max - scaledInfo.premine) / scaledInfo.limit,
-                tokenScript: tokenP2TR,
-            };
-        }
-        return {
-            isPremined: false,
-            remainingSupply: scaledInfo.max - scaledInfo.premine,
-            tokenScript: tokenP2TR,
-        };
-    }
-
-    const tx = new btc.Transaction(txhex);
-    if (tx.id != txId) {
-        throw new Error(`Invalid raw tx, \n${txId} \n${tx.id}`)
-    }
-
-    const REMAININGSUPPLY_WITNESS_INDEX = 16;
-
-    for (let i = 0; i < tx.inputs.length; i++) {
-        const witnesses = tx.inputs[i].getWitnesses();
-
-        if (witnesses.length > 2) {
-            const lockingScriptBuffer = witnesses[witnesses.length - 2];
-            const { p2tr } = script2P2TR(lockingScriptBuffer);
-            if (p2tr === minterP2TR) {
-                if (metadata.info.minterMd5 == MinterType.OPEN_MINTER_V2) {
-                    return {
-                        tokenScript:
-                            witnesses[REMAININGSUPPLY_WITNESS_INDEX - 2].toString('hex'),
-                        isPremined: true,
-                        remainingSupplyCount: byteString2Int(
-                            witnesses[6 + vout].toString('hex'),
-                        ),
-                    };
-                }
-                return {
-                    tokenScript:
-                        witnesses[REMAININGSUPPLY_WITNESS_INDEX - 2].toString('hex'),
-                    isPremined: true,
-                    remainingSupply: byteString2Int(witnesses[6 + vout].toString('hex')),
-                };
-            }
-        }
-    }
-    return null;
-};
 
 export function scaleConfig(config: OpenMinterTokenInfo): OpenMinterTokenInfo {
     const clone = Object.assign({}, config);

@@ -1,16 +1,12 @@
 import {
     BurnGuard,
     CAT20,
-    ClosedMinter,
-    int32,
-    OpenMinter,
-    OpenMinterV2,
     ProtocolState,
     TransferGuard,
     TxOutpoint,
 } from '@cat-protocol/cat-smartcontracts';
 
-import {btc, MinterType, SupportedNetwork} from '../common';
+import {btc, SupportedNetwork} from '../common';
 import {
     bsv,
     ByteString,
@@ -146,62 +142,6 @@ export function getTokenContractP2TR(minterP2TR: string) {
     return contract2P2TR(getTokenContract(minterP2TR, guardsP2TR));
 }
 
-export function getClosedMinterContract(
-    issuerAddress: string,
-    genesisId: ByteString,
-) {
-    return new ClosedMinter(issuerAddress, genesisId);
-}
-
-export function getOpenMinterContract(
-    genesisId: ByteString,
-    max: int32,
-    premine: int32,
-    limit: int32,
-    premineAddress: ByteString,
-    minterMd5: string = MinterType.OPEN_MINTER_V2,
-) {
-    if (minterMd5 === MinterType.OPEN_MINTER_V1) {
-        return new OpenMinter(genesisId, max, premine, limit, premineAddress);
-    }
-    const maxCount = max / limit;
-    const premineCount = premine / limit;
-    return new OpenMinterV2(
-        genesisId,
-        maxCount,
-        premine,
-        premineCount,
-        limit,
-        premineAddress,
-    );
-}
-
-export function getOpenMinterContractP2TR(
-    genesisId: ByteString,
-    max: int32,
-    premine: int32,
-    limit: int32,
-    premineAddress: ByteString,
-    minterMd5: string,
-) {
-    return contract2P2TR(
-        getOpenMinterContract(
-            genesisId,
-            max,
-            premine,
-            limit,
-            premineAddress,
-            minterMd5,
-        ),
-    );
-}
-
-export function getClosedMinterContractP2TR(
-    issuerAddress: string,
-    genesisId: ByteString,
-) {
-    return contract2P2TR(getClosedMinterContract(issuerAddress, genesisId));
-}
 
 export function toTxOutpoint(txid: string, outputIndex: number): TxOutpoint {
     const outputBuf = Buffer.alloc(4, 0);
@@ -359,7 +299,13 @@ export function verifyContract(
 export function getDummyEcKey(){
     return new EcKeyService({privateKey: 'L4EpxBBbTqztn8Q9W73Cf7e36ttHhDWRSzr4sHazjUcCrucwEJLy'})
 }
+
+export function getDummySignature() {
+    return btc.crypto.Signature.fromString('E907831F80848D1069A5371B402410364BDF1C5F8307B0084C55F1CE2DCA821525F66A4A85EA8B71E482A74F382D2CE5EBEEE8FDB2172F477DF4900D310536C0').toString('hex')
+}
+
 export function getFee(tx: btc.Transaction){
     return tx.inputs.reduce((acc: number, i: any) => acc + i.output.satoshis, 0)
         - tx.outputs.reduce((acc: number, o: any) => acc + o.satoshis, 0)
 }
+
