@@ -799,7 +799,7 @@ describe("official sdk v2", () => {
         let param: BuildSimulateTxParams = {
             publicKey: "0x82e41609813847aec1dd3ba866f9acba88eef4c83278300a5c6b8ed2a63d6343",
             data: {
-                type: "fungible_asset_transfer",
+                type: "simulate_fungible_asset_transfer",
                 base: {
                     sequenceNumber: "30",
                     chainId: 1,

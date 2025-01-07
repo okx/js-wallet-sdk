@@ -179,7 +179,7 @@ export type BuildSimulateTxParams = {
 };
 
 export type AptosSimulateParam = {
-    type: "simulate_transfer" | "simulate_token_transfer" | "fungible_asset_transfer",
+    type: "simulate_transfer" | "simulate_token_transfer" | "simulate_fungible_asset_transfer",
     base: AptosBasePram,
     data: any
 }
@@ -275,7 +275,7 @@ export class AptosWallet extends BaseWallet {
                 const rawTxn = createRawTransaction(HexString.fromUint8Array(sender.toUint8Array()), payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
                 tx = generateBCSSimulateTransactionWithPublicKey(publicKey, rawTxn);
                 break
-            case "fungible_asset_transfer":
+            case "simulate_fungible_asset_transfer":
                 const faData = simulateParam.data as AptosFungibleTokenTransferParam
                 const aptosConfig = new AptosConfig({network: Network.MAINNET});
                 const fungibleAsset = new FungibleAsset(aptosConfig);
