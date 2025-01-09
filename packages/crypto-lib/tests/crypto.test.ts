@@ -97,7 +97,7 @@ describe("crypto", () => {
 
     test("ed25519", async () => {
         // The first 32 bytes of the signature are the private key and the following 32 bits are the public key
-        const str = "40819a6788c3fc0a299a1a9302a5638becf7ee3235328f04212ac0d7b7f3749a288a2265542d8d5bf05d4fc046fa818a8e1022c250de244617ab45ed82f886eb";
+        const str = "40819a6788c3fc0a299a1a9302a5638becf7ee3235328f04212ac0d7b7f3749a0bcf13c90b17be1a6fcb83818f338ef193a09c73a8d669cdeae92466f79317e8";
         const secretKey = base.fromHex(str);
 
         const p = signUtil.ed25519.publicKeyCreate(secretKey)
