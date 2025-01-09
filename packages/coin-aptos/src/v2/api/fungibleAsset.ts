@@ -24,7 +24,7 @@ import { ProcessorType } from "../utils/const";
 import { AptosConfig } from "./aptosConfig";
 // import { waitForIndexerOnVersion } from "./utils";
 import { Account } from "../account";
-import {AccountAddress, AccountAddressInput} from "../core";
+import { AccountAddress, AccountAddressInput } from "../core";
 import { InputGenerateTransactionOptions } from "../transactions";
 import { SimpleTransaction } from "../transactions/instances/simpleTransaction";
 
