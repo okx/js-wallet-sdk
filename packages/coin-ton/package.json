@@ -38,10 +38,8 @@
     "prando": "^6.0.1",
     "symbol.inspect": "^1.0.3",
     "tonweb-mnemonic": "1.0.1",
-    "tweetnacl": "^1.0.3"
-  },
-  "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "1.0.12-beta.0"
+    "tweetnacl": "^1.0.3",
+    "@okxweb3/crypto-lib": "1.0.8",
+    "@okxweb3/coin-base": "1.0.14"
   }
 }

@@ -37,10 +37,8 @@
     "@noble/hashes": "^1.4.0",
     "@scure/bip32": "^1.3.3",
     "@scure/bip39": "^1.2.1",
-    "tweetnacl": "^1.0.3"
-  },
-  "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "1.0.12-beta.0"
+    "tweetnacl": "^1.0.3",
+    "@okxweb3/crypto-lib": "1.0.8",
+    "@okxweb3/coin-base": "1.0.14"
   }
 }

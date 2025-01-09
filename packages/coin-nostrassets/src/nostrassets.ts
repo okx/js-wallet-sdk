@@ -77,7 +77,7 @@ export async function decrypt(privkey: string, pubkey: string, data: string): Pr
     let iv = base.fromBase64(ivb64)
     // @ts-ignore
     let plaintext = await crypto.subtle.decrypt({name: 'AES-CBC', iv}, cryptoKey, ciphertext)
-    let text = base.fromUtf8(plaintext)
+    let text = base.fromUtf8(new Uint8Array(plaintext))
     return text
 }
 

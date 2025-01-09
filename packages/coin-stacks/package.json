@@ -33,8 +33,8 @@
     "ts-node": "^10.7.0",
     "typescript": "^4.6.2"
   },
-  "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "1.0.12-beta.0"
+  "dependencies": {
+    "@okxweb3/crypto-lib": "1.0.8",
+    "@okxweb3/coin-base": "1.0.14"
   }
 }

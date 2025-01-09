@@ -36,10 +36,8 @@
   "dependencies": {
     "@polkadot/x-textdecoder": "^9.6.2",
     "@polkadot/x-textencoder": "^9.6.2",
-    "pako": "^2.0.4"
-  },
-  "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "1.0.12-beta.0"
+    "pako": "^2.0.4",
+    "@okxweb3/crypto-lib": "1.0.8",
+    "@okxweb3/coin-base": "1.0.14"
   }
 }

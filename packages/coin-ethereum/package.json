@@ -34,10 +34,8 @@
   },
   "dependencies": {
     "eth-sig-util": "^3.0.1",
-    "superstruct": "^1.0.3"
-  },
-  "peerDependencies": {
-    "@okxweb3/crypto-lib": "1.0.7-beta.0",
-    "@okxweb3/coin-base": "1.0.12-beta.0"
+    "superstruct": "^1.0.3",
+    "@okxweb3/crypto-lib": "1.0.8",
+    "@okxweb3/coin-base": "1.0.14"
   }
 }
