@@ -3,6 +3,14 @@
 
 All notable changes to this project will be documented in this file.
 
+
+
+
+# [1.0.8](https://github.com/okx/js-wallet-sdk) (2025-01-09)
+### Optimize
+
+- **crypto-lib:** add ed25519 implement
+
 # [1.0.6](https://github.com/okx/js-wallet-sdk) (2024-10-22)
 
 ### Bug Fixes
