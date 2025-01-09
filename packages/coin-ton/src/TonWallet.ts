@@ -180,9 +180,14 @@ export class TonWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        checkSeed(param.privateKey)
+        let isValid = true;
+        try {
+            checkSeed(param.privateKey)
+        } catch (e){
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
-            isValid: true,
+            isValid: isValid,
             privateKey: param.privateKey
         };
         return Promise.resolve(data);
