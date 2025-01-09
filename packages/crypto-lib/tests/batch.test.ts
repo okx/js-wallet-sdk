@@ -4,10 +4,6 @@ import * as fs from "fs"
 describe("crypto", () => {
   // mnemonic root  child  secp256k1-public ed25519-public msg  secp256k1-signature ed25519-signature
   test("bip32", async () => {
-    const path = "./tests/bip32.txt"
-    if(fs.existsSync(path)) {
-       fs.unlinkSync(path)
-    }
 
     for(let i = 0; i < 100; i++) {
       const mnemonic = bip39.generateMnemonic()
@@ -37,17 +33,12 @@ describe("crypto", () => {
       items.push(base.toHex(s2))
 
      const line = items.join(",") + "\r\n"
-     fs.appendFileSync(path, line)
      const info = `${i}  ${line}`
      console.info(info)
     }
   })
 
   test("hash", async () => {
-    const path = "./tests/hash.txt"
-    if(fs.existsSync(path)) {
-      fs.unlinkSync(path)
-    }
 
     for(let i = 0; i < 100; i++) {
       const msg = base.randomBytes(32)
@@ -63,7 +54,6 @@ describe("crypto", () => {
 
       const items = [base.toHex(msg), s1, s2, s3, s4, s5, s6, s7, s8, s9]
       const line = items.join(",") + "\r\n"
-      fs.appendFileSync(path, line)
       const info = `${i}  ${line}`
       console.info(info)
     }
