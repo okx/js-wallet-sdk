@@ -189,7 +189,7 @@ describe("eth walLet", () => {
     });
 
     test("getAddressByPublicKey", async () => {
-        const addr = await wallet.getAddressByPublicKey({publicKey: "0x04c847f6dd9e4fd3ce75c61614c838d9a54a5482b46e439b99aec5ebe26f9681510eab4e8116df5cb889d48194010633e83dd9ccbbffa6942a6768412293a70f41"});
+        const addr = await wallet.getAddressByPublicKey({publicKey: publicKey});
         const expected = '0xd74c65ad81aa8537327e9ba943011a8cec7a7b6b';
         expect(addr).toEqual(expected);
     });
