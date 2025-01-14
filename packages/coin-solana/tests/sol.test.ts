@@ -34,6 +34,7 @@ describe("address", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new SolWallet();
         let j = 1;
@@ -42,6 +43,7 @@ describe("address", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length+1);
@@ -52,6 +54,8 @@ describe("address", () => {
         const privateKey = await wallet.getRandomPrivateKey();
         const res = await wallet.validPrivateKey({privateKey:privateKey});
         expect(res.isValid).toEqual(true);
+
+        expect((await wallet.validPrivateKey({privateKey:"0000000000000000000000000000000000000000000000000000000000000000"})).isValid).toEqual(false);
     });
 
     test("getNewAddress", async () => {
@@ -360,4 +364,31 @@ describe("address", () => {
         let expected = `R1skTPrnLQL7Hg9BPsxT1PwcbSD3LPQPWm83qF33iTNZ7dLzH7TA5cdRb92gJRfy94zJqm3xNrJKJGh3rDHHbhiYRmSisjGFTNn6NpMiz4Eb1KB6H9i9LrWZcGaJEkJjcLtoyLvjDi55xX8ruewUbzaHrzTKgrW4yY2iLxaJ1CHzuYZHxRjyNkwmUMmjVZ5CRW7vRVdaVNCA4RokxJaFTC2v2GfsdUc82g5482b6a5zZ8ZuNFrj9v2Z6Pyu7Bvd1eG13pVD27ZbedBeVVY98uFPniZqmkBHwdLRESqv9BSdTpEC4q5RuTRQiMRjY9snNAxKg6mr1Lt6AHnGFvAowrD45wUMn5BXmFr2pyoXvgP3RogGfrF6kQqUJrQTJvTzve2VfGcCatRbhrs44gHwdGKto65ZLrB5JgBnk4ujLGprMvuMmFNFRK5jXETdKULhfhhbMm9qRSzco9pbkMPzM4wP83qJ2U9Wm2GqR2eNcNSMAGXr7ZR4iApMNdRToAPFWMe1NNgTG7BbQDtreq7HyMZGXwrkT6uVxD3BTzRNzg7MYjmPDuUVufThhs3LW6p1TNMRNcmK4FV7X5oaT8XwQFyKJmmmdLXiAGzVrk469R1tB42uHzYC2eRBsPk6VVZ7Yq3i5rKRLkcr6k4MnRqiJaSuRKzycLHSPNEuHABx4WPAi77z7gPppWrM2WqvhVwbyYVWpoAegMST2gDGUWZpsEMmQamygqC9FKggeCyvRENyLuUgL19u54848NFDgmnV2qb5w9L6aDoJddKKd7JtGZz5uuzzDRBu2ThchbTG6NyU5yFP6ipp9zNsidxznhwzA8X11`;
         expect(tx).toBe(expected);
     });
+
+    test("tokenTransfer getSerializedTransaction to PDA", async () => {
+        let wallet = new SolWallet()
+        let param = {
+            privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
+            data: {
+                // version: 0,
+                type: "tokenTransfer",
+                payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                blockHash: "8ghFXVhEfjPirMC4a57UoH1QYnKrA3Rah6y22jca5zPD",
+                from: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                to: "3HBR6etBCXSVYQwXMPL9i6ScWJjSAZfmczex1azzmX9T",
+                amount: 100000,
+                mint: "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+                createAssociatedAddress: false,
+                token2022: true,
+                decimal: 6,
+                computeUnitLimit: 100000,
+                computeUnitPrice: 70539,
+                needPriorityFee: false
+            }
+        }
+        let tx = await wallet.getSerializedTransaction(param);
+        let expected = `FB7FmtvLSKcGuyHmZv2XEMA9ciZFLbHhtHjP7SRMD4sr1EpJnGo48gWBchCWFYqjU8DGavrQhqp8F1DunfhzMrW8N1oLE6eBvLcXjuTz7q17ZutX5tiDEGiRYgi8SJM8G7jtE81wRuyYB4HqCXk7V26eV4rUrdGgnuauQxRsFDpqCcC1aPuqvwYAiWmzcvD1KuB8RPijNxSbQjKUx9DNvEJuTCxKvakj7KCUXwa8D5F39sdVZP1yrJMbQdjJzVG982ZNZ6p6K8etXfJo3kyyQbXazGnY6nukCppPN2SFQsHxiWMr7ENRCicqyf12jVQzVs5RSBR44FgjxthJMhjFB2728xbLxYA72CqTn2n7An4Apjkwj5MeJJHiG5bT`;
+        expect(tx).toBe(expected);
+    });
+
 })
