@@ -117,15 +117,22 @@ export async function CreateContractCall(contractAddress: string, from: string, 
     return {txId: tx.txId, signature: json.stringify(tx.signature)};
 }
 
-export type Call = {
-    contractAddress: string,
-    entrypoint: string,
+export type CallV2 = {
+    contractAddress?: string,
+    contract_address?:string,
+    entrypoint?: string,
+    entry_point?:string,
     calldata: string[]
 }
 
-export async function CreateMultiContractCall(from: string, calls: Call[], nonce: BigNumberish, maxFee: BigNumberish, chainId: StarknetChainId, privateKey: string) {
+export async function CreateMultiContractCall(from: string, calls: CallV2[], nonce: BigNumberish, maxFee: BigNumberish, chainId: StarknetChainId, privateKey: string) {
     const AAaccount = new Account(from, addHexPrefix(privateKey));
-    const tx = await AAaccount.execute(calls, undefined, {
+    let arr = calls.map(item => ({
+        contractAddress: item.contract_address? item.contract_address:item.contractAddress!,
+        entrypoint:item.entry_point? item.entry_point:item.entrypoint!,
+        calldata: item.calldata,
+    }))
+    const tx = await AAaccount.execute(arr, undefined, {
         nonce: nonce,
         maxFee: maxFee,
         chainId: chainId,

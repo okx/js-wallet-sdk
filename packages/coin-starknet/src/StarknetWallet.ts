@@ -17,7 +17,7 @@ import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 
 import {
     CalculateContractAddressFromHash,
-    Call, computeHashOnElements,
+    CallV2, computeHashOnElements,
     constants,
     CreateContractCall,
     CreateMultiContractCall,
@@ -62,7 +62,7 @@ export type StarknetSignData = {
     }
     multiContractCallData?: {
         from: string
-        calls: Call[]
+        calls: CallV2[]
     }
 }
 
@@ -80,12 +80,12 @@ function validateHexString(value: string) {
     return true
 }
 
-function checkPrivateKey(privateKeyHex: string):boolean{
-    if (!validateHexString(privateKeyHex)){
+function checkPrivateKey(privateKeyHex: string): boolean {
+    if (!validateHexString(privateKeyHex)) {
         return false;
     }
     const keyBytes = base.fromHex(privateKeyHex.toLowerCase());
-    if (keyBytes.length < 25 || keyBytes.length > 33) {
+    if (keyBytes.length < 25 || keyBytes.length > 33 || keyBytes.every(byte=>byte ===0)) {
         return false;
     }
     return true
