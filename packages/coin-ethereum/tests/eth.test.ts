@@ -44,6 +44,7 @@ describe("eth api", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         expect.assertions(ps.length);
 
