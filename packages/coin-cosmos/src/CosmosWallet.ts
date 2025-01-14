@@ -127,7 +127,7 @@ export abstract class CosmosWallet extends BaseWallet {
       return Promise.resolve(false);
     }
     const privateKey = base.fromHex(privateKeyHex.toLowerCase())
-    return privateKey.length == 32
+    return privateKey.length == 32 && !privateKey.every(byte => byte === 0)
   }
 
   async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
