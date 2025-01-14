@@ -63,8 +63,22 @@ export type StarknetSignData = {
     }
 }
 
+function validateHexString(value: string) {
+    if (!value) {
+        return false;
+    }
+    const hexStr = value.toLowerCase().startsWith("0x") ? value.substring(2).toLowerCase() : value.toLowerCase();
+    if (hexStr.length === 0) {
+        return false;
+    }
+    if (!hexStr.match(/^[0-9A-Fa-f]*$/)) {
+        return false;
+    }
+    return true
+}
+
 function checkPrivateKey(privateKeyHex: string):boolean{
-    if (!base.validateHexString(privateKeyHex)){
+    if (!validateHexString(privateKeyHex)){
         return false;
     }
     const keyBytes = base.fromHex(privateKeyHex.toLowerCase());

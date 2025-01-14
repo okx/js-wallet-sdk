@@ -390,7 +390,7 @@ describe("near", () => {
     test("wallet-DAppTx", async () => {
         let wallet = new NearWallet();
         let param: SignTxParams = {
-            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj1234",
+            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj",
             data: {
                 blockHash: "EekjoegUYx2iibbWDuUSQENYCvUGkxj2Et1hTonbwBuN",
                 type: NearTypes.DAppTx,
@@ -407,7 +407,7 @@ describe("near", () => {
         }
         let result = await wallet.signTransaction(param)
         console.info(result)
-        expect(result).toEqual("QAAAADlmZWFiOGVkZjBlZWJlMDRhZWU0ZWY2ZGUxNTliZGRhZTQwMWQyZDc5Zjk2ZWVmZjZiZDc4OWEwYzgzY2ExOWQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0BAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADQA6BVf12ywjoofQgzoqvoY5K0ruQNG7y9o7RF0oaKYQpxTyD7zeauNCAjPxtC+dtKWhM/AT+rYVINxfluRDwK")
+        expect(result).toEqual("QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN")
     });
 
     test("wallet-AddKey", async () => {
@@ -475,7 +475,7 @@ describe("near", () => {
     test("wallet-DAppTxs", async () => {
         let wallet = new NearWallet();
         let param: SignTxParams = {
-            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj1234",
+            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj",
             data: {
                 blockHash: "EekjoegUYx2iibbWDuUSQENYCvUGkxj2Et1hTonbwBuN",
                 type: NearTypes.DAppTxs,
@@ -494,7 +494,7 @@ describe("near", () => {
         }
         let result = await wallet.signTransaction(param)
         console.info(result)
-        expect(result).toEqual(["QAAAADlmZWFiOGVkZjBlZWJlMDRhZWU0ZWY2ZGUxNTliZGRhZTQwMWQyZDc5Zjk2ZWVmZjZiZDc4OWEwYzgzY2ExOWQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0BAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADQA6BVf12ywjoofQgzoqvoY5K0ruQNG7y9o7RF0oaKYQpxTyD7zeauNCAjPxtC+dtKWhM/AT+rYVINxfluRDwK",])
+        expect(result).toEqual(["QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN",])
     });
 
     test("createAccount", async () => {
