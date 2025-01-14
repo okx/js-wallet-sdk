@@ -1,7 +1,7 @@
 {
   "name": "@okxweb3/coin-aptos",
   "version": "1.1.0",
-  "description": "",
+  "description": "A aptos SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
