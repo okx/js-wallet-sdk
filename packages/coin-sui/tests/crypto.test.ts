@@ -42,6 +42,7 @@ describe("cryptography", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new SuiWallet();
         let j = 1;
@@ -50,6 +51,7 @@ describe("cryptography", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length+1);
@@ -58,8 +60,12 @@ describe("cryptography", () => {
     test("validPrivateKey", async () => {
         const wallet = new SuiWallet();
         const privateKey = await wallet.getRandomPrivateKey();
-        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        let res = await wallet.validPrivateKey({privateKey:privateKey});
         expect(res.isValid).toEqual(true);
+        res = await wallet.validPrivateKey({privateKey:""});
+        expect(res.isValid).toEqual(false);
+        res = await wallet.validPrivateKey({privateKey:"AABBXX"});
+        expect(res.isValid).toEqual(false);
     });
 
     test("decoder or encoder SuiPrivateKey exception", async () => {

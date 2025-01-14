@@ -90,9 +90,14 @@ export class SuiWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        tryDecodeSuiPrivateKey(param.privateKey)
+        let isValid = true;
+        try {
+            tryDecodeSuiPrivateKey(param.privateKey)
+        } catch (e) {
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
-            isValid: true,
+            isValid: isValid,
             privateKey: param.privateKey
         };
         return Promise.resolve(data);
