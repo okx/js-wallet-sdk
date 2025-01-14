@@ -132,7 +132,7 @@ export class NearWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const privateKeyHex = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic,param.hdPath, false, "hex")
+            const privateKeyHex = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic, param.hdPath, false, "hex")
             const publicKey = base.toHex(signUtil.ed25519.publicKeyCreate(base.fromHex(privateKeyHex)))
             return Promise.resolve('ed25519:' + base.toBase58(base.fromHex(privateKeyHex + publicKey)))
         } catch (e) {

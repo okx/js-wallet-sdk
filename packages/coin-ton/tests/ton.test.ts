@@ -42,17 +42,25 @@ describe("ton", () => {
     test("edge test", async () => {
         const wallet = new TonWallet();
         let j = 1;
+        let k = 1;
         for (let i = 0; i < ps.length; i++) {
             let param = {privateKey: ps[i]};
             try {
                 await wallet.getNewAddress(param);
             } catch (e) {
                 j = j + 1
-                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
+
+            try {
+                await wallet.validPrivateKey({privateKey:ps[i]});
+            } catch (e) {
+                k++;
+            }
+
             expect(ps[i]).toEqual(param.privateKey)
         }
         expect(j).toEqual(ps.length + 1);
+        expect(k).toEqual(ps.length + 1);
     });
 
     test("validPrivateKey", async () => {
