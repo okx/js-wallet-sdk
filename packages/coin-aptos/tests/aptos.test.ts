@@ -50,9 +50,9 @@ describe("aptos", () => {
     test("signCommonMsg", async () => {
         let wallet = new AptosWallet();
         let sig = await wallet.signCommonMsg({privateKey:"4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5", message:{walletId:"123456789"}});
-        assert.strictEqual(sig,"fb2e769833b0f4d7e33f8fdea12f542337522701af82e06e272640945b9e71e024b0acf1089aaf3930a5c58f89c1dd034d417f5e04e4c4f42b67a4f29dcabf07")
+        expect(sig).toEqual("fb2e769833b0f4d7e33f8fdea12f542337522701af82e06e272640945b9e71e024b0acf1089aaf3930a5c58f89c1dd034d417f5e04e4c4f42b67a4f29dcabf07")
         sig = await wallet.signCommonMsg({privateKey:"4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5", message:{text:"123456789"}});
-        assert.strictEqual(sig,"61840f574464271524dfd902061c4a272ec60ba9b90d75a4ffaa41258b5fdafe0badbe0b452a62d88c73d8a5e867c711eacddd10336e93deafca6a516eabea08")
+        expect(sig).toEqual("61840f574464271524dfd902061c4a272ec60ba9b90d75a4ffaa41258b5fdafe0badbe0b452a62d88c73d8a5e867c711eacddd10336e93deafca6a516eabea08")
     });
 
     const ps: any[] = [];
