@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ### New Features
 
-- **coin-nostrasset:** support signCommonMsg ([](https://github.com/okx/js-wallet-sdk))
+- **coin-nostrassets:** support signCommonMsg ([](https://github.com/okx/js-wallet-sdk))
 
 # [1.0.2](https://github.com/okx/js-wallet-sdk) (2023-11-28)
 
