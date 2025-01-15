@@ -22,10 +22,10 @@ import {
     NewAddressError,
     NewAddressParams,
     secp256k1SignTest,
-    segwitType,
+    segwitType, SignCommonMsgParams,
     SignMsgError,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     TypedMessage,
     ValidAddressData,
     ValidAddressParams,
@@ -46,7 +46,7 @@ import {
     RuneMainWallet,
     RuneMainTestWallet,
     CatWallet,
-    psbtDecode
+    psbtDecode, privateKeyFromWIF
 } from "../index";
 
 
@@ -446,6 +446,17 @@ export class BtcWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignMsgError);
         }
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+        let publicKey = addr.compressedPublicKey? addr.compressedPublicKey : addr.publicKey;
+        if(publicKey.startsWith("0x")) {
+            publicKey = publicKey.substring(2);
+        }
+        let privateKey = privateKeyFromWIF(params.privateKey, this.network());
+        return super.signCommonMsg({privateKey:params.privateKey, privateKeyHex:privateKey,publicKey:publicKey,
+            addressType:params.addressType, message:params.message, signType:SignType.Secp256k1})
     }
 
     async verifyMessage(param: VerifyMessageParams): Promise<boolean> {

@@ -1,15 +1,15 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
     GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignMsgError,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     ValidAddressData,
     ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams
 } from '@okxweb3/coin-base';
@@ -228,6 +228,20 @@ export class NearWallet extends BaseWallet {
         const pk = base.fromBase58(parts[1])
         const seedHex = base.toHex(pk.slice(0, 32))
         return publicKeyFromSeed(seedHex)
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let privateKey = params.privateKey.startsWith("0x") || params.privateKey.startsWith("0X") ?params.privateKey.substring(2):params.privateKey;
+        if ((!params.privateKey.startsWith("0x")) && (!params.privateKey.startsWith("0X")) && !base.isHexString('0x' + params.privateKey)) {
+            const parts = params.privateKey.split(':');
+            if (parts.length != 2 || parts[0] != 'ed25519') {
+                throw Error("invalid privateKey")
+            }
+            const pk = base.fromBase58(parts[1])
+            privateKey = base.toHex(pk.slice(0, 32))
+        }
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

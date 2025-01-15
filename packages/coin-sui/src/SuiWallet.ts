@@ -12,7 +12,7 @@ import {
     GenPrivateKeyError,
     NewAddressError,
     SignMsgError,
-    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData
+    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from '@okxweb3/coin-base';
 import {base,signUtil} from '@okxweb3/crypto-lib';
 import {
@@ -97,6 +97,12 @@ export class SuiWallet extends BaseWallet {
         };
         return Promise.resolve(data);
     }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        const pri = tryDecodeSuiPrivateKey(params.privateKey)
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:pri, message:params.message, signType:SignType.ED25519})
+    }
+
 
     async signMessage(param: SignTxParams): Promise<string> {
         try {

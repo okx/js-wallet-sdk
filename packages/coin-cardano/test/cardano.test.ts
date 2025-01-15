@@ -5,8 +5,6 @@ import {
     getNewAddress,
     pubKeyFromPrivateKey
 } from "../src/account";
-import assert from "assert";
-import {AdaWallet} from "../src";
 
 // todo fix for jest
 describe("cardano", () => {

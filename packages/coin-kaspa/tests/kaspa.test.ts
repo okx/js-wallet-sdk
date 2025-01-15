@@ -2,6 +2,16 @@ import {KaspaWallet} from "../src";
 const wallet = new KaspaWallet();
 
 describe("kaspa", () => {
+
+
+    test("signCommonMsg", async () => {
+        let wallet = new KaspaWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1ca64e53306b181d26888429d9cdaa22cebd4b4fd84f5d0aaa0699df7d996299587fea8ba53890ebe09f55a9ac4ae867059b496bd8feabb97f8a4e20a34b73bc21")
+        sig = await wallet.signCommonMsg({privateKey:"d636a23d4f49fe4e0d59fcf7a6c2ab3846ff2d3a54007b3817a11dff770d06ff", message:{text:"123456789"}});
+        expect(sig).toEqual("1c96f99670d2685250aed3a633e5e37d15b0ee26e6e360fc35df7b00ea117e5e706f93a16291fedb829f9307dd03678f0d2178bf4011ed19fa4200f94f6b294270")
+    });
+
     test("derive privateKey", async () => {
         const privateKey = await wallet.getDerivedPrivateKey({
             mnemonic: "reopen vivid parent want raw main filter rotate earth true fossil dream",

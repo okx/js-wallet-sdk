@@ -1,5 +1,5 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
@@ -7,9 +7,9 @@ import {
     GetDerivedPathParam,
     NewAddressData,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
 } from "@okxweb3/coin-base";
 import {
@@ -215,6 +215,10 @@ export class TonWallet extends BaseWallet {
 
     async validateMnemonicOfTon(param: ValidateMnemonicParams): Promise<any> {
         return validateMnemonic(param.mnemonicArray, param.password);
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

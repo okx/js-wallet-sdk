@@ -109,3 +109,22 @@ export type ValidSignedTransactionParams = {
   tx: string;
   data?: any
 };
+
+export enum SignType {
+  Secp256k1=1 ,
+  ECDSA_P256,
+  ED25519,
+  StarknetSignType,
+  TezosSignType
+}
+
+export type SignCommonMsgParams = {
+  privateKey: string;
+  privateKeyHex?: string;
+  publicKey?: string;
+  signType?: SignType;
+  message: any;
+  addressType?: string;
+  version?: string;
+  hrp?: string;
+};
