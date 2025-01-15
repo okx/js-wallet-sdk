@@ -1,7 +1,7 @@
 {
   "name": "@okxweb3/coin-zkspace",
   "version": "1.0.11",
-  "description": "",
+  "description": "A zkspace SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "scripts": {
     "build": "run-s clean build:main",
@@ -14,7 +14,18 @@
     "type": "git",
     "url": "https://github.com/okx/js-wallet-sdk"
   },
-  "keywords": [],
+  "keywords": [
+    "zkspace",
+    "wallet",
+    "web3",
+    "crypto",
+    "blockchain",
+    "sdk",
+    "transaction",
+    "signing",
+    "address",
+    "private-key"
+  ],
   "author": "okx",
   "license": "MIT",
   "files": [

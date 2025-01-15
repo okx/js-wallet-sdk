@@ -1,7 +1,7 @@
 {
   "name": "@okxweb3/coin-ethereum",
   "version": "1.0.10-beta.1",
-  "description": "",
+  "description": "An Ethereum SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -15,7 +15,19 @@
     "type": "git",
     "url": "https://github.com/okx/js-wallet-sdk"
   },
-  "keywords": [],
+  "keywords": [
+    "ethereum",
+    "eth",
+    "wallet",
+    "web3",
+    "crypto",
+    "blockchain",
+    "sdk",
+    "transaction",
+    "signing",
+    "address",
+    "private-key"
+  ],
   "author": "okx",
   "license": "MIT OR MPL 2.0",
   "files": [

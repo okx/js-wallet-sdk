@@ -1,7 +1,7 @@
 {
   "name": "@okxweb3/coin-base",
   "version": "1.0.14",
-  "description": "",
+  "description": "A base package for @okxweb3/coin-*",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -15,7 +15,17 @@
     "type": "git",
     "url": "https://github.com/okx/js-wallet-sdk"
   },
-  "keywords": [],
+  "keywords": [
+    "wallet",
+    "web3",
+    "crypto",
+    "blockchain",
+    "sdk",
+    "transaction",
+    "signing",
+    "address",
+    "private-key"
+  ],
   "author": "okx",
   "license": "MIT",
   "files": [
