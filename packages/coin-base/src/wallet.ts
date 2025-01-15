@@ -165,6 +165,9 @@ abstract class BaseWallet {
             if (publicKey.startsWith("0x")) {
                 publicKey = publicKey.substring(2);
             }
+            if (!params.message.walletId) {
+                return Promise.reject("invalid walletId");
+            }
             data = buildCommonSignMsg(publicKey, params.message.walletId);
         }
         let hash = base.magicHash(data);
