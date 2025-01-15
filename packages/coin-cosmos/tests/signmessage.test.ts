@@ -7,7 +7,6 @@ import {
     SignMessageData
 } from "../src";
 import {SignTxParams} from "@okxweb3/coin-base";
-import assert from "assert";
 
 describe("sign message with tx", ()=> {
 

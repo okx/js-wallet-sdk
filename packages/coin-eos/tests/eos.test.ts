@@ -15,7 +15,6 @@ import {
     verifySignature, signSerializedTransaction,
 } from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
-import assert from "assert";
 
 describe("eos", () => {
 

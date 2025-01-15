@@ -24,7 +24,6 @@ import {SignTxParams} from "@okxweb3/coin-base";
 import {serialize} from "borsh";
 import {PublicKey} from "../src/keypair";
 import {MessagePayload} from "../src/nearlib";
-import {expect} from "@jest/globals";
 /*
 // send tx
 curl -X POST -d '{ "jsonrpc": "2.0", "id": "1", "method": "broadcast_tx_commit", "params": ["DwAAAHpoYW5nb2sudGVzdG5ldACf6rjt8O6+BK7k723hWb3a5AHS15+W7v9r14mgyDyhnQMTt1wPVgAAEgAAAHpoYW5ncWlvazMudGVzdG5ldMrT3+w+qj+2i9kCh1uOhqdpcM93vcaH0vIbNeiqxFl1AgAAAAAFANsvZOZ5puXw20LF3bpZEeI0MzXozU8Bx0isPfDpdNItAAAAAAAAAAABAK629ZISVCE2Uu/GFBZKy1xV1Fcfcyoj8fDV7yoVu8kwf/DCRBDFY1/T0CTUT9qWAfOnWde2uH8t1RQxMTw1AQE="]}' -H "Content-Type: application/json" https://rpc.testnet.near.org

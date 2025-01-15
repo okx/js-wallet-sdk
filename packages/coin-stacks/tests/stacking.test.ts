@@ -8,8 +8,6 @@ import {
     tokenTransfer, StxWallet
 } from '../src';
 import Assert from 'assert';
-import {test} from "@jest/globals";
-import assert from "assert";
 
 
 test("signCommonMsg", async () => {
