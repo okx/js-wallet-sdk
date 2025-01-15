@@ -1,5 +1,5 @@
 import {
-  BaseWallet,
+  BaseWallet, buildCommonSignMsg,
   CalcTxHashError,
   CalcTxHashParams,
   GetAddressParams,
@@ -12,10 +12,10 @@ import {
   MpcTransactionParam,
   NewAddressData,
   NewAddressError,
-  NewAddressParams,
+  NewAddressParams, SignCommonMsgParams,
   SignMsgError,
   SignTxError,
-  SignTxParams,
+  SignTxParams, SignType,
   ValidAddressData,
   ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams,
   validSignedTransactionError,
@@ -199,6 +199,11 @@ export abstract class CosmosWallet extends BaseWallet {
     } catch (e) {
     }
     return Promise.reject(SignTxError);
+  }
+
+  async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+    let hrp = params.hrp? params.hrp:this.getPrefix();
+    return super.signCommonMsg({privateKey:params.privateKey, message:params.message,hrp:hrp, signType:SignType.Secp256k1})
   }
 
   async signMessage(param: SignTxParams): Promise<string> {

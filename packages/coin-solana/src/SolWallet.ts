@@ -17,13 +17,17 @@ import {
     GetHardwareSignedTransactionError,
     NewAddressError,
     SignTxError,
-    validSignedTransactionError, ValidPrivateKeyParams, ValidPrivateKeyData,
+    validSignedTransactionError,
+    ValidPrivateKeyParams,
+    ValidPrivateKeyData,
+    SignCommonMsgParams,
+    buildCommonSignMsg,
+    SignType,
 } from '@okxweb3/coin-base';
 import {base,signUtil} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
 import {ComputeBudgetProgram} from "./sdk/web3/programs/compute-budget";
 import {TokenStandard} from "./sdk/metaplex";
-import {getSerializedMplTransaction, getSerializedTokenTransferVersionedTransaction} from "./api";
 
 export type TransactionType = "transfer" | "tokenTransfer" | "mplTransfer"
 export type SolSignParam = {
@@ -113,6 +117,12 @@ export class SolWallet extends BaseWallet {
             address: param.address,
         };
         return Promise.resolve(data);
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        const buf = base.fromBase58(params.privateKey)
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:base.toHex(buf), message:params.message, signType:SignType.ED25519})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

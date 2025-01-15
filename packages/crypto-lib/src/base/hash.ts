@@ -51,4 +51,40 @@ export function blake2(data: Uint8Array, bitLength: number, key: Uint8Array | un
     return blake2b(data, {dkLen: byteLength, key: key})
 }
 
+
+function varintBufNum(n: number) {
+    let buf;
+    if (n < 253) {
+        buf = Buffer.alloc(1);
+        buf.writeUInt8(n, 0);
+    } else if (n < 0x10000) {
+        buf = Buffer.alloc(1 + 2);
+        buf.writeUInt8(253, 0);
+        buf.writeUInt16LE(n, 1);
+    } else if (n < 0x100000000) {
+        buf = Buffer.alloc(1 + 4);
+        buf.writeUInt8(254, 0);
+        buf.writeUInt32LE(n, 1);
+    } else {
+        buf = Buffer.alloc(1 + 8);
+        buf.writeUInt8(255, 0);
+        buf.writeInt32LE(n & -1, 1);
+        buf.writeUInt32LE(Math.floor(n / 0x100000000), 5);
+    }
+    return buf;
+}
+
+const MAGIC_BYTES = Buffer.from('Bitcoin Signed Message:\n');
+
+
+export function magicHash(message: string, messagePrefix?: string) {
+    const messagePrefixBuffer = messagePrefix ? Buffer.from(messagePrefix,"utf8") : MAGIC_BYTES;
+    const prefix1 = varintBufNum(messagePrefixBuffer.length);
+    const messageBuffer = Buffer.from(message);
+    const prefix2 = varintBufNum(messageBuffer.length);
+    const buf = Buffer.concat([prefix1, messagePrefixBuffer, prefix2, messageBuffer]);
+    return doubleSha256(buf);
+}
+
+
 export {sha256, sha512, ripemd160, sha3_256, sha3_512}

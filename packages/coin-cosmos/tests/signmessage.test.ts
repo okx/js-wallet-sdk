@@ -9,6 +9,22 @@ import {
 import {SignTxParams} from "@okxweb3/coin-base";
 
 describe("sign message with tx", ()=> {
+
+    test("signCommonMsg", async () => {
+        let wallet = new SeiWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1ca38adcea509ddd27018907ca6e10995230993ddd7e03d6c98cdca9e99c42b9bb74a6e57147bc066884d1bef0f997d4bc8ba9dd1de5e90e4f9c8c3f79ec7adb18")
+        sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{text:"123456789"}});
+        expect(sig).toEqual("1b001cd35d660e0f6c6225b7b9932f01774d81f366faea828a3dd90ab0e5a55536666fa132f3a861bd916eab67ea99a51ddb7f434dfe526b2a895cc152221cc877")
+
+
+        let wallet2 = new CommonCosmosWallet();
+        sig = await wallet2.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"},hrp:"sei"});
+        expect(sig).toEqual("1ca38adcea509ddd27018907ca6e10995230993ddd7e03d6c98cdca9e99c42b9bb74a6e57147bc066884d1bef0f997d4bc8ba9dd1de5e90e4f9c8c3f79ec7adb18")
+        sig = await wallet2.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{text:"123456789"},hrp:"sei"});
+        expect(sig).toEqual("1b001cd35d660e0f6c6225b7b9932f01774d81f366faea828a3dd90ab0e5a55536666fa132f3a861bd916eab67ea99a51ddb7f434dfe526b2a895cc152221cc877")
+    });
+
     test("osmo amino osmosis/gamm/swap-exact-amount-in with timeout_height", async () => {
         const message = `{
           "chain_id": "osmosis-1",

@@ -14,6 +14,17 @@ const venomWallet = new VenomWallet();
 describe("ton", () => {
     const timeoutAtSeconds = Math.floor(Date.now() / 1e3) + 600;
     // const timeoutAtSeconds = 1718863283n;
+
+    test("signCommonMsg", async () => {
+        let wallet = new TonWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8", message:{walletId:"123456789"}});
+        expect(sig).toEqual("cc40d1fe95d67c7cd7e994a49fe8576f6958767084247cdc0b47fb8d62feef3578de28ce230f55eaec6396dc5d3b6720c0bbd53579f532b645eeb15055e30801")
+
+        sig = await wallet.signCommonMsg({privateKey:"fc81e6f42150458f53d8c42551a8ab91978a55d0e22b1fd890b85139086b93f8", message:{text:"123456789"}});
+        expect(sig).toEqual("7996f58cca2f3d823096aeebfe9ad7cadd1800182507daa4b942b6085536d181f9036b8e3dde2d3a6615898f60deb4beb02b7911c4824e774a116da297f82307")
+    });
+
+
     test("derive seed", async () => {
         const seed = await tonWallet.getDerivedPrivateKey({
             // bip39 mnemoric

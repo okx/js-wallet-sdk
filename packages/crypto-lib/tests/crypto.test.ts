@@ -1,12 +1,16 @@
 import {sha256} from "@noble/hashes/sha256";
 import {Buffer} from "buffer";
 import {base, bip32, bip39, signUtil} from "../src";
-import {randomBytes} from '../src/base';
+import {magicHash, randomBytes, toHex} from '../src/base';
 import {secp256k1} from "../src/signutil";
 import {publicKeyCreate} from "../src/signutil/ed25519";
 
 
 describe("crypto", () => {
+
+    test("magicHash", async () => {
+        expect(toHex(magicHash("hello world"))).toEqual("0b6b6ce07bc55ee4aeba0098a5e5d2c8986cab228a54199723f9962316633733");
+    })
 
     test("publicKeyCreate", async () => {
         const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";

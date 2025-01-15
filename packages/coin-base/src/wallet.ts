@@ -1,22 +1,26 @@
-import {NotImplementedError, GenPrivateKeyError} from "./error";
+import {GenPrivateKeyError, NotImplementedError, SignCommonMsgError} from "./error";
 import {
+    CalcTxHashParams,
     DerivePriKeyParams,
+    GetAddressParams,
     GetDerivedPathParam,
+    GetRawTransactionParams,
+    HardwareRawTransactionParam,
+    MpcMessageParam,
+    MpcRawTransactionParam,
+    MpcTransactionParam,
     NewAddressParams,
+    SignCommonMsgParams,
     SignTxParams,
+    SignType,
     TypedMessage,
     ValidAddressParams,
     ValidPrivateKeyParams,
+    ValidSignedTransactionParams,
     VerifyMessageParams,
-    GetAddressParams,
-    MpcRawTransactionParam,
-    MpcTransactionParam,
-    HardwareRawTransactionParam,
-    CalcTxHashParams,
-    GetRawTransactionParams,
-    ValidSignedTransactionParams, MpcMessageParam,
 } from './common';
-import {bip39, bip32, base, signUtil} from "@okxweb3/crypto-lib";
+import {base, bip32, bip39, BN, signUtil} from "@okxweb3/crypto-lib";
+import {buildCommonSignMsg} from "./basic";
 
 export function secp256k1SignTest(privateKey: Buffer) {
     const msgHash = base.sha256("secp256k1-test");
@@ -25,13 +29,70 @@ export function secp256k1SignTest(privateKey: Buffer) {
     return signUtil.secp256k1.verify(msgHash, signature, recovery, publicKey);
 }
 
+
+export function makeSignature(v: number, r: Buffer, s: Buffer): string {
+    const rSig = fromSigned(r);
+    const sSig = fromSigned(s);
+    const vSig = v;
+    const rStr = padWithZeroes(toUnsigned(rSig).toString('hex'), 64);
+    const sStr = padWithZeroes(toUnsigned(sSig).toString('hex'), 64);
+    const vStr = base.stripHexPrefix(intToHex(vSig));
+    return vStr.concat(rStr, sStr);
+}
+
+export function intToHex(i: Number) {
+    const hex = i.toString(16); // eslint-disable-line
+
+    return `0x${hex}`;
+}
+
+export const toUnsigned = function (num: BN): Buffer {
+    return Buffer.from(num.toTwos(256).toArray())
+}
+
+export function padWithZeroes(hexString: string, targetLength: number): string {
+    if (hexString !== '' && !/^[a-f0-9]+$/iu.test(hexString)) {
+        throw new Error(
+            `Expected an unprefixed hex string. Received: ${hexString}`,
+        );
+    }
+
+    if (targetLength < 0) {
+        throw new Error(
+            `Expected a non-negative integer target length. Received: ${targetLength}`,
+        );
+    }
+
+    return String.prototype.padStart.call(hexString, targetLength, '0');
+}
+
+export const fromSigned = function (num: Buffer): BN {
+    return new BN(num).fromTwos(256)
+}
+
+export function ecdsaSign(msgHash: Buffer, privateKey: Buffer, chainId?: number): { v: number, r: Buffer, s: Buffer } {
+    const {signature, recovery} = signUtil.secp256k1.sign(msgHash, privateKey) // { signature, recid: recovery }
+
+    const r = Buffer.from(signature.slice(0, 32))
+    const s = Buffer.from(signature.slice(32, 64))
+
+    if (chainId && !Number.isSafeInteger(chainId)) {
+        throw new Error(
+            'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)'
+        )
+    }
+    const v = chainId ? recovery + (chainId * 2 + 35) : recovery + 27
+    return {v, r, s}
+}
+
+
 abstract class BaseWallet {
     // secp256k1 curve uses the default implementation, ed25519 curve, you need to use the basic/ed25519 implementation.
     getRandomPrivateKey(): Promise<any> {
         try {
             while (true) {
                 const privateKey = base.randomBytes(32)
-                if(secp256k1SignTest(privateKey)) {
+                if (secp256k1SignTest(privateKey)) {
                     return Promise.resolve(base.toHex(privateKey, true));
                 }
             }
@@ -46,7 +107,7 @@ abstract class BaseWallet {
         return bip39.mnemonicToSeed(param.mnemonic)
             .then((masterSeed: Buffer) => {
                 let childKey = bip32.fromSeed(masterSeed).derivePath(param.hdPath)
-                if(childKey.privateKey) {
+                if (childKey.privateKey) {
                     let privateKey = base.toHex(childKey.privateKey);
                     return Promise.resolve("0x" + privateKey);
                 } else {
@@ -79,6 +140,56 @@ abstract class BaseWallet {
     // sign message
     signMessage(param: SignTxParams): Promise<string> {
         return Promise.reject(NotImplementedError);
+    }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        if (!params.signType) {
+            params.signType = SignType.Secp256k1;
+        }
+        let data;
+        if (params.message.text) {
+            data = params.message.text;
+        } else {
+            let publicKey;
+            if (params.publicKey) {
+                publicKey = params.publicKey;
+            } else {
+                let addr = await this.getNewAddress({
+                    privateKey: params.privateKey,
+                    addressType: params.addressType,
+                    hrp: params.hrp,
+                    version: params.version
+                });
+                publicKey = addr.publicKey;
+            }
+            if (publicKey.startsWith("0x")) {
+                publicKey = publicKey.substring(2);
+            }
+            if (!params.message.walletId) {
+                return Promise.reject("invalid walletId");
+            }
+            data = buildCommonSignMsg(publicKey, params.message.walletId);
+        }
+        let hash = base.magicHash(data);
+        const privateKeyStr = params.privateKeyHex ? params.privateKeyHex : params.privateKey;
+        const privateKey = base.fromHex(privateKeyStr);
+        var sig;
+        switch (params.signType) {
+            case SignType.Secp256k1:
+                const {v, r, s} = ecdsaSign(Buffer.from(hash), privateKey)
+                return Promise.resolve(makeSignature(v, r, s));
+            case SignType.ECDSA_P256:
+                sig = signUtil.p256.sign(Buffer.from(hash), privateKey).signature
+                return Promise.resolve(base.toHex(sig));
+            case SignType.ED25519:
+                sig = signUtil.ed25519.sign(hash, privateKey)
+                return Promise.resolve(base.toHex(sig));
+            case SignType.StarknetSignType:
+                sig = signUtil.schnorr.stark.sign(hash, privateKey).toCompactRawBytes();
+                return Promise.resolve(base.toHex(sig));
+            case SignType.TezosSignType:
+                return Promise.reject("not support");
+        }
     }
 
     // verify message
@@ -140,7 +251,7 @@ abstract class BaseWallet {
         return Promise.reject(NotImplementedError)
     }
 
-    validSignedTransaction(param: ValidSignedTransactionParams): Promise<any>  {
+    validSignedTransaction(param: ValidSignedTransactionParams): Promise<any> {
         return Promise.reject(NotImplementedError)
     }
 
@@ -149,4 +260,28 @@ abstract class BaseWallet {
     }
 }
 
-export {BaseWallet}
+//just for test
+class SimpleWallet extends BaseWallet {
+    mockAddress: string | undefined;
+    mockPublicKey: string | undefined;
+
+    mockData(mockAddress: string, mockPublicKey: string) {
+        this.mockAddress = mockAddress;
+        this.mockPublicKey = mockPublicKey;
+    }
+
+    getNewAddress(param: NewAddressParams): Promise<any> {
+        return Promise.resolve({address: this.mockAddress, publicKey: this.mockPublicKey});
+    }
+
+    validAddress(param: ValidAddressParams): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+
+    signTransaction(param: SignTxParams): Promise<any> {
+        throw new Error("Method not implemented.");
+    }
+}
+
+
+export {BaseWallet, SimpleWallet}

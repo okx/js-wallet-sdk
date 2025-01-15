@@ -18,7 +18,7 @@ import {
     validSignedTransactionError,
     ValidSignedTransactionParams,
     ValidPrivateKeyParams,
-    ValidPrivateKeyData
+    ValidPrivateKeyData, SignCommonMsgParams, SignCommonMsgError, buildCommonSignMsg, SignType
 } from "@okxweb3/coin-base";
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
@@ -653,6 +653,10 @@ export class AptosWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignTxError);
         }
+    }
+
+   async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signMessageByPayload(param: SignMessageByPayloadParams): Promise<any> {
