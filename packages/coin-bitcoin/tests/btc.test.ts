@@ -14,7 +14,7 @@ import {
     DogeWallet,
     LtcWallet, calculateTxSize, BsvWallet, BchWallet
 } from '../src';
-import {Transaction,} from '../src/bitcoinjs-lib'
+import {Transaction} from '../src/bitcoinjs-lib'
 
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
