@@ -61,7 +61,12 @@ export class AdaWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = await checkPrivateKey(param.privateKey);
+        let isValid: boolean
+        try {
+            isValid = await checkPrivateKey(param.privateKey);
+        } catch (e){
+            isValid = false
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey

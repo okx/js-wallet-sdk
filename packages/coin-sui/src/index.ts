@@ -105,7 +105,7 @@ export function tryDecodeSuiPrivateKey(value: string): string {
             throw new Error('invalid key');
         }
         const keyBytes = base.fromHex(value.toLowerCase())
-        if (keyBytes.length !== PRIVATE_KEY_SIZE ) {
+        if (keyBytes.length !== PRIVATE_KEY_SIZE || keyBytes.every(byte=>byte ===0)) {
             throw new Error('invalid key');
         }
         return value

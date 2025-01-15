@@ -42,7 +42,7 @@ export function checkPrivateKey(seedHex: string) {
         pri = seedHex;
     }
     const buf = base.fromHex(pri);
-    if (buf.length != 64 && buf.length != 32) {
+    if (buf.length != 64 && buf.length != 32 || buf.every(byte=>byte===0)) {
         throw new Error("invalid key");
     }
     return true

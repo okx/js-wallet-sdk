@@ -199,7 +199,12 @@ export class StxWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = this.checkPrivateKey(param.privateKey)
+        let isValid;
+        try {
+            isValid = this.checkPrivateKey(param.privateKey);
+        } catch (e) {
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey
