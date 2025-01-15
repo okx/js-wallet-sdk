@@ -21,6 +21,7 @@ describe("address", () => {
         let key1 = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'base58')
         console.log(key)
         console.log(key1)
+        expect(key.length).toBe(128);
     })
 
     const ps: any[] = [];
