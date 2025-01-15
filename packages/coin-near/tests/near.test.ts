@@ -85,6 +85,7 @@ describe("near", () => {
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new NearWallet();
         let j = 1;
@@ -93,6 +94,7 @@ describe("near", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length + 1);
@@ -100,12 +102,20 @@ describe("near", () => {
     test("validPrivateKey2", async () => {
         const wallet = new NearWallet();
         const privateKey = await wallet.getRandomPrivateKey();
-        const res = await wallet.validPrivateKey({privateKey: privateKey});
+        let res = await wallet.validPrivateKey({privateKey: privateKey});
         expect(res.isValid).toEqual(true);
 
+        res = await wallet.validPrivateKey({privateKey: "12"});
+        expect(res.isValid).toEqual(false);
+        res = await wallet.validPrivateKey({privateKey: ""});
+        expect(res.isValid).toEqual(false);
+
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        const res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base.base58.encode(p)});
+        let res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base.base58.encode(p)});
         expect(res2.isValid).toEqual(true);
+
+        res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + "111222"});
+        expect(res2.isValid).toEqual(false);
     });
 
     test("signMessage", async () => {

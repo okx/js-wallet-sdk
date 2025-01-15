@@ -75,7 +75,7 @@ export class SolWallet extends BaseWallet {
 
     checkPrivateKey(privateKey: string): boolean {
         const keyBytes = base.fromBase58(privateKey)
-        return keyBytes.length == 64;
+        return keyBytes.length == 64 && !keyBytes.every(byte => byte===0);
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
@@ -95,7 +95,12 @@ export class SolWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = this.checkPrivateKey(param.privateKey)
+        let isValid;
+        try{
+            isValid = this.checkPrivateKey(param.privateKey)
+        }catch (e){
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey

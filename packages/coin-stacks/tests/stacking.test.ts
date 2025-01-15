@@ -48,6 +48,7 @@ ps.push("L1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVkbiS79mJ441FNAYArL1vSc9DuBDeVk
 ps.push("L1v");
 ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
 ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+ps.push("0000000000000000000000000000000000000000000000000000000000000000");
 test("edge test", async () => {
     const wallet = new StxWallet();
     let j = 1;
@@ -58,6 +59,7 @@ test("edge test", async () => {
         } catch (e) {
             j = j + 1
             expect(ps[i]).toEqual(param.privateKey)
+            expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
         }
     }
     expect(j).toEqual(ps.length+1);
@@ -67,8 +69,12 @@ test("validPrivateKey", async () => {
     const wallet = new StxWallet();
     const privateKey = await wallet.getRandomPrivateKey();
     console.log(privateKey);
-    const res = await wallet.validPrivateKey({privateKey:privateKey});
+    let res = await wallet.validPrivateKey({privateKey:privateKey});
     expect(res.isValid).toEqual(true);
+    res = await wallet.validPrivateKey({privateKey:""});
+    expect(res.isValid).toEqual(false);
+    res = await wallet.validPrivateKey({privateKey:"AABBXX"});
+    expect(res.isValid).toEqual(false);
 });
 
 test('stack stx', async () => {

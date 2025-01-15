@@ -42,6 +42,7 @@ describe("address", () => {
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a\n");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     // ps.push("0Xbdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a");
     test("edge test", async () => {
         const wallet = new TrxWallet();
@@ -51,6 +52,7 @@ describe("address", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length + 1);

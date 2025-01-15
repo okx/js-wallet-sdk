@@ -40,7 +40,7 @@ function checkPrivateKey(privateKey: string): boolean {
         return false;
     }
     const keyBytes = base.fromHex(privateKey.toLowerCase());
-    return keyBytes.length == 32;
+    return keyBytes.length == 32 && !keyBytes.every(byte=>byte ===0);
 }
 
 export class TrxWallet extends BaseWallet {

@@ -74,8 +74,13 @@ export class EosWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        const privateKey = stringToPrivateKey(param.privateKey);
-        let isValid = privateKey.data.length == privateKeyDataSize;
+        let isValid;
+        try {
+           const privateKey = stringToPrivateKey(param.privateKey);
+            isValid = privateKey.data.length == privateKeyDataSize && !privateKey.data.every(byte=>byte===0);
+        } catch (e) {
+            isValid = false
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey

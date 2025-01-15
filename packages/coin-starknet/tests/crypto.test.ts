@@ -2,7 +2,7 @@ import {signUtil} from "@okxweb3/crypto-lib";
 import {
     Account,
     CalculateContractAddressFromHash,
-    Call,
+    CallV2,
     CreateContractCall,
     CreateMultiContractCall,
     CreateSignedDeployAccountTx,
@@ -49,6 +49,7 @@ describe("tx", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new StarknetWallet();
         let j = 1;
@@ -57,6 +58,7 @@ describe("tx", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length+1);
@@ -225,7 +227,7 @@ describe("tx", () => {
         const nonce = "2";
         const chainId = StarknetChainId.SN_GOERLI;
 
-        const calls: Call[] = [
+        const calls: CallV2[] = [
             {
                 calldata: ["0x026e9E8c411056B64B2D044EBCb39FC810D652Cfbe694326651d796BB078320b", "0x38d7ea4c68000", "0"],
                 contractAddress: ETH,
@@ -240,6 +242,21 @@ describe("tx", () => {
         const tx = await CreateMultiContractCall(from, calls, nonce, maxFee, chainId, "0x0603c85d20500520d4c653352ff6c524f358afeab7e41a511c73733e49c3075e");
         console.log(tx.txId)
         console.log(tx.signature)
+
+        const calls2: CallV2[] = [
+            {
+                calldata: ["0x026e9E8c411056B64B2D044EBCb39FC810D652Cfbe694326651d796BB078320b", "0x38d7ea4c68000", "0"],
+                contractAddress: ETH,
+                entrypoint: "transfer"
+            },
+            {
+                calldata: ["0x004eb36472e15019967568f5D09eAF985e4CaC8Cce3CD6c1930841442270A582", "0x38d7ea4c68000", "0"],
+                contractAddress: ETH,
+                entrypoint: "transfer"
+            },
+        ]
+        const tx2 = await CreateMultiContractCall(from, calls2, nonce, maxFee, chainId, "0x0603c85d20500520d4c653352ff6c524f358afeab7e41a511c73733e49c3075e");
+        expect(tx.txId).toEqual(tx2.txId);
     })
 })
 

@@ -14,6 +14,9 @@ export async function checkPrivateKey(privateKey: string) {
         throw new Error('invalid key');
     }
     const keyBytes = base.fromHex(privateKey.toLowerCase())
+    if(keyBytes.every(byte => byte===0)) {
+        throw new Error("invalid key");
+    }
     if (![32, 64, 96, 128].includes(keyBytes.length)) {
         throw new Error('invalid key');
     }
