@@ -19,8 +19,6 @@ import {Transaction,} from '../src/bitcoinjs-lib'
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
 import {countAdjustedVsize} from "../src/sigcost";
-import {test} from "@jest/globals";
-import assert from "assert";
 
 describe("bitcoin", () => {
 
@@ -33,10 +31,10 @@ describe("bitcoin", () => {
     test("signCommonMsg", async () => {
         let wallet = new BchWallet();
         let sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{walletId:"123456789"}});
-        assert.strictEqual(sig,"1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02")
+        expect(sig).toEqual("1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02")
 
         sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{text:"123456789"}});
-        assert.strictEqual(sig,"1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
+        expect(sig).toEqual("1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
 
         // sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:"segwit_taproot", message:{walletId:"123456789"}});
         // console.log(sig)
