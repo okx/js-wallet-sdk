@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-ethereum",
-  "version": "1.0.10-beta.1",
+  "version": "1.0.12",
   "description": "An Ethereum SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -47,7 +47,7 @@
   "dependencies": {
     "eth-sig-util": "^3.0.1",
     "superstruct": "^1.0.3",
-    "@okxweb3/crypto-lib": "1.0.8",
-    "@okxweb3/coin-base": "1.0.14"
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

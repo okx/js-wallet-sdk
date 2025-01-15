@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-bitcoin",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "@okxweb3/coin-bitcoin is a Bitcoin SDK for building Web3 wallets and applications. It supports BTC, BSV, DOGE, LTC, and TBTC, enabling private key management, transaction signing, address generation, and inscriptions like BRC-20, Runes, CAT, and Atomicals.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -65,7 +65,7 @@
     "@cat-protocol/cat-smartcontracts": "0.2.8",
     "@cmdcode/tapscript": "1.4.6",
     "decimal.js": "10.4.3",
-    "@okxweb3/crypto-lib": "1.0.8",
-    "@okxweb3/coin-base": "1.0.14"
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

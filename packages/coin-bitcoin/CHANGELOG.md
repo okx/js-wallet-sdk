@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 
 - **coin-bitcoin:** support signCommonMsg ([](https://github.com/okx/js-wallet-sdk))
 
+# [1.1.0](https://github.com/okx/js-wallet-sdk)(2024-01-10)
+
+### New Features
+
+- **coin-bitcoin:** support feePerb decimal ([](https://github.com/okx/js-wallet-sdk))
+
 
 # [1.0.36] (2024-12-02)
 
