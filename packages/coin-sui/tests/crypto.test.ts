@@ -1,8 +1,6 @@
 import * as sui from '../src';
 import {base, signUtil} from '@okxweb3/crypto-lib';
 import {encodeSuiPrivateKey, SuiWallet, tryDecodeSuiPrivateKey} from "../src";
-import {test} from "@jest/globals";
-import assert from "assert";
 
 declare const TextEncoder: any;
 const suiWallet = new sui.SuiWallet()
@@ -12,10 +10,10 @@ describe("cryptography", () => {
     test("signCommonMsg", async () => {
         let wallet = new SuiWallet();
         let sig = await wallet.signCommonMsg({privateKey:"31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a", message:{walletId:"123456789"}});
-        assert.strictEqual(sig,"c08a2f98a1aa88a301b6cb96a52567daf5af440735c00e2c5c7d1c303edab15b6fcc364fcde9e875ab029909036c6b02030ee81b53c7625ecf8f236d38ca6f08")
+        expect(sig).toEqual("c08a2f98a1aa88a301b6cb96a52567daf5af440735c00e2c5c7d1c303edab15b6fcc364fcde9e875ab029909036c6b02030ee81b53c7625ecf8f236d38ca6f08")
 
         sig = await wallet.signCommonMsg({privateKey:"31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b42897a", message:{text:"123456789"}});
-        assert.strictEqual(sig,"dbd5c3595938a31d0507e20e823e317a52d8e750edd3eb0d4b0068a91b48f37cd5b84c1ed897e1c969ed3c99b34de854bb66ab4129a9a2d6f2f7ce1b1cca160a")
+        expect(sig).toEqual("dbd5c3595938a31d0507e20e823e317a52d8e750edd3eb0d4b0068a91b48f37cd5b84c1ed897e1c969ed3c99b34de854bb66ab4129a9a2d6f2f7ce1b1cca160a")
 
         // console.log(await wallet.getNewAddress({privateKey:"suiprivkey1qqvegc25e2rx3de999cfs3ftvu55e572cxwwsen06qg752y3gdvlq4gzdkt"}))
         // console.log(await wallet.signCommonMsg({privateKey:"suiprivkey1qqvegc25e2rx3de999cfs3ftvu55e572cxwwsen06qg752y3gdvlq4gzdkt", message:{walletId:"5E0D82CE-F00B-43AD-8576-2ADF6B51A67C"}}))
