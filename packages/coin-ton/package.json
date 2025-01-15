@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-ton",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "A ton SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -50,7 +50,7 @@
     "symbol.inspect": "^1.0.3",
     "tonweb-mnemonic": "1.0.1",
     "tweetnacl": "^1.0.3",
-    "@okxweb3/crypto-lib": "1.0.8",
-    "@okxweb3/coin-base": "1.0.14"
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

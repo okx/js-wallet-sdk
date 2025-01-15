@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-polkadot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A polkadot SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@polkadot/x-textencoder": "^9.5.1",
-    "@okxweb3/crypto-lib": "^1.0.7-beta.10",
-    "@okxweb3/coin-base": "^1.0.12-beta.20"
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

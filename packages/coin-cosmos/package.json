@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-cosmos",
-  "version": "1.0.13",
+  "version": "1.1.0",
   "description": "A Cosmos SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@cosmjs/encoding": "^0.32.3",
     "@cosmjs/math": "^0.32.3",
-    "@okxweb3/crypto-lib": "1.0.8",
-    "@okxweb3/coin-base": "1.0.14"
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

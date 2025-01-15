@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-zkspace",
-  "version": "1.0.11",
+  "version": "1.1.0",
   "description": "A zkspace SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "scripts": {
@@ -44,8 +44,8 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.7.0",
-    "@okxweb3/coin-ethereum": "1.0.11",
-    "@okxweb3/crypto-lib": "1.0.8",
-    "@okxweb3/coin-base": "1.0.14"
+    "@okxweb3/coin-ethereum": "^1.0.12",
+    "@okxweb3/crypto-lib": "^1.0.10",
+    "@okxweb3/coin-base": "^1.1.0"
   }
 }

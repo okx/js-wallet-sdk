@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-base",
-  "version": "1.0.14",
+  "version": "1.1.0",
   "description": "A base package for @okxweb3/coin-*",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,7 +32,7 @@
     "dist"
   ],
   "dependencies": {
-    "@okxweb3/crypto-lib": "1.0.8"
+    "@okxweb3/crypto-lib": "1.0.10"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",
