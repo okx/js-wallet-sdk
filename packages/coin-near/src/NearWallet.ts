@@ -182,7 +182,11 @@ export class NearWallet extends BaseWallet {
         const key = param.privateKey.startsWith('0x') ? param.privateKey : '0x' + param.privateKey
         let isValid: boolean
         if (base.isHexString(key)) {
-            isValid = checkPrivateKey(param.privateKey);
+            try {
+                isValid = checkPrivateKey(param.privateKey);
+            } catch (e){
+                isValid = false;
+            }
         } else {
             const parts = param.privateKey.split(':');
             if (parts.length != 2 || parts[0] != 'ed25519') {
@@ -190,7 +194,11 @@ export class NearWallet extends BaseWallet {
             } else {
                 const pk = base.fromBase58(parts[1])
                 const seedHex = base.toHex(pk.slice(0, 32))
-                isValid = checkPrivateKey(seedHex)
+                try {
+                    isValid = checkPrivateKey(seedHex)
+                } catch (e){
+                    isValid = false
+                }
             }
         }
         const data: ValidPrivateKeyData = {
