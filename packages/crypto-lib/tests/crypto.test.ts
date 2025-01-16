@@ -1,7 +1,7 @@
 import {sha256} from "@noble/hashes/sha256";
 import {Buffer} from "buffer";
 import {base, bip32, bip39, signUtil} from "../src";
-import {magicHash, randomBytes, toHex} from '../src/base';
+import {fromHex, magicHash, randomBytes, toHex} from '../src/base';
 import {secp256k1} from "../src/signutil";
 import {publicKeyCreate} from "../src/signutil/ed25519";
 import {
@@ -12,11 +12,16 @@ import {
     setLengthRight,
     unpadBuffer,
     unpadArray,
-    unpadHexString
+    unpadHexString, validateNoLeadingZeroes
 } from "../src/abi/bytes";
+import {assertIsString} from "../src/abi/helpers";
+import {SoliditySHA3} from "../src/abi";
+import {fromAscii, getKeys, toAscii} from "../src/abi/internal";
+import {getLength} from "../src/abi/rlp";
+import {bitLen, equalBytes} from "../src/signutil/schnorr/abstract/utils";
 
 describe("abi test", ()=>{
-    test("", async ()=>{
+    test("bytes test", async ()=>{
         expect(intToHex(123456)).toEqual("0x1e240")
         expect(toHex(intToBuffer(123456))).toEqual("01e240")
         expect(toHex(zeros(2))).toEqual("0000")
@@ -25,6 +30,22 @@ describe("abi test", ()=>{
         expect(unpadBuffer(base.fromHex("0x01234"))).toEqual(new Buffer([0x01,0x23]))
         expect(unpadArray([0,1,2,3,4,5,6])).toEqual([ 1, 2, 3, 4, 5, 6 ])
         expect(unpadHexString("0x01234")).toEqual("0x1234")
+    })
+    test("helper test", async ()=>{
+        assertIsString("1234");
+        expect(base.toHex(SoliditySHA3(['uint256'], [1234]))).toEqual("17fa14b0d73aa6a26d6b8720c1c84b50984f5c188ee1c113d2361e430f1b6764");
+        expect(getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a')).toEqual([ '1', '3' ])
+        expect(toAscii("0x1234")).toEqual("4");
+        expect(fromAscii("1234")).toEqual("0x31323334");
+        expect(getLength("1234")).toEqual(4)
+        validateNoLeadingZeroes({"123":new Buffer([0x1234])})
+    })
+})
+
+describe("signutil test", ()=>{
+    test("abstract utils", async () => {
+        expect(equalBytes(fromHex("0x1234"), fromHex("0x1234"))).toBe(true);
+        expect(bitLen(BigInt(1234).valueOf())).toEqual(11);
     })
 })
 
