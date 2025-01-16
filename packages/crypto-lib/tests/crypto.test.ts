@@ -4,7 +4,29 @@ import {base, bip32, bip39, signUtil} from "../src";
 import {magicHash, randomBytes, toHex} from '../src/base';
 import {secp256k1} from "../src/signutil";
 import {publicKeyCreate} from "../src/signutil/ed25519";
+import {
+    intToBuffer,
+    intToHex,
+    zeros,
+    setLengthLeft,
+    setLengthRight,
+    unpadBuffer,
+    unpadArray,
+    unpadHexString
+} from "../src/abi/bytes";
 
+describe("abi test", ()=>{
+    test("", async ()=>{
+        expect(intToHex(123456)).toEqual("0x1e240")
+        expect(toHex(intToBuffer(123456))).toEqual("01e240")
+        expect(toHex(zeros(2))).toEqual("0000")
+        expect(setLengthLeft(base.fromHex("0x1234"),1)).toEqual(new Buffer([0x34]))
+        expect(setLengthRight(base.fromHex("0x1234"),1)).toEqual(new Buffer([0x12]))
+        expect(unpadBuffer(base.fromHex("0x01234"))).toEqual(new Buffer([0x01,0x23]))
+        expect(unpadArray([0,1,2,3,4,5,6])).toEqual([ 1, 2, 3, 4, 5, 6 ])
+        expect(unpadHexString("0x01234")).toEqual("0x1234")
+    })
+})
 
 describe("crypto", () => {
 
