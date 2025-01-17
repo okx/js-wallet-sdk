@@ -36,6 +36,40 @@ import { signTransaction} from "../src/v2/internal/transactionSubmission";
 
 
 describe("aptos", () => {
+    test("aptos_account", async ()=>{
+        const account2 = new AptosAccount(base.fromHex("0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26"))
+        console.log(account2.toPrivateKeyObject())
+        let expected = {"address": "0x7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c19", "privateKeyHex": "0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5", "publicKeyHex": "0x067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26"};
+        expect(account2.toPrivateKeyObject()).toEqual(expected)
+    })
+
+    test("calcTxHash", async ()=> {
+        let wallet = new AptosWallet();
+        let txHex = `7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c1906000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002204b7dca8399f8d30f496cc904787114ac7d84c97d7553128fffb0f89463c288f608e803000000000000102700000000000001000000000000000399f36200000000160020067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc264041ebca08cf018a9f3e0b05327c8c4047bb56c8385f225327fd24e3c5cb54da17f49e46b2486f799cd005c30c00986f1f11bb1c66f6d9805f6fcd382af8dc490f`;
+        let txHash = await wallet.calcTxHash({data:txHex});
+        console.log(txHash)
+        expect(txHash).toEqual("0x8d7bc7782b7fd2a50eb3603cf1b428d800440fc4015a7db363188d9b6b2486c3")
+        let res = await wallet.validSignedTransaction({tx: "7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c1906000000000000000200000000000000000000000000000000000000000000000000000000000000010d6170746f735f6163636f756e74087472616e736665720002204b7dca8399f8d30f496cc904787114ac7d84c97d7553128fffb0f89463c288f608e803000000000000102700000000000001000000000000000399f36200000000160020067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc264041ebca08cf018a9f3e0b05327c8c4047bb56c8385f225327fd24e3c5cb54da17f49e46b2486f799cd005c30c00986f1f11bb1c66f6d9805f6fcd382af8dc490f"})
+        let expected = `{"raw_txn":{"sender":{"address":"7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c19"},"sequence_number":"6","payload":{"value":{"module_name":{"address":{"address":"0000000000000000000000000000000000000000000000000000000000000001"},"name":{"value":"aptos_account"}},"function_name":{"value":"transfer"},"ty_args":[],"args":["4b7dca8399f8d30f496cc904787114ac7d84c97d7553128fffb0f89463c288f6","e803000000000000"]}},"max_gas_amount":"10000","gas_unit_price":"1","expiration_timestamp_secs":"1660131587","chain_id":{"value":22}},"authenticator":{"public_key":{"value":"067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26"},"signature":{"value":"41ebca08cf018a9f3e0b05327c8c4047bb56c8385f225327fd24e3c5cb54da17f49e46b2486f799cd005c30c00986f1f11bb1c66f6d9805f6fcd382af8dc490f"}}}`;
+        expect(res).toEqual(expected)
+        let data = await wallet.signMessage({ privateKey: "0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26",
+            data: "hello world"});
+        expect(data).toEqual("067047ab5613be91c2bfea98f83d920ece3432c38b6d74c187402b68e110010646ef7c70fb92761d2ef84951688210df47ed963cc8c976e37426121716741c0c")
+        
+        expect((await wallet.validAddress({address:"0x7eaead7cf02b43db13f948bc3e2704c8885b2aebf0c214ff980b791cbf227c19"})).isValid).toBe(true);
+
+        let txHash2 = wallet.GetTransactionHash(txHex);
+        expect(txHash2).toEqual(txHash)
+
+        expect(wallet.checkPrivateKey("0x4a6d287353203941768551f66446d5d4a85ab685b5b444041801014ae39419b5067aec3603bdca82e52a172ec69b2505a979f1d935a59409bacae5c7f268fc26")).toBe(true)
+        let dpath = await wallet.getDerivedPath({index:0});
+        console.log(dpath)
+        expect(dpath).toEqual("m/44'/637'/0'/0'/0'")
+        let dp = await wallet.getDerivedPrivateKey({mnemonic:"hello hello hello hello hello hello hello hello hello hello hello hello",hdPath:dpath});
+        expect(dp).toEqual("0x9c01b9e3e183611715a7e8f821e5a1c9a36c1ad2b4c24c42e806017d4731bd6b")
+        console.log(await wallet.getRandomPrivateKey())
+    })
+    
     test("address", async () => {
         let seeds = base.randomBytes(32);
         let key = signUtil.ed25519.fromSeed(seeds)
