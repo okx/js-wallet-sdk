@@ -242,8 +242,9 @@ export class StarknetWallet extends BaseWallet {
         if(hash.startsWith("0x")) {
             hash = hash.substring(2)
         }
-        let sig = starkCurve.sign(hash, params.privateKey);
-        let point = starkCurve.ProjectivePoint.fromHex(base.toHex(starkCurve.getPublicKey(params.privateKey)));
+        const pri = modPrivateKey(params.privateKey);
+        let sig = starkCurve.sign(hash, pri);
+        let point = starkCurve.ProjectivePoint.fromHex(base.toHex(starkCurve.getPublicKey(pri)));
         let res = {publicKey:point.x.toString(16),publicKeyY:point.y.toString(16),signedDataR:sig.r.toString(16),signedDataS:sig.s.toString(16)};
         return Promise.resolve(base.toHex(base.toUtf8(jsonStringifyUniform(res))));
     }
