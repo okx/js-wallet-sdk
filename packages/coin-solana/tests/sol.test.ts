@@ -16,6 +16,20 @@ describe("address", () => {
         expect(sig).toEqual("5631301793ff16f0f2966e1671b8cd178018812e6fb6cde954729bd50c68e42aa662e297654d8037b43fc009fd1a4179f91cf876b5c99ffe3ae3672d8237ae07")
     });
 
+    test("getDerivedPrivateKey", async () => {
+        const wallet = new SolWallet();
+        const hdPath = await wallet.getDerivedPath({
+            index: 0,
+        });
+        const privKey = await wallet.getDerivedPrivateKey({
+            mnemonic: 'famous grow judge chair narrow auction order repeat hungry endless market taxi',
+            hdPath: hdPath
+        })
+
+        const expected = '42gxtUbib5ETVJAX8aMYrLG3XahGnMXvAHXa4TkhWZJ6ev64bzPXsRQzYEmQvriQwHeWjEu8JqwpyRYCR7hYUnAG';
+        expect(privKey).toBe(expected);
+    });
+
     test('private key', async () => {
         let key = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'hex')
         let key1 = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'base58')
@@ -207,6 +221,15 @@ describe("address", () => {
 
         const expected1 = '4eHde93aFCzCykYja56DXbCXku9ApvuUYuC82ADyHvNTDcTJVAD2eYXkMWU6RcPEfHVghCe2fA7XRb24F8tsrnB5';
         expect(data1).toEqual(expected1);
+    });
+
+    test("sigh message same with go sdk", async () => {
+        const privKey = '2nCvHtAjwgpHHuaRMHcq3atYxyLV1oYh2tzUA6N83Xxr3sVEebEPJuY2oAb6ZwfRCYbWkHRkvw1dfsTFmpvjq3T5';
+        const msg = '87PYrKY7ewJ25qaivxFzQ4g3fYH2ZT1CuRePJo9jCyEydJQMoVkxtS6pyAbKKBjSTxXT3PVGST3BpTpxvtEGMMQQMbbqeJAgzkF5TMNLkovkcEE7ZPm1qq6S9Ros4ZExAyckimPi8wfQW8rHhmMn9PnNaXS2bv4HJeHXXjEvzn2Ezi3CWbNQRvJs695KKtFfhGTqoabp9URM';
+        const data = await api.signMessage(msg, privKey)
+
+        const expected = '4q87dkdRhMkLn3TuxVXP1woCTAk2R4EbRP21yWtLaoZtHpgrLFEhuhmrGSZkXtcwMoaGqdgy7wZeayeXNtopDWzv';
+        expect(data).toEqual(expected);
     });
 
     test("deserializeMessages", async () => {
