@@ -843,6 +843,14 @@ describe("eth walLet", () => {
         expect(signature).toEqual(expected);
     });
 
+    test("sign msg same with go sdk", async () => {
+        const privateKey = "0xf4d79cecc34de14e8b43e7779acaa350060513937f420f5b91ab7f483cac6b72";
+        const msg = "0x6e616d653a20417065580a76657273696f6e3a20312e300a656e7649643a20310a616374696f6e3a204c32204b65790a6f6e6c795369676e4f6e3a2068747470733a2f2f70726f2e617065782e65786368616e6765";
+        const signature = eth.signMessage(MessageTypes.PERSONAL_SIGN, msg, base.fromHex(privateKey))
+        const expected = '0x4f7787fd680ad9cc83414d744c4dc06b7a3a592abebefd2c2c78d2a0f68a551b2f96890fa33199ed628009b002ea6161267d42d6fe76844863d55cd4d4ffdd5a1b';
+        expect(signature).toEqual(expected);
+    });
+
     test("TYPE_DATA_V4_2", async () => {
         const privateKey = "0x808e50dd63f3749405dfb0ac9a965804a33919fb82c4676bb00ac435ead6b4e8";
         const msg = "{\n" +
