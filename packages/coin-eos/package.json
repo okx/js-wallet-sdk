@@ -45,9 +45,9 @@
     "typescript": "^4.6.2"
   },
   "dependencies": {
-    "@polkadot/x-textdecoder": "^9.6.2",
-    "@polkadot/x-textencoder": "^9.6.2",
-    "pako": "^2.0.4",
+    "@polkadot/x-textdecoder": "9.7.2",
+    "@polkadot/x-textencoder": "9.7.2",
+    "pako": "2.1.0",
     "@okxweb3/crypto-lib": "^1.0.10",
     "@okxweb3/coin-base": "^1.1.0"
   }

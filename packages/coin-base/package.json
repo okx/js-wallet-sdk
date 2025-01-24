@@ -32,7 +32,7 @@
     "dist"
   ],
   "dependencies": {
-    "@okxweb3/crypto-lib": "1.0.10"
+    "@okxweb3/crypto-lib": "^1.0.10"
   },
   "devDependencies": {
     "@types/jest": "^29.2.5",
