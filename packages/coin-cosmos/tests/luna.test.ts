@@ -35,7 +35,7 @@ describe("luna", () => {
         const privateKey = base.randomBytes(32)
         const address = getNewAddress(privateKey, prefix)
 
-        // 前缀 + 分隔符 + 数据部分32个5位组，校验和部分6个5位组
+        // 32 groups for (prefix + separator + data), 6 groups for checksum
         expect(address.length).toBe(prefix.length + 1 + 38);
 
         const v = validateAddress(address, prefix)
