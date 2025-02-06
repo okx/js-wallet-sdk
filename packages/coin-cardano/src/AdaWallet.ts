@@ -1,4 +1,10 @@
-import {BaseWallet, ValidPrivateKeyData, ValidPrivateKeyParams} from "@okxweb3/coin-base";
+import {
+    BaseWallet,
+    buildCommonSignMsg, jsonStringifyUniform,
+    SignCommonMsgParams,
+    ValidPrivateKeyData,
+    ValidPrivateKeyParams
+} from "@okxweb3/coin-base";
 import {
     CalcTxHashParams,
     DerivePriKeyParams,
@@ -9,16 +15,15 @@ import {
     ValidAddressData,
     ValidAddressParams,
 } from "@okxweb3/coin-base";
-import { ed25519_getRandomPrivateKey } from "@okxweb3/coin-base";
 import {
     CalcTxHashError,
     GenPrivateKeyError,
     NewAddressError,
     SignTxError,
 } from "@okxweb3/coin-base";
-import { base } from "@okxweb3/crypto-lib";
+import {base, signUtil} from "@okxweb3/crypto-lib";
 import {getNewAddress, pubKeyFromPrivateKey, getDerivedPrivateKey, checkPrivateKey} from "./account";
-import { calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData } from "./transaction";
+import {calcTxHash, transfer, minAda, MultiAssetData, TxData, minFee, signTx, signData} from "./transaction";
 
 export class AdaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
@@ -27,7 +32,7 @@ export class AdaWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve(ed25519_getRandomPrivateKey(false, "hex"))
+            return Promise.resolve(signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -56,7 +61,12 @@ export class AdaWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = await checkPrivateKey(param.privateKey);
+        let isValid: boolean
+        try {
+            isValid = await checkPrivateKey(param.privateKey);
+        } catch (e){
+            isValid = false
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey
@@ -121,6 +131,22 @@ export class AdaWallet extends BaseWallet {
     async signMessage(param: SignTxParams): Promise<any> {
         try {
             return signData(param.data.address, param.data.message, param.data.privateKey || param.privateKey);
+        } catch (e) {
+            return Promise.reject(SignTxError);
+        }
+    }
+
+    async signCommonMsg(param: SignCommonMsgParams): Promise<any> {
+        try {
+            let data;
+            const addr = await this.getNewAddress({privateKey:param.privateKey});
+            if(param.message.text){
+                data = param.message.text;
+            } else {
+               data = buildCommonSignMsg(addr.publicKey, param.message.walletId);
+            }
+            let hash = base.magicHash(data);
+            return Promise.resolve(jsonStringifyUniform(await signData(addr.address, base.toHex(hash), param.privateKey)));
         } catch (e) {
             return Promise.reject(SignTxError);
         }

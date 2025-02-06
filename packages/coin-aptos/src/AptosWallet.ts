@@ -4,8 +4,6 @@ import {
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
     GenPrivateKeyError,
     GetDerivedPathParam,
     jsonStringifyUniform,
@@ -20,23 +18,23 @@ import {
     validSignedTransactionError,
     ValidSignedTransactionParams,
     ValidPrivateKeyParams,
-    ValidPrivateKeyData
+    ValidPrivateKeyData, SignCommonMsgParams, SignCommonMsgError, buildCommonSignMsg, SignType
 } from "@okxweb3/coin-base";
-import {base} from '@okxweb3/crypto-lib';
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
     AptosAccount,
     burnCoin,
     claimNFTTokenPayload,
     createRawTransaction,
-    createRawTransactionByABI,
-    generateBCSSimulateTransaction,
+    createRawTransactionByABI, createRawTransactionByABIV2, createSimulateRawTransactionByABIV2,
+    generateBCSSimulateTransaction, generateBCSSimulateTransactionWithPublicKey,
     generateBCSTransaction,
     HexString,
     mintCoin,
     offerNFTTokenPayload,
     offerNFTTokenPayloadObject,
     registerCoin,
-    transferCoin,
+    transferCoin, transferCoinV2,
     transferPayload,
 } from './index';
 import * as client from './client'
@@ -45,20 +43,24 @@ import {
     AccountAddress,
     AptosConfig,
     Deserializer,
-    Ed25519PrivateKey, FungibleAsset, generateSignedTransaction, generateSignedTransactionForSimulation,
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+    FungibleAsset,
+    generateSignedTransaction,
+    generateSignedTransactionForSimulation,
     RawTransaction,
     SimpleTransaction,
     Transaction
 } from "./v2";
 import {Network} from "./v2/utils/apiEndpoints";
 import {signTransaction} from "./v2/internal/transactionSubmission";
-import {TransactionPayload, TransactionPayloadEntryFunction} from "./transaction_builder/aptos_types";
+import {AuthenticationKey, TransactionPayload} from "./transaction_builder/aptos_types";
 import { Deserializer as DeserializerBcs } from "./transaction_builder/bcs";
 
 export type AptosParam = {
     type: "transfer" | "tokenTransfer" | "tokenMint" | "tokenBurn" | "tokenRegister" | "dapp" | "simulate" | "offerNft" |
         "offerNftObject" | "claimNft" | "offerNft_simulate" | "claimNft_simulate" | "simple_transaction" | "simulate_simple_transaction" |
-        "fungible_asset_transfer" | "simulate_fungible_asset_transfer",
+        "fungible_asset_transfer" | "simulate_fungible_asset_transfer" | "tokenTransferV2",
     base: AptosBasePram,
     data: any
 }
@@ -171,6 +173,18 @@ export type SignMessageByPayloadParams = {
     data: any;
 };
 
+export type BuildSimulateTxParams = {
+    publicKey: string;
+    data: any;
+};
+
+export type AptosSimulateParam = {
+    type: "simulate_transfer" | "simulate_token_transfer" | "simulate_fungible_asset_transfer" | "simulate_dapp",
+    base: AptosBasePram,
+    data: any
+}
+
+
 export class AptosWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
         return `m/44'/637'/${param.index}'/0'/0'`;
@@ -178,7 +192,7 @@ export class AptosWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve("0x" + ed25519_getRandomPrivateKey(false, "hex"))
+            return Promise.resolve("0x" + signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -186,7 +200,7 @@ export class AptosWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const key = await ed25519_getDerivedPrivateKey(param, false, "hex")
+            const key = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic, param.hdPath, false, "hex")
             return Promise.resolve("0x" + key);
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
@@ -240,6 +254,77 @@ export class AptosWallet extends BaseWallet {
         return Promise.resolve(data);
     }
 
+    buildSimulateTx(param:BuildSimulateTxParams):Promise<any>{
+        const publicKey = base.fromHex(param.publicKey);
+        const pubKey = new Ed25519PublicKey(Uint8Array.from(publicKey));
+        const authKey = pubKey.authKey();
+        const sender = authKey.derivedAddress();
+        let simulateParam = param.data as AptosSimulateParam;
+        const baseParam = simulateParam.base;
+        let tx: Uint8Array
+        switch (simulateParam.type) {
+            case "simulate_transfer":
+                const data = simulateParam.data as AptosTransferParam
+                const tfPayload = transferPayload(data.recipientAddress, BigInt(data.amount))
+                const tfRawTxn = createRawTransaction(HexString.fromUint8Array(sender.toUint8Array()), tfPayload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                tx = generateBCSSimulateTransactionWithPublicKey(publicKey, tfRawTxn);
+                break
+            case "simulate_token_transfer":
+                const tokenData = simulateParam.data as AptosTokenTransferParam
+                const payload = transferCoinV2(tokenData.tyArg, tokenData.recipientAddress, BigInt(tokenData.amount))
+                const rawTxn = createRawTransaction(HexString.fromUint8Array(sender.toUint8Array()), payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                tx = generateBCSSimulateTransactionWithPublicKey(publicKey, rawTxn);
+                break
+            case "simulate_dapp":
+                const dappData = simulateParam.data as AptosCustomParam
+                if (dappData.type == 2) {
+                    const deserializer = new DeserializerBcs(base.fromHex(dappData.data));
+                    const payload = TransactionPayload.deserialize(deserializer);
+                    const rawTxn = createRawTransaction(
+                        HexString.fromUint8Array(sender.toUint8Array()),
+                        payload,
+                        BigInt(baseParam.sequenceNumber),
+                        baseParam.chainId,
+                        BigInt(baseParam.maxGasAmount),
+                        BigInt(baseParam.gasUnitPrice),
+                        BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSSimulateTransactionWithPublicKey(publicKey, rawTxn);
+                } else {
+                    return createSimulateRawTransactionByABIV2(sender,pubKey, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), dappData.data, dappData.abi);
+                }
+                break
+            case "simulate_fungible_asset_transfer":
+                const faData = simulateParam.data as AptosFungibleTokenTransferParam
+                const aptosConfig = new AptosConfig({network: Network.MAINNET});
+                const fungibleAsset = new FungibleAsset(aptosConfig);
+                const metadataAddress = faData.fungibleAssetMetadataAddress;
+                const amount = BigInt(faData.amount);
+                const senderAddress =new AccountAddress(sender.toUint8Array());
+                const res = fungibleAsset.transferFungibleAsset({
+                    senderAddress: senderAddress,
+                    fungibleAssetMetadataAddress: AccountAddress.from(metadataAddress),
+                    recipient: faData.recipientAddress,
+                    amount: amount,
+                    options: {
+                        maxGasAmount: Number(baseParam.maxGasAmount),
+                        gasUnitPrice: Number(baseParam.gasUnitPrice),
+                        expireTimestamp: Number(baseParam.expirationTimestampSecs),
+                        chainId: Number(baseParam.chainId),
+                        accountSequenceNumber: Number(baseParam.sequenceNumber),
+                    },
+                }).then(transferFungibleAssetRawTransaction => {
+                    const signedTx = generateSignedTransactionForSimulation({
+                        transaction: transferFungibleAssetRawTransaction,
+                        signerPublicKey: pubKey,
+                    });
+                    return base.toHex(signedTx);
+                });
+                return res;
+        }
+        return Promise.resolve(base.toHex(tx));
+    }
+
     signTransaction(param: SignTxParams): Promise<any> {
         try {
             const account = AptosAccount.fromPrivateKey(HexString.ensure(param.privateKey))
@@ -271,6 +356,14 @@ export class AptosWallet extends BaseWallet {
                     const baseParam = ap.base
                     const data = ap.data as AptosTokenTransferParam
                     const payload = transferCoin(data.tyArg, data.recipientAddress, BigInt(data.amount))
+                    const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
+                    tx = generateBCSTransaction(account, rawTxn);
+                    break
+                }
+                case "tokenTransferV2": {
+                    const baseParam = ap.base
+                    const data = ap.data as AptosTokenTransferParam
+                    const payload = transferCoinV2(data.tyArg, data.recipientAddress, BigInt(data.amount))
                     const rawTxn = createRawTransaction(sender, payload, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount), BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs))
                     tx = generateBCSTransaction(account, rawTxn);
                     break
@@ -315,10 +408,12 @@ export class AptosWallet extends BaseWallet {
                             BigInt(baseParam.gasUnitPrice),
                             BigInt(baseParam.expirationTimestampSecs))
                         tx = generateBCSTransaction(account, rawTxn);
-                    }else {
-                        const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
-                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
-                        tx = generateBCSTransaction(account, rawTxn);
+                    } else {
+                        // const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        //     BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
+                        // tx = generateBCSTransaction(account, rawTxn);
+                        return createRawTransactionByABIV2(senderAccount, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi);
                     }
                     break
                 }
@@ -339,10 +434,12 @@ export class AptosWallet extends BaseWallet {
                             BigInt(baseParam.expirationTimestampSecs))
                         tx = generateBCSSimulateTransaction(account, rawTxn);
 
-                    }else {
-                        const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
-                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
-                        tx = generateBCSSimulateTransaction(account, rawTxn);
+                    } else {
+                        return createRawTransactionByABIV2(senderAccount, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                            BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi);
+                        // const rawTxn = createRawTransactionByABI(sender, BigInt(baseParam.sequenceNumber), baseParam.chainId, BigInt(baseParam.maxGasAmount),
+                        //     BigInt(baseParam.gasUnitPrice), BigInt(baseParam.expirationTimestampSecs), data.data, data.abi)
+                        // tx = generateBCSSimulateTransaction(account, rawTxn);
                     }
 
                     break
@@ -463,7 +560,7 @@ export class AptosWallet extends BaseWallet {
                     const amount = BigInt(data.amount);
                     // normal fungible asset transfer between primary stores
                     const res = fungibleAsset.transferFungibleAsset({
-                        sender: senderAccount,
+                        senderAddress: senderAccount.accountAddress,
                         fungibleAssetMetadataAddress: AccountAddress.from(metadataAddress),
                         recipient: data.recipientAddress,
                         amount: amount,
@@ -497,7 +594,7 @@ export class AptosWallet extends BaseWallet {
                     const amount = BigInt(data.amount);
                     // normal fungible asset transfer between primary stores
                     const res = fungibleAsset.transferFungibleAsset({
-                        sender: senderAccount,
+                        senderAddress: senderAccount.accountAddress,
                         fungibleAssetMetadataAddress: AccountAddress.from(metadataAddress),
                         recipient: data.recipientAddress,
                         amount: amount,
@@ -556,6 +653,10 @@ export class AptosWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignTxError);
         }
+    }
+
+   async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signMessageByPayload(param: SignMessageByPayloadParams): Promise<any> {

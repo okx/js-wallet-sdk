@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.1.0](https://github.com/okx/js-wallet-sdk)(2024-01-15)
+
+### New Features
+
+- **coin-base:** support signCommonMsg ([](https://github.com/okx/js-wallet-sdk))
+
+# [1.0.14](https://github.com/okx/js-wallet-sdk) (2025-01-09)
+
+### Optimize
+
+- **coin-base:** move ed25519 code to crypto-lib  ([](https://github.com/okx/js-wallet-sdk))
 
 # [1.0.9](https://github.com/okx/js-wallet-sdk) (2024-08-20)
 

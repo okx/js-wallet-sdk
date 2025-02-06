@@ -38,12 +38,26 @@ curl -X POST -d '{ "jsonrpc": "2.0", "id": "1", "method": "query", "params": {"r
 */
 
 describe("near", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new NearWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347", message:{walletId:"123456789"}});
+        expect(sig).toEqual("9cd25548cbd7af813b239a0aa0be329a3d1b053d6b84a63d1d7027d5459e864871b6eb259e9f74c752371f0348804be86e01ab26760a77eb071a7c9945e9b00a")
+
+        sig = await wallet.signCommonMsg({privateKey:"ed25519:4ZBavqnpvLM5m96gvuSK5iGTFSo253TDzdcuiVUdyDY7njHADF5tv5LNHyfFnJiSNt7wthdxGjYNFL89vDAtqkmh", message:{walletId:"7FC4E090-2B10-4F0C-94B0-AC7014B8CCC5"}});
+        expect(sig).toEqual("4ab8ba7079680447aaa2e44dc2a4c60bf35bfe4f1417db8e18d51fd9287a67be6b9f5134024dced167f36deeb4f957109dbe9c740f6881d1e3d18eb6f0f80f0c")
+
+        sig = await wallet.signCommonMsg({privateKey:"ed25519:4ZBavqnpvLM5m96gvuSK5iGTFSo253TDzdcuiVUdyDY7njHADF5tv5LNHyfFnJiSNt7wthdxGjYNFL89vDAtqkmh", message:{text:"7FC4E090-2B10-4F0C-94B0-AC7014B8CCC5"}});
+        expect(sig).toEqual("e35d274f5be9dd222a5b0a3896db128bff02e7c8576deefe71a40af099abd531df68e081c639dcbec206fdf9ddb2942fec2049bb6ec3c80253d0a4231aa6560c")
+    });
+
     test("getRandomPrivateKey", async () => {
         let wallet = new NearWallet()
         let privateKey = await wallet.getRandomPrivateKey();
         let addr = await wallet.getNewAddress({privateKey: privateKey})
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        let addr2 = await wallet.getNewAddress({privateKey: 'ed25519:' + base58.encode(p)})
+        let addr2 = await wallet.getNewAddress({privateKey: 'ed25519:1thX6LZfHDZZKUs92febYZhYRcXddmzfzF2NvTkPNE'})
+        expect(addr2.address).toEqual("03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8")
     })
 
 
@@ -74,6 +88,7 @@ describe("near", () => {
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new NearWallet();
         let j = 1;
@@ -82,6 +97,7 @@ describe("near", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length + 1);
@@ -89,12 +105,20 @@ describe("near", () => {
     test("validPrivateKey2", async () => {
         const wallet = new NearWallet();
         const privateKey = await wallet.getRandomPrivateKey();
-        const res = await wallet.validPrivateKey({privateKey: privateKey});
+        let res = await wallet.validPrivateKey({privateKey: privateKey});
         expect(res.isValid).toEqual(true);
 
+        res = await wallet.validPrivateKey({privateKey: "12"});
+        expect(res.isValid).toEqual(false);
+        res = await wallet.validPrivateKey({privateKey: ""});
+        expect(res.isValid).toEqual(false);
+
         let p = Uint8Array.from(Array.from(Array(32).keys()))
-        const res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base58.encode(p)});
+        let res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + base.base58.encode(p)});
         expect(res2.isValid).toEqual(true);
+
+        res2 = await wallet.validPrivateKey({privateKey: 'ed25519:' + "111222"});
+        expect(res2.isValid).toEqual(false);
     });
 
     test("signMessage", async () => {
@@ -128,6 +152,9 @@ describe("near", () => {
                 state: ""
             }
         });
+        console.log(res)
+        const expected = "tLRCNeEZtT9MB7gj0yhL9TwF5bF0x6JAGz+H92R+SHtETxFcjv1CDP+u0Gy5/NZFqwcYpOVdm/zN6L1xERSgBg=="
+        expect(res).toEqual(expected)
     })
 
     test("serialize", async () => {
@@ -233,6 +260,8 @@ describe("near", () => {
         const seedHex = base.toHex(pk.slice(0, 32))
         const addr = getAddress(seedHex)
         console.info(addr)
+        const expected = "58064be4ab6a0097b6c794f5cf1983ef36c60ea82c17e8488107433f6386b5ba"
+        expect(addr).toEqual(expected);
 
         const r = validateAddress(addr)
         console.info(r)
@@ -254,6 +283,7 @@ describe("near", () => {
         // https://explorer.testnet.near.org/transactions/xxxx
         const result = base.toBase64(signedTx.encode())
         console.info(result)
+        expect(result).toEqual("DwAAAHpoYW5nb2sudGVzdG5ldABYBkvkq2oAl7bHlPXPGYPvNsYOqCwX6EiBB0M/Y4a1ugITt1wPVgAAEQAAAHRvQWNjb3VudC50ZXN0bmV0ytPf7D6qP7aL2QKHW46Gp2lwz3e9xofS8hs16KrEWXUBAAAAAwAAAKHtzM4bwtMAAAAAAAAAG2EbimoecPO5+5bjvfrXVkBxIg0nhHpEG3qdW0rjn6pI99eEX0Bof0W5CXaLVBnr6RYu7BSJT6VSj599c9ntCA==")
     });
 
 
@@ -286,6 +316,7 @@ describe("near", () => {
         // https://explorer.testnet.near.org/transactions/xxxx
         const result = base.toBase64(signedTx.encode())
         console.info(result)
+        expect(result).toEqual("QAAAAGMxZjBmN2JjMGRlZWQ3ZDIxNTFlNzk4N2FkMmFjYTc0YjhlODU2YzFmODdlZmE5M2ZlYzFmZjQwNzViNGQ2ZTQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0NVIbpll4AAEAAAAAzMTZlMTBlMGU5M2JlZjA5MjdmNGIwYmM0ODg0OTc1OWE0MmMyMThiMGU4MWEzOWNjYjhlYjE1ZjA0OGIwMGU4eWIYfT7FAxjK3qM3SNY6qKLkNgTNuGdWVoJkbUwzYNUBAAAAAgsAAABmdF90cmFuc2ZlcnEAAAB7ImFtb3VudCI6IjEwMDAwMDAwMDAwMDAwMDAwMDAiLCJyZWNlaXZlcl9pZCI6IjMxNmUxMGUwZTkzYmVmMDkyN2Y0YjBiYzQ4ODQ5NzU5YTQyYzIxOGIwZTgxYTM5Y2NiOGViMTVmMDQ4YjAwZTgifQDkC1QCAAAAAQAAAAAAAAAAAAAAAAAAAAApaKmd6gyPfDKpIfUC3xnwOjiVfNYs0mhn8pRxeNRqwyr1A+5O/uTWEFgtjyLlq5DR6Jx8Fmk7H8KoNM7wDlQI")
     });
 
     //58064be4ab6a0097b6c794f5cf1983ef36c60ea82c17e8488107433f6386b5ba
@@ -325,6 +356,7 @@ describe("near", () => {
         // https://explorer.testnet.near.org/transactions/xxxx
         const result = base.toBase64(signedTx.encode())
         console.info(result)
+        expect(result).toEqual("QAAAADlmZWFiOGVkZjBlZWJlMDRhZWU0ZWY2ZGUxNTliZGRhZTQwMWQyZDc5Zjk2ZWVmZjZiZDc4OWEwYzgzY2ExOWQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0BAAAAAAAAABEAAAB0b0FjY291bnQudGVzdG5ldMrT3+w+qj+2i9kCh1uOhqdpcM93vcaH0vIbNeiqxFl1AQAAAAIMAAAAbmVhcl9kZXBvc2l0AgAAAHt9AQAAAAAAAAAAAECyusngGR4CAAAAAAAAADWQwzy4U96L98PW1z0SX6tZY30qh3epYf6t2nUTGL0u4lltKW3zseisPox+vNe2nB2lIjGzjPC10ADRi7Gp6gg=")
     });
 
     test("wallet-TransferNear", async () => {
@@ -390,7 +422,7 @@ describe("near", () => {
     test("wallet-DAppTx", async () => {
         let wallet = new NearWallet();
         let param: SignTxParams = {
-            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj1234",
+            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj",
             data: {
                 blockHash: "EekjoegUYx2iibbWDuUSQENYCvUGkxj2Et1hTonbwBuN",
                 type: NearTypes.DAppTx,
@@ -406,8 +438,7 @@ describe("near", () => {
             }
         }
         let result = await wallet.signTransaction(param)
-        console.info(result)
-        expect(result).toEqual("QAAAADlmZWFiOGVkZjBlZWJlMDRhZWU0ZWY2ZGUxNTliZGRhZTQwMWQyZDc5Zjk2ZWVmZjZiZDc4OWEwYzgzY2ExOWQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0BAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADQA6BVf12ywjoofQgzoqvoY5K0ruQNG7y9o7RF0oaKYQpxTyD7zeauNCAjPxtC+dtKWhM/AT+rYVINxfluRDwK")
+        expect(result).toEqual("QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN")
     });
 
     test("wallet-AddKey", async () => {
@@ -475,7 +506,7 @@ describe("near", () => {
     test("wallet-DAppTxs", async () => {
         let wallet = new NearWallet();
         let param: SignTxParams = {
-            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj1234",
+            privateKey: "ed25519:4yNHZKYxR4bk76CZ3MFQxpMeavbPTJVuGNrPZSBp5nzZTc64w35xmrGggbTWLHM1sUJCN5moESgsZKbDVDCj",
             data: {
                 blockHash: "EekjoegUYx2iibbWDuUSQENYCvUGkxj2Et1hTonbwBuN",
                 type: NearTypes.DAppTxs,
@@ -494,7 +525,7 @@ describe("near", () => {
         }
         let result = await wallet.signTransaction(param)
         console.info(result)
-        expect(result).toEqual(["QAAAADlmZWFiOGVkZjBlZWJlMDRhZWU0ZWY2ZGUxNTliZGRhZTQwMWQyZDc5Zjk2ZWVmZjZiZDc4OWEwYzgzY2ExOWQAn+q47fDuvgSu5O9t4Vm92uQB0teflu7/a9eJoMg8oZ0BAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADQA6BVf12ywjoofQgzoqvoY5K0ruQNG7y9o7RF0oaKYQpxTyD7zeauNCAjPxtC+dtKWhM/AT+rYVINxfluRDwK",])
+        expect(result).toEqual(["QAAAADVhY2Y3N2M4MDQ3NWQ1Y2NkMzEwODI3ZTNiYTQ2MGQ4MzEyYmUwN2ZlMjRiNjg4OTJjN2Q4ZmI2ZDdlNDkxMzIA9gAyV7f0vO0NkNKZ/i9QeY4Psrqk0U07GW2Se5FE50ABAAAAAAAAAAwAAAB3cmFwLnRlc3RuZXTK09/sPqo/tovZAodbjoanaXDPd73Gh9LyGzXoqsRZdQEAAAACDAAAAG5lYXJfZGVwb3NpdAIAAAB7fQAAAAAAAAAAAABAsrrJ4BkeAgAAAAAAAADzpEm3+vL2aF6b6/qyg2la7yxvEqQ5P5aUqdkQJ77V+6VP6kpBJmjX8VEGdDdhiT39REe2MEiuzPxpQCetI9QN",])
     });
 
     test("createAccount", async () => {
@@ -532,5 +563,7 @@ describe("near", () => {
 
         const result = base.toBase64(signedTx.encode())
         console.info(result)
+        const expected = "DwAAAHpoYW5nb2sudGVzdG5ldACf6rjt8O6+BK7k723hWb3a5AHS15+W7v9r14mgyDyhnQMTt1wPVgAAEQAAAHRvQWNjb3VudC50ZXN0bmV0ytPf7D6qP7aL2QKHW46Gp2lwz3e9xofS8hs16KrEWXUCAAAAAAUA"
+        expect(result.startsWith(expected)).toBe(true)
     });
 });

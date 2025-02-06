@@ -5,8 +5,6 @@ import {
     getNewAddress,
     pubKeyFromPrivateKey
 } from "../src/account";
-import assert from "assert";
-import {AdaWallet} from "../src";
 
 // todo fix for jest
 describe("cardano", () => {
@@ -15,6 +13,15 @@ describe("cardano", () => {
         const hdPath = "m/1852'/1815'/0'/0/0"
         const privateKey = await getDerivedPrivateKey(mnemonic, hdPath)
         expect(privateKey).toEqual('30db52f355dc57e92944cbc93e2d30c9352a096fa2bbe92f1db377d3fdc2714aa3d22e03781d5a8ffef084aa608b486454b34c68e6e402d4ad15462ee1df5b8860e14a0177329777e9eb572aa8c64c6e760a1239fd85d69ad317d57b02c3714aeb6e22ea54b3364c8aaa0dd8ee5f9cea06fa6ce22c3827b740827dd3d01fe8f3')
+    });
+    test("check private key", async () => {
+        let i = 0;
+        try {
+            await checkPrivateKey("0000000000000000000000000000000000000000000000000000000000000000");
+        } catch (e){
+          i+=1;
+        }
+        expect(i).toEqual(1)
     });
 
     test("addressFromPubKey", async () => {

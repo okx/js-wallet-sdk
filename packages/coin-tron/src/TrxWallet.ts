@@ -24,7 +24,7 @@ import {
     GetHardwareSignedTransactionError,
     GetHardWareMessageHashError,
     validSignedTransactionError,
-    jsonStringifyUniform, ValidPrivateKeyData, ValidPrivateKeyParams
+    jsonStringifyUniform, ValidPrivateKeyData, ValidPrivateKeyParams, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from '@okxweb3/coin-base';
 import {base} from '@okxweb3/crypto-lib';
 import * as tron from "./index";
@@ -40,7 +40,7 @@ function checkPrivateKey(privateKey: string): boolean {
         return false;
     }
     const keyBytes = base.fromHex(privateKey.toLowerCase());
-    return keyBytes.length == 32;
+    return keyBytes.length == 32 && !keyBytes.every(byte=>byte ===0);
 }
 
 export class TrxWallet extends BaseWallet {
@@ -129,6 +129,10 @@ export class TrxWallet extends BaseWallet {
         }
         return Promise.reject(SignTxError);
     }
+
+    // async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+    //     return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.Secp256k1})
+    // }
 
     async signMessage(param: SignTxParams): Promise<string> {
         try {

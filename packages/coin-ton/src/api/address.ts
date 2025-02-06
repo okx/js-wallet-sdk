@@ -16,7 +16,7 @@ export function checkSeed(seed: string) {
         throw new Error("invalid key");
     }
     const buf = base.fromHex(seed.toLowerCase());
-    if (!buf || (buf.length != 32)) {
+    if (!buf || (buf.length != 32) || buf.every(byte=>byte===0)) {
         throw new Error("invalid key");
     }
 }
@@ -45,8 +45,12 @@ export function parseAddress(address: string): {
                 isValid: true,
             };
         } else if (Address.isFriendly(address)) {
+            const addr = Address.parseFriendly(address)
+            if (addr.isTestOnly) {
+                return {isValid: false};
+            }
             return {
-                ...Address.parseFriendly(address),
+                ...addr,
                 isUserFriendly: true,
                 isValid: true,
             };

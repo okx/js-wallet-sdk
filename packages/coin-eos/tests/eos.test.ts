@@ -17,6 +17,14 @@ import {
 import {base, signUtil} from '@okxweb3/crypto-lib';
 
 describe("eos", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new EosWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1b50854615dc25d0c856181f433789d6c2f8f88d1a15a95f14149d1e77ddd36761125dc2071414f3dc0281fb9c570392624309a3f83292ab2e874ef123f7c97b03,02afeca27ce8ad8627872e1b8dc2dfd2890520e07d90c0e06cc2c49fea358be9e2");
+        sig = await wallet.signCommonMsg({privateKey:"5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK", message:{text:"123456789"}});
+        expect(sig).toEqual("1cc3ff3944439377583fd953ab2d90b2ededc64fe172092128cdc86764212f30c46d56e282047d34a2d0e8167e8cf3bb875b7f4547d939e2de929e958cadc227de,02afeca27ce8ad8627872e1b8dc2dfd2890520e07d90c0e06cc2c49fea358be9e2");
+    });
     test('private key getNewAddress', async () => {
         const privateKey = "5JUsJvGbjH1HQ9XhwPP2NuxPZrFNb95miDsfL1BjVrjJXu8qWmK"
         let wallet = new EosWallet()
@@ -41,6 +49,7 @@ describe("eos", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new EosWallet();
         let j = 1;
@@ -49,6 +58,7 @@ describe("eos", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length+1);
@@ -56,8 +66,17 @@ describe("eos", () => {
     test("validPrivateKey", async () => {
         const wallet = new EosWallet();
         const privateKey = await wallet.getRandomPrivateKey();
-        const res = await wallet.validPrivateKey({privateKey:privateKey});
+        let res = await wallet.validPrivateKey({privateKey:privateKey});
         expect(res.isValid).toEqual(true);
+        res = await wallet.validPrivateKey({privateKey:privateKey+"1122"});
+        expect(res.isValid).toEqual(false);
+        res = await wallet.validPrivateKey({privateKey:""});
+        expect(res.isValid).toEqual(false);
+        res = await wallet.validPrivateKey({privateKey:privateKey.slice(1)});
+        expect(res.isValid).toEqual(false);
+
+        res = await wallet.validPrivateKey({privateKey:"0000000000000000000000000000000000000000000000000000000000000000"});
+        expect(res.isValid).toEqual(false);
     });
 
     test("address", async () => {

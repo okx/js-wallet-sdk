@@ -27,16 +27,19 @@ import {
 } from '../src';
 import {SignTxParams} from "@okxweb3/coin-base";
 
+const featureTimestamp = 1937021303288;
+
 describe("luna", () => {
     test("address", async () => {
         const prefix = "cosmos"
         const privateKey = base.randomBytes(32)
-        console.log(privateKey.toString('hex'))
         const address = getNewAddress(privateKey, prefix)
-        console.info(address)
+
+        // 32 groups for (prefix + separator + data), 6 groups for checksum
+        expect(address.length).toBe(prefix.length + 1 + 38);
 
         const v = validateAddress(address, prefix)
-        console.info(v)
+        expect(v).toBe(true);
     });
 
     test("getNewAddress common2", async () => {
@@ -62,19 +65,19 @@ describe("luna", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
+        expect.assertions(ps.length);
+
         const wallet = new SeiWallet();
-        let j = 1;
         for (let i = 0; i < ps.length; i++) {
             let  param = {privateKey: ps[i]}
             try {
                 await wallet.getNewAddress(param);
             } catch (e) {
-                j = j + 1
-                expect(param.privateKey).toEqual(ps[i])
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
-        expect(j).toEqual(ps.length+1);
     });
 
     test("validPrivateKey2", async () => {
@@ -102,7 +105,6 @@ describe("luna", () => {
           0,
           "test",
         )
-        console.info(v)
         expect(v).toStrictEqual("CpUBCowBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEmwKLHRlcnJhMXhta2N6azU5eGdqaHpnd2hmZzhsNXRnczJ1ZnRwdWo5Y2dhenI0Eix0ZXJyYTF2bTlwZnBoNHN5ZjlnM2hmejI5NjM2Y2Z3NXdwOW42eHd1dDh4dRoOCgV1bHVuYRIFMTAwMDASBHRlc3QSZwpQCkYKHy9jb3Ntb3MuY3J5cHRvLnNlY3AyNTZrMS5QdWJLZXkSIwohA/ed1wKaWQXlV5BhQrDFfsIfR0XxKbjAV67M9C4nULpuEgQKAggBGAQSEwoNCgV1bHVuYRIEMjAwMBCgjQYaQJHtpCP8lR0lyC+S97GrMJSnjmHCfomESW//iLEr8HVXKsekP5TM4rG2lPPjckZeZ+wAFgUgSDxj1ZzdVTzwtsA=")
     });
 
@@ -123,9 +125,11 @@ describe("luna", () => {
           amount2StdFee(demon, 0, 100000),
           0,
           undefined,
-          Math.ceil(Date.now() / 1000) + 300,
+          featureTimestamp
         )
-        console.info(v)
+
+        const expected = 'Cr0BCroBCikvaWJjLmFwcGxpY2F0aW9ucy50cmFuc2Zlci52MS5Nc2dUcmFuc2ZlchKMAQoIdHJhbnNmZXISCWNoYW5uZWwtMBoPCgV1b3NtbxIGMTAwMDAwIitvc21vMWx5anhrNHQ4MzV5ajZ1OGwybWc2YTZ0MnY5eDNuajd1bGFsanoyKi1jb3Ntb3MxcnZzNXhwaDRsM3B4MmVmeW5xc3RodXM4cDZyNGV4eXI3Y2t5eHY4gOC26/yRhckBEmQKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQP3ndcCmlkF5VeQYUKwxX7CH0dF8Sm4wFeuzPQuJ1C6bhIECgIIARgCEhAKCgoFdW9zbW8SATAQoI0GGkAvZVTowoGRhV6fKcreTl0VAikje8EHXRj0PtA+l0VAayBa2kAQtClImsXYz9dvtV1Z0b4PI1Y+lx+CxZbeCs3E';
+        expect(v).toBe(expected);
     });
 
     test("sendMessage", async () => {
@@ -140,15 +144,17 @@ describe("luna", () => {
           [],
           amount2StdFee(demon, 0, 100000),
         )
-        console.info(v)
+        const expected = 'EmQKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQP3ndcCmlkF5VeQYUKwxX7CH0dF8Sm4wFeuzPQuJ1C6bhIECgIIARgCEhAKCgoFdW9zbW8SATAQoI0GGkBcix83ia1Jyc0AHKJW5qRX5Q3tjy/4hanMgU03ojpq9wo16A+HvnnQIQk5VNaAgeyD984tOcWP2VJQEPpqXQsA';
+        expect(v).toBe(expected);
     });
 
     test("osmosis-json", async () => {
         const data = "{\n  \"chain_id\": \"osmosis-1\",\n  \"account_number\": \"584406\",\n  \"sequence\": \"1\",\n  \"fee\": {\n    \"gas\": \"250000\",\n    \"amount\": [\n      {\n        \"denom\": \"uosmo\",\n        \"amount\": \"0\"\n      }\n    ]\n  },\n  \"msgs\": [\n    {\n      \"type\": \"osmosis/gamm/swap-exact-amount-in\",\n      \"value\": {\n        \"sender\": \"osmo1lyjxk4t835yj6u8l2mg6a6t2v9x3nj7ulaljz2\",\n        \"routes\": [\n          {\n            \"poolId\": \"722\",\n            \"tokenOutDenom\": \"ibc/6AE98883D4D5D5FF9E50D7130F1305DA2FFA0C652D1DD9C123657C6B4EB2DF8A\"\n          }\n        ],\n        \"tokenIn\": {\n          \"denom\": \"uosmo\",\n          \"amount\": \"10000\"\n        },\n        \"tokenOutMinAmount\": \"3854154180813018\"\n      }\n    }\n  ],\n  \"memo\": \"\"\n}"
         const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
         const prefix = "osmo"
-        const  tt = await sendAminoMessage(privateKey, prefix, data, OsmosisAminoConverters, OsmosisRegistry)
-        console.info(tt)
+        const tt = await sendAminoMessage(privateKey, prefix, data, OsmosisAminoConverters, OsmosisRegistry)
+        const expected = 'CswBCskBCiovb3Ntb3Npcy5nYW1tLnYxYmV0YTEuTXNnU3dhcEV4YWN0QW1vdW50SW4SmgEKK29zbW8xbHlqeGs0dDgzNXlqNnU4bDJtZzZhNnQydjl4M25qN3VsYWxqejISSQjSBRJEaWJjLzZBRTk4ODgzRDRENUQ1RkY5RTUwRDcxMzBGMTMwNURBMkZGQTBDNjUyRDFERDlDMTIzNjU3QzZCNEVCMkRGOEEaDgoFdW9zbW8SBTEwMDAwIhAzODU0MTU0MTgwODEzMDE4EmQKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQP3ndcCmlkF5VeQYUKwxX7CH0dF8Sm4wFeuzPQuJ1C6bhIECgIIARgBEhAKCgoFdW9zbW8SATAQkKEPGkBLqNnM08q2dMOfgz2sVA8+e4csMypqzrta0oQoszskriE5hQgdXHt0bxv5ysC1DFaNzY6PbFYgqCOYbHoq9+S2';
+        expect(tt).toBe(expected);
     });
 });
 
@@ -157,10 +163,11 @@ describe("evmos", () => {
         const prefix = "evmos"
         const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
         const address = getNewAddress(privateKey, prefix, true)
-        console.info(address)
+        expect(address.length).toBe(prefix.length + 1 + 38);
+        expect(address).toBe('evmos1mfl9drwvnh32ruecnzv48d05dwy4jc0nvz95sx');
 
         const v = validateAddress(address, prefix)
-        console.info(v)
+        expect(v).toBe(true);
     });
 
     test("sendToken", async () => {
@@ -179,10 +186,11 @@ describe("evmos", () => {
             "",
             true,
         )
-        console.info(v)
+        const expected = 'CpwBCpkBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnkKLGV2bW9zMXljNHE2c3ZzbDl4eTlnMmdwbGdubHB4d2huenIzeTczd2ZzMHhoEixldm1vczF5YzRxNnN2c2w5eHk5ZzJncGxnbmxweHdobnpyM3k3M3dmczB4aBobCgZhZXZtb3MSETEwMDAwMDAwMDAwMDAwMDAwEn0KWQpPCigvZXRoZXJtaW50LmNyeXB0by52MS5ldGhzZWNwMjU2azEuUHViS2V5EiMKIQP3ndcCmlkF5VeQYUKwxX7CH0dF8Sm4wFeuzPQuJ1C6bhIECgIIARgFEiAKGgoGYWV2bW9zEhAzNTAwMDAwMDAwMDAwMDAwEODFCBpBQkmBlwp9LeOblL/NrILF4fbR9GfpuOjoURbGpYYnlp833pcyGHyQKMbcZxmreKQy2ySBOco8lQ+dQA/6cPE1TAE=';
+        expect(v).toBe(expected);
     });
 
-    test("sendIBCTransfer", async () => {
+    test("sendIBCTransfer_1", async () => {
         const demon = "aevmos"
         const privateKey = "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347"
         const pk = base.fromHex(privateKey)
@@ -199,12 +207,13 @@ describe("evmos", () => {
             amount2StdFee(demon, 5000000000000000, 200000),
             0,
             undefined,
-            Math.ceil(Date.now() / 1000) + 300,
+            featureTimestamp,
             "",
             true
         )
         // curl -X POST -d '{"tx_bytes":"CpwBCpkBChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnkKLGV2bW9zMXljNHE2c3ZzbDl4eTlnMmdwbGdubHB4d2huenIzeTczd2ZzMHhoEixldm1vczF5YzRxNnN2c2w5eHk5ZzJncGxnbmxweHdobnpyM3k3M3dmczB4aBobCgZhZXZtb3MSETEwMDAwMDAwMDAwMDAwMDAwEn0KWQpPCigvZXRoZXJtaW50LmNyeXB0by52MS5ldGhzZWNwMjU2azEuUHViS2V5EiMKIQOcJMA96W11QpNEacdGblBLXYYIw5nd27SBSxlh+Pc6UxIECgIIARgFEiAKGgoGYWV2bW9zEhAzNTAwMDAwMDAwMDAwMDAwEODFCBpBybt+ODmw1NzqBrFEKeBtwicmBLZBD/nTJY86vqT2LjRfs2ebbO+oSk8tlle6e0jHlheujkP38qTzpFa9lNnORQE=","mode":"BROADCAST_MODE_SYNC"}' https://lcd-evmos.whispernode.com/cosmos/tx/v1beta1/txs
-        console.info(v)
+        const expected = 'CsoBCscBCikvaWJjLmFwcGxpY2F0aW9ucy50cmFuc2Zlci52MS5Nc2dUcmFuc2ZlchKZAQoIdHJhbnNmZXISCWNoYW5uZWwtMxobCgZhZXZtb3MSETEwMDAwMDAwMDAwMDAwMDAwIixldm1vczF5YzRxNnN2c2w5eHk5ZzJncGxnbmxweHdobnpyM3k3M3dmczB4aCotY29zbW9zMXJ2czV4cGg0bDNweDJlZnlucXN0aHVzOHA2cjRleHlyN2NreXh2OIDgtuv8kYXJARJ9ClkKTwooL2V0aGVybWludC5jcnlwdG8udjEuZXRoc2VjcDI1NmsxLlB1YktleRIjCiED953XAppZBeVXkGFCsMV+wh9HRfEpuMBXrsz0LidQum4SBAoCCAEYBBIgChoKBmFldm1vcxIQNTAwMDAwMDAwMDAwMDAwMBDAmgwaQZ4Y7DgdLnz8n+1kgCSTpHet23CfVSNw1NmityFIhUGdCBtx2SLxIdvNufcoletFBi2itNNnbN0Cfj1NeRpv7UkB';
+        expect(v).toBe(expected);
     });
 });
 
@@ -213,10 +222,12 @@ describe("sei", () => {
         const prefix = "sei"
         const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
         const address = getNewAddress(privateKey, prefix)
-        console.info(address)
+
+        expect(address.length).toBe(prefix.length + 1 + 38);
+        expect(address).toBe('sei137augvuewy625ns8a2age4sztl09hs7pk0ulte');
 
         const v = validateAddress(address, prefix)
-        console.info(v)
+        expect(v).toBe(true);
     });
 
     test("sendToken", async () => {
@@ -267,10 +278,12 @@ describe("injective", () => {
         const prefix = "inj"
         const privateKey = base.fromHex("ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347")
         const address = getNewAddress(privateKey, prefix)
-        console.info(address)
+
+        expect(address.length).toBe(prefix.length + 1 + 38);
+        expect(address).toBe('inj137augvuewy625ns8a2age4sztl09hs7p326dlq');
 
         const v = validateAddress(address, prefix)
-        console.info(v)
+        expect(v).toBe(true);
     });
 
     test("sendToken", async () => {
@@ -311,13 +324,14 @@ describe("injective", () => {
             amount2StdFee(demon, 200000000000000, 400000),
             0,
             undefined,
-            Math.ceil(Date.now() / 1000) + 300,
+            featureTimestamp,
             "",
             true,
             undefined,
             "/injective.crypto.v1beta1.ethsecp256k1.PubKey",
         )
-        console.info(v)
+        const expected = 'CsQBCsEBCikvaWJjLmFwcGxpY2F0aW9ucy50cmFuc2Zlci52MS5Nc2dUcmFuc2ZlchKTAQoIdHJhbnNmZXISCWNoYW5uZWwtOBoZCgNpbmoSEjEwMDAwMDAwMDAwMDAwMDAwMCIqaW5qMXl3cWU4MDU3c3JuZ2F0OHJ0ejk1dGt4MGZmbDJ1cmFya2VnY2M4Kitvc21vMTh2dTNqeTc3ZDB4dmxnNWdndXVkNWgwa3YycmVwZzgzZWh3bmdmOIDgtuv8kYXJARJ+Cl4KVAotL2luamVjdGl2ZS5jcnlwdG8udjFiZXRhMS5ldGhzZWNwMjU2azEuUHViS2V5EiMKIQP3ndcCmlkF5VeQYUKwxX7CH0dF8Sm4wFeuzPQuJ1C6bhIECgIIARgDEhwKFgoDaW5qEg8yMDAwMDAwMDAwMDAwMDAQgLUYGkGHSlFv65Ah75x4uarIrgPIV5Jmg3qbW7KLYrk1/2hPylf49u6xN7w7UnqhG/Uxl9Y4DmRZZLcM0qhPNGwojNMJAQ==';
+        expect(v).toBe(expected);
     });
 
     test("injective-getAddressByPublicKey", async () => {
@@ -326,7 +340,6 @@ describe("injective", () => {
             publicKey: "038bffbf6a298c27e338b4c9ab670ac4b35678250b9bf4eebea9f56a327f56af7c",
             hrp: "inj"
         })
-        console.log(c)
         expect(c).toEqual('inj1u5m8vf5yw49gut3lrk3trje0zdvlnpduj2zudf')
     })
 
@@ -341,7 +354,8 @@ describe("injective", () => {
             "}";
         const data: SignMessageData = {type: "signDoc", data: message}
         const v = await wallet.signMessage({privateKey, data})
-        console.info(v)
+        const expected = '/XuNUR7sZxUcNy49VdbFl/mrii3DhungqP2bTAtBryk9d54fJ5fx20Mdpps7kL1Ty54ezlzTtZTyH7DNv7xjzQ==';
+        expect(v).toBe(expected);
     });
 
     test("injective-signmessage-2", async () => {
@@ -383,7 +397,8 @@ describe("injective", () => {
             "}";
         const data: SignMessageData = {type: "amino", data: message}
         const v = await wallet.signMessage({privateKey, data})
-        console.info(v)
+        const expected = 'BFiUnJlDqEpxfrOTTO0V3UUZjgRNV7RRcHrDfYREAcs2Tu0Jbdis6rlxgwHWZZ9HoCLJgf7wNNjOY/SCago94g==';
+        expect(v).toBe(expected);
     });
 });
 
@@ -501,27 +516,37 @@ describe("common_wallet", () => {
     test("address", async () => {
         {
             const sei = new SeiWallet()
-            const address = await sei.getNewAddress({
+            const {address} = await sei.getNewAddress({
                 privateKey: "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347",
             });
-            console.info(address)
-            console.info(await sei.validAddress({address: address.address}))
+            const publicKey = '03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e';
 
-            console.info(await sei.getAddressByPublicKey({publicKey: "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e"}));
+            const expected = 'sei137augvuewy625ns8a2age4sztl09hs7pk0ulte';
+            expect(address).toBe(expected);
+
+            const {isValid} = await sei.validAddress({address});
+            expect(isValid).toBe(true);
+
+            const addr = await sei.getAddressByPublicKey({publicKey});
+            expect(addr).toBe(expected);
         }
         {
             const hrp = "sei";
             const sei = new CommonCosmosWallet()
-            const address = await sei.getNewAddress({
+            const publicKey = '03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e';
+            const {address} = await sei.getNewAddress({
                 privateKey: "ebc42dae1245fad403bd18f59f7283dc18724d2fc843b61e01224b9789057347",
-                hrp: hrp,
+                hrp,
             });
-            console.info(address)
-            console.info(await sei.validAddress({address: address.address, hrp}))
-            console.info(await sei.getAddressByPublicKey({
-                publicKey: "03f79dd7029a5905e557906142b0c57ec21f4745f129b8c057aeccf42e2750ba6e",
-                hrp
-            }));
+
+            const expected = 'sei137augvuewy625ns8a2age4sztl09hs7pk0ulte';
+            expect(address).toBe(expected);
+
+            const {isValid} = await sei.validAddress({address, hrp});
+            expect(isValid).toBe(true);
+
+            const addr = await sei.getAddressByPublicKey({publicKey, hrp});
+            expect(addr).toBe(expected);
         }
     });
 });

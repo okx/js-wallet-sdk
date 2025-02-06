@@ -71,7 +71,8 @@ export async function appendTransferInstruction(transaction: web3.Transaction, f
 export async function appendTokenTransferInstruction(transaction: web3.Transaction, fromAddress: string, toAddress: string, mintAddress: string, amount: number, createAssociatedAddress: boolean, token2022?: boolean, decimal?: number) {
     const tokenProgramId = token2022 === true ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
     const fromAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mintAddress), new web3.PublicKey(fromAddress), false, tokenProgramId);
-    const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mintAddress), new web3.PublicKey(toAddress), false, tokenProgramId);
+    // Allow the owner account to be a PDA (Program Derived Address)
+    const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mintAddress), new web3.PublicKey(toAddress), true, tokenProgramId);
     if (createAssociatedAddress) {
         transaction.add(
             spl.createAssociatedTokenAccountInstruction(
@@ -332,7 +333,8 @@ export async function signTransferVersionedTransaction(txData: TxData, ...privat
 export async function signTokenTransferVersionedTransaction(txData: TxData, ...privateKey: string[]) {
     const tokenProgramId = txData.token2022 === true ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
     const fromAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(txData.mint!), new web3.PublicKey(txData.from), false, tokenProgramId);
-    const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(txData.mint!), new web3.PublicKey(txData.to), false, tokenProgramId);
+    // Allow the owner account to be a PDA (Program Derived Address)
+    const toAssociatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(txData.mint!), new web3.PublicKey(txData.to), true, tokenProgramId);
 
     const instructions = [];
     if (txData.computeUnitLimit && txData.computeUnitPrice) {

@@ -15,6 +15,14 @@ import {NewAddressParams, SignTxParams, VerifyMessageParams} from "@okxweb3/coin
 
 describe("address", () => {
 
+    test("signCommonMsg", async () => {
+        let wallet = new TrxWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1b5662ca72b121ddd4abd1f39b2e22fd86b0a3e274761abbf182e955f073efd47b1139781a288af743683535258f4bd6ab3ea2ffe43404cb8c948e5bad23bbbdd7")
+        sig = await wallet.signCommonMsg({privateKey:"bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a", message:{text:"123456789"}});
+        expect(sig).toEqual("1b38028dece5b8e80fd8f064ed95c0e54d3f470bb848cd949e6ddd27ec8e51d5051dfb374e488d7fb03d2e2497210d4dd22ac95269866bef1f1fc75a9b4505f086")
+    });
+
     test("validPrivateKey", async () => {
         const wallet = new TrxWallet();
         const privateKey = await wallet.getRandomPrivateKey();
@@ -34,6 +42,7 @@ describe("address", () => {
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("bdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a\n");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     // ps.push("0Xbdd80f4421968142b3a4a6c27a1d84a3623384d085a04a895f109fd8d49cef0a");
     test("edge test", async () => {
         const wallet = new TrxWallet();
@@ -43,6 +52,7 @@ describe("address", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length + 1);

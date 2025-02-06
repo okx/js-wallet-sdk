@@ -16,7 +16,7 @@ import {
     GetPayLoadError,
     NewAddressError,
     SignMsgError,
-    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData
+    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from "@okxweb3/coin-base";
 import {
     createStacksPrivateKey,
@@ -182,7 +182,7 @@ export class StxWallet extends BaseWallet {
             }
             const data: NewAddressData = {
                 address: address,
-                publicKey: publicKey
+                publicKey: publicKey,
             };
             return Promise.resolve(data);
         } catch (e) {
@@ -199,7 +199,12 @@ export class StxWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = this.checkPrivateKey(param.privateKey)
+        let isValid;
+        try {
+            isValid = this.checkPrivateKey(param.privateKey);
+        } catch (e) {
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey
@@ -274,6 +279,14 @@ export class StxWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(e);
         }
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let key = params.privateKey.toLowerCase().startsWith("0x")? params.privateKey.substring(2):params.privateKey
+        const privateKey = createStacksPrivateKey(key.toLowerCase());
+        const priKey = privateKey.compressed? base.toHex(privateKey.data.slice(0,32)):base.toHex(privateKey.data);
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:priKey, message:params.message, signType:SignType.Secp256k1,version:params.version})
     }
 
     async signMessage(param: SignTxParams): Promise<any> {

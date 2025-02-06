@@ -8,6 +8,7 @@ import {EntryFunctionArgumentTypes, SimpleEntryFunctionArgumentTypes, EntryFunct
 import {Bool, MoveOption, MoveString, MoveVector, U128, U16, U256, U32, U64, U8} from "../../bcs";
 import {AccountAddress} from "../../core";
 import {
+    convertNumber,
     findFirstNonSignerArg,
     isBcsAddress,
     isBcsBool,
@@ -143,6 +144,10 @@ function parseArg(
         if (isBool(arg)) {
             return new Bool(arg);
         }
+        if (isString(arg)) {
+            if (arg === "true") return new Bool(true);
+            if (arg === "false") return new Bool(false);
+        }
         throwTypeMismatch("boolean", position);
     }
     // TODO: support uint8array?
@@ -153,22 +158,25 @@ function parseArg(
         throwTypeMismatch("string | AccountAddress", position);
     }
     if (param.isU8()) {
-        if (isNumber(arg)) {
-            return new U8(arg);
+        const num = convertNumber(arg);
+        if (num !== undefined) {
+            return new U8(num);
         }
-        throwTypeMismatch("number", position);
+        throwTypeMismatch("number|string", position);
     }
     if (param.isU16()) {
-        if (isNumber(arg)) {
-            return new U16(arg);
+        const num = convertNumber(arg);
+        if (num !== undefined) {
+            return new U16(num);
         }
-        throwTypeMismatch("number", position);
+        throwTypeMismatch("number | string", position);
     }
     if (param.isU32()) {
-        if (isNumber(arg)) {
-            return new U32(arg);
+        const num = convertNumber(arg);
+        if (num !== undefined) {
+            return new U32(num);
         }
-        throwTypeMismatch("number", position);
+        throwTypeMismatch("number | string", position);
     }
     if (param.isU64()) {
         if (isLargeNumber(arg)) {

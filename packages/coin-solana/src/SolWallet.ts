@@ -10,8 +10,6 @@ import {
     ValidAddressParams,
     ValidSignedTransactionParams,
     BaseWallet,
-    ed25519_getRandomPrivateKey,
-    ed25519_getDerivedPrivateKey,
     jsonStringifyUniform,
     CalcTxHashError,
     GenPrivateKeyError,
@@ -19,13 +17,17 @@ import {
     GetHardwareSignedTransactionError,
     NewAddressError,
     SignTxError,
-    validSignedTransactionError, ValidPrivateKeyParams, ValidPrivateKeyData,
+    validSignedTransactionError,
+    ValidPrivateKeyParams,
+    ValidPrivateKeyData,
+    SignCommonMsgParams,
+    buildCommonSignMsg,
+    SignType,
 } from '@okxweb3/coin-base';
-import {base} from '@okxweb3/crypto-lib';
+import {base,signUtil} from '@okxweb3/crypto-lib';
 import {api, web3} from "./index";
 import {ComputeBudgetProgram} from "./sdk/web3/programs/compute-budget";
 import {TokenStandard} from "./sdk/metaplex";
-import {getSerializedMplTransaction, getSerializedTokenTransferVersionedTransaction} from "./api";
 
 export type TransactionType = "transfer" | "tokenTransfer" | "mplTransfer"
 export type SolSignParam = {
@@ -56,7 +58,7 @@ export class SolWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            return Promise.resolve(ed25519_getRandomPrivateKey(true, "base58"))
+            return Promise.resolve(signUtil.ed25519.ed25519_getRandomPrivateKey(true, "base58"))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
         }
@@ -64,7 +66,7 @@ export class SolWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const key = await ed25519_getDerivedPrivateKey(param, true, "base58")
+            const key = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic,param.hdPath, true, "base58")
             return Promise.resolve(key);
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
@@ -73,7 +75,7 @@ export class SolWallet extends BaseWallet {
 
     checkPrivateKey(privateKey: string): boolean {
         const keyBytes = base.fromBase58(privateKey)
-        return keyBytes.length == 64;
+        return keyBytes.length == 64 && !keyBytes.every(byte => byte===0);
     }
 
     async getNewAddress(param: NewAddressParams): Promise<any> {
@@ -93,7 +95,12 @@ export class SolWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        let isValid = this.checkPrivateKey(param.privateKey)
+        let isValid;
+        try{
+            isValid = this.checkPrivateKey(param.privateKey)
+        }catch (e){
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
             isValid: isValid,
             privateKey: param.privateKey
@@ -115,6 +122,12 @@ export class SolWallet extends BaseWallet {
             address: param.address,
         };
         return Promise.resolve(data);
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        const buf = base.fromBase58(params.privateKey)
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:base.toHex(buf), message:params.message, signType:SignType.ED25519})
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {

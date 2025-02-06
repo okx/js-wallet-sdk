@@ -8,15 +8,13 @@ import {
     ValidAddressData,
     ValidAddressParams,
     BaseWallet,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
     CalcTxHashError,
     GenPrivateKeyError,
     NewAddressError,
     SignMsgError,
-    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData
+    SignTxError, ValidPrivateKeyParams, ValidPrivateKeyData, SignCommonMsgParams, buildCommonSignMsg, SignType
 } from '@okxweb3/coin-base';
-import {base} from '@okxweb3/crypto-lib';
+import {base,signUtil} from '@okxweb3/crypto-lib';
 import {
     SuiObjectRef,
     Ed25519Keypair,
@@ -62,7 +60,7 @@ export class SuiWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            const privateKeyHex = ed25519_getRandomPrivateKey(false, "hex")
+            const privateKeyHex = signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex")
             return Promise.resolve(encodeSuiPrivateKey(privateKeyHex))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
@@ -71,7 +69,7 @@ export class SuiWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const privateKeyHex = await ed25519_getDerivedPrivateKey(param, false, "hex")
+            const privateKeyHex = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic,param.hdPath, false, "hex")
             return Promise.resolve(encodeSuiPrivateKey(privateKeyHex))
         } catch (e) {
             return Promise.reject(GenPrivateKeyError);
@@ -92,13 +90,24 @@ export class SuiWallet extends BaseWallet {
     }
 
     async validPrivateKey(param: ValidPrivateKeyParams): Promise<any> {
-        tryDecodeSuiPrivateKey(param.privateKey)
+        let isValid = true;
+        try {
+            tryDecodeSuiPrivateKey(param.privateKey)
+        } catch (e) {
+            isValid = false;
+        }
         const data: ValidPrivateKeyData = {
-            isValid: true,
+            isValid: isValid,
             privateKey: param.privateKey
         };
         return Promise.resolve(data);
     }
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        const pri = tryDecodeSuiPrivateKey(params.privateKey)
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:pri, message:params.message, signType:SignType.ED25519})
+    }
+
 
     async signMessage(param: SignTxParams): Promise<string> {
         try {

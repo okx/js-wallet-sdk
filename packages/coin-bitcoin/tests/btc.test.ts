@@ -12,9 +12,9 @@ import {
     ValidSignedTransaction,
     message,
     DogeWallet,
-    LtcWallet, calculateTxSize
+    LtcWallet, calculateTxSize, BsvWallet, BchWallet
 } from '../src';
-import {Transaction,} from '../src/bitcoinjs-lib'
+import {Transaction} from '../src/bitcoinjs-lib'
 
 import {base} from "@okxweb3/crypto-lib";
 import {SignTxParams, VerifyMessageParams} from "@okxweb3/coin-base";
@@ -26,6 +26,19 @@ describe("bitcoin", () => {
         const wallet = new BtcWallet();
         const res = await wallet.validPrivateKey({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36"});
         expect(res.isValid).toEqual(true);
+    });
+
+    test("signCommonMsg", async () => {
+        let wallet = new BchWallet();
+        let sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{walletId:"123456789"}});
+        expect(sig).toEqual("1b87feb2cc194b8d41a9c6ff0dc0ddba952c7ba73936d3f0361d498341716c2b34426876ef21ad4f5f94482bafe72a418729737b9461303be9da2be849a4123f02")
+
+        sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36", message:{text:"123456789"}});
+        expect(sig).toEqual("1bfb5fcdb8b7102c2f142718aec10f30cd0ea0d84cd7b51dac1e8e8565ead520a72ad1b75d1a7f412b05f821f5ccc694452e838f2022ccc3d5edefb9eda7cd7e8d")
+
+        // sig = await wallet.signCommonMsg({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:"segwit_taproot", message:{walletId:"123456789"}});
+        // console.log(sig)
+        // console.log(await wallet.getNewAddress({privateKey:"KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36",addressType:"segwit_taproot"}))
     });
 
     test("getNewAddress", async () => {
@@ -187,24 +200,26 @@ describe("bitcoin", () => {
                 {
                     txId: "a7881146cc7671ad89dcd1d99015ed7c5e17cfae69eedd01f73f5ab60a6c1318",
                     vOut: 0,
-                    amount: 50000,
+                    amount: 100000,
                     address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst"
                 },
             ],
             outputs: [
                 {
                     address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst",
-                    amount: 10000
+                    amount: 9500
                 }
             ],
             address: "tb1qjph0dpexkz6wg36sz5xygj2qjehm4yc3628yst",
-            feePerB: 2
+            feePerB: 402.8
         };
 
         let signParams: SignTxParams = {
             privateKey: "cNtoPYke9Dhqoa463AujyLzeas8pa6S15BG1xDSRnVmcwbS9w7rS",
             data: btcTxParams
         };
+      let txfee = await wallet.estimateFee(signParams);
+      console.info(txfee);
         let tx = await wallet.signTransaction(signParams);
         console.info(tx);
     })
@@ -286,7 +301,7 @@ describe("bitcoin", () => {
             ],
             memoPos: -1,
             address: "2NF33rckfiQTiE5Guk5ufUdwms8PgmtnEdc",
-            feePerB: 2
+            feePerB: 2.11
         };
 
         let signParams: SignTxParams = {
@@ -295,7 +310,7 @@ describe("bitcoin", () => {
         };
         let tx = await wallet.signTransaction(signParams);
         console.info(tx);
-        expect(tx).toEqual('0200000000010123a0f76bb214f2b3804879b161ceb29dbd08b45f62a399eda2512e3fedebeda700000000171600145c005c5532ce810ddf20f9d1d939631b47089ecdffffffff03f0490200000000001600145c005c5532ce810ddf20f9d1d939631b47089ecdd88401000000000017a914ef05515a0595d15eaf90d9f62fb85873a6d8c0b4870000000000000000366a343d3a653a3078386239346336346666376433396361616161633234343530656236363565346564663661663065393a3a743a333002483045022100b897da3b077f27ff0752346adacf2654c354aac94768fe73a72824f8986ca51d02200ac592435dbc25855c080dd80a660614e390a6b2372a3a940e2821d296a2d50c01210357bbb2d4a9cb8a2357633f201b9c518c2795ded682b7913c6beef3fe23bd6d2f00000000')
+        expect(tx).toEqual('0200000000010123a0f76bb214f2b3804879b161ceb29dbd08b45f62a399eda2512e3fedebeda700000000171600145c005c5532ce810ddf20f9d1d939631b47089ecdffffffff03f0490200000000001600145c005c5532ce810ddf20f9d1d939631b47089ecdbe8401000000000017a914ef05515a0595d15eaf90d9f62fb85873a6d8c0b4870000000000000000366a343d3a653a3078386239346336346666376433396361616161633234343530656236363565346564663661663065393a3a743a333002483045022100e63f5a4a0f1dd93c4c33e5f14ee60d5bc8c69e8d36c0c842a7aaf3a65a843128022047730c5cc4051f8401aacfab333788de07024d3e8ec4e05aba0193c530b0815501210357bbb2d4a9cb8a2357633f201b9c518c2795ded682b7913c6beef3fe23bd6d2f00000000')
     });
 
     test("message sign", async () => {

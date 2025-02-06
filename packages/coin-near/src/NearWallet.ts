@@ -1,17 +1,15 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     CalcTxHashError,
     CalcTxHashParams,
     DerivePriKeyParams,
-    ed25519_getDerivedPrivateKey,
-    ed25519_getRandomPrivateKey,
     GenPrivateKeyError,
     GetDerivedPathParam,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignMsgError,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     ValidAddressData,
     ValidAddressParams, ValidPrivateKeyData, ValidPrivateKeyParams
 } from '@okxweb3/coin-base';
@@ -124,7 +122,7 @@ export class NearWallet extends BaseWallet {
 
     async getRandomPrivateKey(): Promise<any> {
         try {
-            const privateKeyHex = ed25519_getRandomPrivateKey(false, "hex")
+            const privateKeyHex = signUtil.ed25519.ed25519_getRandomPrivateKey(false, "hex")
             const publicKey = base.toHex(signUtil.ed25519.publicKeyCreate(base.fromHex(privateKeyHex)), false)
             return Promise.resolve('ed25519:' + base.toBase58(base.fromHex(privateKeyHex + publicKey)))
         } catch (e) {
@@ -134,7 +132,7 @@ export class NearWallet extends BaseWallet {
 
     async getDerivedPrivateKey(param: DerivePriKeyParams): Promise<any> {
         try {
-            const privateKeyHex = await ed25519_getDerivedPrivateKey(param, false, "hex")
+            const privateKeyHex = await signUtil.ed25519.ed25519_getDerivedPrivateKey(param.mnemonic, param.hdPath, false, "hex")
             const publicKey = base.toHex(signUtil.ed25519.publicKeyCreate(base.fromHex(privateKeyHex)))
             return Promise.resolve('ed25519:' + base.toBase58(base.fromHex(privateKeyHex + publicKey)))
         } catch (e) {
@@ -184,7 +182,11 @@ export class NearWallet extends BaseWallet {
         const key = param.privateKey.startsWith('0x') ? param.privateKey : '0x' + param.privateKey
         let isValid: boolean
         if (base.isHexString(key)) {
-            isValid = checkPrivateKey(param.privateKey);
+            try {
+                isValid = checkPrivateKey(param.privateKey);
+            } catch (e){
+                isValid = false;
+            }
         } else {
             const parts = param.privateKey.split(':');
             if (parts.length != 2 || parts[0] != 'ed25519') {
@@ -192,7 +194,11 @@ export class NearWallet extends BaseWallet {
             } else {
                 const pk = base.fromBase58(parts[1])
                 const seedHex = base.toHex(pk.slice(0, 32))
-                isValid = checkPrivateKey(seedHex)
+                try {
+                    isValid = checkPrivateKey(seedHex)
+                } catch (e){
+                    isValid = false
+                }
             }
         }
         const data: ValidPrivateKeyData = {
@@ -230,6 +236,20 @@ export class NearWallet extends BaseWallet {
         const pk = base.fromBase58(parts[1])
         const seedHex = base.toHex(pk.slice(0, 32))
         return publicKeyFromSeed(seedHex)
+    }
+
+
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let privateKey = params.privateKey.startsWith("0x") || params.privateKey.startsWith("0X") ?params.privateKey.substring(2):params.privateKey;
+        if ((!params.privateKey.startsWith("0x")) && (!params.privateKey.startsWith("0X")) && !base.isHexString('0x' + params.privateKey)) {
+            const parts = params.privateKey.split(':');
+            if (parts.length != 2 || parts[0] != 'ed25519') {
+                throw Error("invalid privateKey")
+            }
+            const pk = base.fromBase58(parts[1])
+            privateKey = base.toHex(pk.slice(0, 32))
+        }
+        return super.signCommonMsg({privateKey:params.privateKey,privateKeyHex:privateKey, message:params.message, signType:SignType.ED25519})
     }
 
     async signMessage(param: SignTxParams): Promise<string> {

@@ -1,11 +1,11 @@
 import {
-    BaseWallet,
+    BaseWallet, buildCommonSignMsg,
     DerivePriKeyParams,
     GenPrivateKeyError,
-    GetDerivedPathParam,
+    GetDerivedPathParam, jsonStringifyUniform,
     NewAddressData,
     NewAddressError,
-    NewAddressParams,
+    NewAddressParams, SignCommonMsgParams,
     SignTxError,
     SignTxParams,
     ValidAddressData,
@@ -17,7 +17,7 @@ import {base, bip32, bip39} from '@okxweb3/crypto-lib';
 
 import {
     CalculateContractAddressFromHash,
-    Call,
+    CallV2, computeHashOnElements,
     constants,
     CreateContractCall,
     CreateMultiContractCall,
@@ -32,6 +32,9 @@ import {
     validateAndParseAddress,
     verifyMessage
 } from "./index";
+import {encodeShortString} from "./utils/shortString";
+import {starkCurve} from "./utils/ec";
+import {BigNumberish, hexToDecimalString} from "./utils/num";
 
 export type StarknetTransactionType =
     "transfer"
@@ -59,16 +62,30 @@ export type StarknetSignData = {
     }
     multiContractCallData?: {
         from: string
-        calls: Call[]
+        calls: CallV2[]
     }
 }
 
-function checkPrivateKey(privateKeyHex: string):boolean{
-    if (!base.validateHexString(privateKeyHex)){
+function validateHexString(value: string) {
+    if (!value) {
+        return false;
+    }
+    const hexStr = value.toLowerCase().startsWith("0x") ? value.substring(2).toLowerCase() : value.toLowerCase();
+    if (hexStr.length === 0) {
+        return false;
+    }
+    if (!hexStr.match(/^[0-9A-Fa-f]*$/)) {
+        return false;
+    }
+    return true
+}
+
+function checkPrivateKey(privateKeyHex: string): boolean {
+    if (!validateHexString(privateKeyHex)) {
         return false;
     }
     const keyBytes = base.fromHex(privateKeyHex.toLowerCase());
-    if (keyBytes.length < 25 || keyBytes.length > 33) {
+    if (keyBytes.length < 25 || keyBytes.length > 33 || keyBytes.every(byte=>byte ===0)) {
         return false;
     }
     return true
@@ -206,6 +223,30 @@ export class StarknetWallet extends BaseWallet {
         } catch (e) {
             return Promise.reject(SignTxError + ":" + e);
         }
+    }
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let data;
+        if(params.message.text){
+            data=params.message.text;
+        } else {
+            let addr = await this.getNewAddress({privateKey:params.privateKey});
+            if(addr.publicKey.startsWith("0x")) {
+                addr.publicKey = addr.publicKey.substring(2);
+            }
+            data = buildCommonSignMsg(addr.publicKey, params.message.walletId);
+        }
+        let msgHash = base.magicHash(data);
+        let msgHashFirst = msgHash.slice(0,16)
+        let msgHashEnd = msgHash.slice(16);
+        let hash = computeHashOnElements([hexToDecimalString(base.toHex(msgHashFirst)), hexToDecimalString(base.toHex(msgHashEnd))]);
+        if(hash.startsWith("0x")) {
+            hash = hash.substring(2)
+        }
+        const pri = modPrivateKey(params.privateKey);
+        let sig = starkCurve.sign(hash, pri);
+        let point = starkCurve.ProjectivePoint.fromHex(base.toHex(starkCurve.getPublicKey(pri)));
+        let res = {publicKey:point.x.toString(16),publicKeyY:point.y.toString(16),signedDataR:sig.r.toString(16),signedDataS:sig.s.toString(16)};
+        return Promise.resolve(base.toHex(base.toUtf8(jsonStringifyUniform(res))));
     }
 
     verifyMessage(param: VerifyMessageParams): Promise<any> {

@@ -1,19 +1,41 @@
 import {web3, spl, api, SolWallet} from "../src"
 import {PublicKey, ComputeBudgetProgram} from "../src/sdk/web3";
 import {TokenStandard, transferNftBuilder, getSignedTransaction} from "../src/sdk/metaplex";
-import {base} from "@okxweb3/crypto-lib";
-import {ed25519_getRandomPrivateKey} from "@okxweb3/coin-base";
+import {base,signUtil} from "@okxweb3/crypto-lib";
 import {TOKEN_2022_PROGRAM_ID} from "../src/sdk/spl";
-import {deserializeMessages} from "../src/api";
 
 const privateKey = "037f00373589c700a411382ae702e258b01f30a509a32be2b2c84fb54de4c1e5fd5fd86d7d7b8355492b1517a96a2fbb17e1a374b80a21559bdfee0dfbaa0b32";
-const privateKeyBase58 = base.toBase58(base.fromHex(privateKey))
+const privateKeyBase58 = base.toBase58(base.fromHex(privateKey)); // 548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePK
 describe("address", () => {
+
+    test("signCommonMsg", async () => {
+        let wallet = new SolWallet();
+        let sig = await wallet.signCommonMsg({privateKey:privateKeyBase58, message:{walletId:"123456789"}});
+        expect(sig).toEqual("10a3e37d8d1eb5aea9b3936c7f99fe6997d5f8b575dd3b200cd273e2a72e19072e2f2312e3cdbead467307dbafb5f7aac29bb445454b9b497d6c4e385ffe5205")
+        sig = await wallet.signCommonMsg({privateKey:privateKeyBase58, message:{text:"123456789"}});
+        expect(sig).toEqual("5631301793ff16f0f2966e1671b8cd178018812e6fb6cde954729bd50c68e42aa662e297654d8037b43fc009fd1a4179f91cf876b5c99ffe3ae3672d8237ae07")
+    });
+
+    test("getDerivedPrivateKey", async () => {
+        const wallet = new SolWallet();
+        const hdPath = await wallet.getDerivedPath({
+            index: 0,
+        });
+        const privKey = await wallet.getDerivedPrivateKey({
+            mnemonic: 'famous grow judge chair narrow auction order repeat hungry endless market taxi',
+            hdPath: hdPath
+        })
+
+        const expected = '42gxtUbib5ETVJAX8aMYrLG3XahGnMXvAHXa4TkhWZJ6ev64bzPXsRQzYEmQvriQwHeWjEu8JqwpyRYCR7hYUnAG';
+        expect(privKey).toBe(expected);
+    });
+
     test('private key', async () => {
-        let key = ed25519_getRandomPrivateKey(true, 'hex')
-        let key1 = ed25519_getRandomPrivateKey(true, 'base58')
+        let key = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'hex')
+        let key1 = signUtil.ed25519.ed25519_getRandomPrivateKey(true, 'base58')
         console.log(key)
         console.log(key1)
+        expect(key.length).toBe(128);
     })
 
     const ps: any[] = [];
@@ -27,6 +49,7 @@ describe("address", () => {
     ps.push("L1v");
     ps.push("0x31342f041c5b54358074b4579231c8a300be65e687dff020bc7779598b428 97a");
     ps.push("0x31342f041c5b54358074b457。、。9231c8a300be65e687dff020bc7779598b428 97a");
+    ps.push("0000000000000000000000000000000000000000000000000000000000000000");
     test("edge test", async () => {
         const wallet = new SolWallet();
         let j = 1;
@@ -35,6 +58,7 @@ describe("address", () => {
                 await wallet.getNewAddress({privateKey: ps[i]});
             } catch (e) {
                 j = j + 1
+                expect((await wallet.validPrivateKey({privateKey:ps[i]})).isValid).toEqual(false);
             }
         }
         expect(j).toEqual(ps.length+1);
@@ -45,14 +69,16 @@ describe("address", () => {
         const privateKey = await wallet.getRandomPrivateKey();
         const res = await wallet.validPrivateKey({privateKey:privateKey});
         expect(res.isValid).toEqual(true);
+
+        expect((await wallet.validPrivateKey({privateKey:"0000000000000000000000000000000000000000000000000000000000000000"})).isValid).toEqual(false);
     });
 
     test("getNewAddress", async () => {
         const address = api.getNewAddress(privateKeyBase58);
-        console.info(address);
-
         const valid = api.validAddress(address);
-        console.info(valid);
+
+        expect(address).toEqual('J44uzihE3Ty2YBdMsLwCE3hV5uf2q2hRJQMnW2NGqPfo');
+        expect(valid).toEqual(true);
     });
 
     test("transfer", async () => {
@@ -74,21 +100,27 @@ describe("address", () => {
 
         await api.appendTransferInstruction(rawTransaction, fromAddress, toAddress, amount)
         const data = await api.signTransaction(rawTransaction, privateKeyBase58)
-        console.info(data);
+
+        const expected = '5dWVhhoMzK6BUN3Sas7Erm7YnfACk61NXVrMcRz5V4sqgX3GcNPND5S8GJ8xFnsYSkr6PBqA8xfUc7rha7nsjghVXyrPRUTKGL1ka8xhUtnZZiz2hbe2LGgn1HmrkWx6ZG72wbB9QqCcFUUCXqfnjeLgp1Mr7TXMbZXEkoojgvfcveMHEkSuhRfT3A4hWM8qax9miagKvdqDpdpcSWrjot3QyLj1WprhUq3F9nHEa5djHyd8X6SZ6xVHiEpKGV9rbjGmmhK8i8RwQYk88NKbBBawKNCjkqTW4PhtDB2q4VF1ciJ1vQrytxFF7wSBFq6Vfiv3767ext26DhLioaNCt6E3HS2r2zgq9X8vCR3X2isZ';
+        expect(data).toEqual(expected);
     });
 
     test("associatedTokenAddress", async () => {
         const wallet = "9F3m9cPLjN4abNCoKPY9MKSc8zbzcoUoFSEiZ9hyU9Hb"
         const mint = "EE5L8cMU4itTsCSuor7NLK6RZx6JhsBe8GGV3oaAHm3P"
         const associatedAddress = await spl.getAssociatedTokenAddress(new web3.PublicKey(mint), new web3.PublicKey(wallet))
-        console.info(new web3.PublicKey(associatedAddress).toString());
+
+        const expectedAddress = 'BgsoyUT1pgTuzaTvfHUGM3R2uC2EMeNYtLov4fKfiwxL';
+        expect(new web3.PublicKey(associatedAddress).toString()).toEqual(expectedAddress);
     });
 
     test("associatedToken2022Address", async () => {
         const wallet = "9F3m9cPLjN4abNCoKPY9MKSc8zbzcoUoFSEiZ9hyU9Hb"
         const mint = "EE5L8cMU4itTsCSuor7NLK6RZx6JhsBe8GGV3oaAHm3P"
         const associatedAddressToken2022 = await spl.getAssociatedTokenAddress(new web3.PublicKey(mint), new web3.PublicKey(wallet), false, TOKEN_2022_PROGRAM_ID);
-        console.info(new web3.PublicKey(associatedAddressToken2022).toString());
+
+        const expectedAddress = 'Gn5m2mhAhi9EQpzStLoH23AvG3LSNyNyYAeBHDx5vRBz';
+        expect(new web3.PublicKey(associatedAddressToken2022).toString()).toEqual(expectedAddress);
     });
 
 
@@ -101,7 +133,9 @@ describe("address", () => {
         const rawTransaction = api.createRawTransaction(fromAddress, blockHash)
         await api.appendTokenTransferInstruction(rawTransaction, fromAddress, toAddress, mint, amount, true)
         const data = await api.signTransaction(rawTransaction, privateKeyBase58)
-        console.info(data);
+
+        const expectedData = 'ACbGiT23N7B89pCo6cGWqjJsabZqBTZSMorHCnrcXChw58k9nGNeqcqNtnyPjr6K2dL2bXHQhkyq2YNppo8ERTF46P9iKWx6rSVqf7SKBUf3AEgBYH3rdG5pYZGGymKZA4kmkbru35FKhT6g2ASfJ75J2qS7pzifnFGrx3D6xXURCFhh4GXTwSvYt5DUARrPpFgaXesT6mx4ZHf2qeKKLazYTcZ9j32gHdzwX3v3MtGzqDiWV9xhkKFPUAZfYt7mHiSX1mVk4Q7vNHtSYJx8sy3HiTSNuDUNBLpPHunnAEGXNWpWt9dXDZCndkEWtHsLp8Ms272pbepWRK2mhbS3TDzCeKqNfNXYN5gkcSPGpZ9yfDEa7YMDmsFhs84ibYG65T7C6T4SJHQDJMKS3hsAabMEfuLA58fLVYV2cbDnBoLr24dQEWdnuu8YiNBVVMXqGAuq4r7FjeHPKKe56ahSYfxEHsrEFD5svTCsJDuRaTpbDptSPjNk8XBzxWabW75ZSEuJ2v5vLJHWH8JrcSGZasEzN9d4DAezDSdkXLjmUQJYCAh9tbygpX';
+        expect(data).toEqual(expectedData);
     });
 
     test("token2022Transfer", async () => {
@@ -123,7 +157,9 @@ describe("address", () => {
         rawTransaction.add(modifyComputeUnits).add(addPriorityFee);
         await api.appendTokenTransferInstruction(rawTransaction, fromAddress, toAddress, mint, amount, false, true, decimal);
         const data = await api.signTransaction(rawTransaction, privateKeyBase58);
-        console.info(data);
+
+        const expectedData = 'NzTcXN3KvaeBETkpZQsbKJ8STYnouHdawTwsT1pE2QG9Gc2Ek1SFFn1hVEfAz47Ss8du5N9kFGq4APBNRWw5o1uFTzTgC8rkHSzfyxduteapkrjce2N1cZF98rMaMYKCxS15Dj4U6boeaPjmAnmtBcKp4tCC5eZQxK4QzX6RZEWCWLWpTihF4jxeBgT5VovNL8J3GPvo5eoRJVC56uVmXM5g5Kgbmr3yPeeUoBtWaZEHCUFWfeYicnjUjkDVoUAkgZBGyH1teofrzZg1U1ieiUmPLJ9S6jnKNC9sbPau948kYT6Q7gJV1qiEm21SFrBqCw1qgyqpXXPWxeQ59QWgSB8CN4NvV2ss171bcRDUm6C5qyczb4Astt4trNRmjxfDpmr3UV6RTCpaW9k8m5jsj4NsxUWD3faeQmF5777u4UBnWtWZe6ddg9G44W99X6Dk2bS';
+        expect(data).toEqual(expectedData);
     });
 
     test("token2022MintTo", async () => {
@@ -134,12 +170,13 @@ describe("address", () => {
         const amount = 10000000000;
         const blockHash = "EceWisnSkrDKzboD7mrs1hNBNKSx6LovpcpNuggbreYc";
         const mint = "FTDMffVuqMpPPTdfaDTNgMTx7A8xe2jpPQBzMq3D85yi";
-        // const mintAuthorityAddress = "5Js8oiMNBPeaPXSqzZpSCKpQjN41S9W9WQBR9vVbdS8k";
         const mintAuthorityAddress = "J44uzihE3Ty2YBdMsLwCE3hV5uf2q2hRJQMnW2NGqPfo";
         const rawTransaction = api.createRawTransaction(payerAddress, blockHash);
         await api.appendTokenMintToInstruction(rawTransaction, payerAddress, toAddress, mint, mintAuthorityAddress, amount, false, true);
         const data = await api.signTransaction(rawTransaction, feePayerPrivateKey, mintAuthorityPrivateKey);
-        console.info(data);
+
+        const expected = '5s7V2GTrwgCnGrByQZ8gYXP76xF8fUoawrTdDwHCHmWCd37BvXQZpzQc6bznJUZt6YXLgyE9VndEwErUtw2yYKXmZb2sDowhdeTHABs7BSSBi85cKt2mvm8EKYg6dJhRRYnFRsgdBfM1L288p7jNMeUHmuW3oZ7QnSJr99imSQdsyrVT44a3dCCWCyDc8oEf2KqXsaY1M88BktxMusAY4AebLD3F6iZxmFeaL7XL8cSjtJqpNuQt4U4MEhJuXYEjs4KNbkaX541zUQzkqFgx88b19bvudv73mmptMLdqkDCJ33bm9bw4SWrkc1DSsFaR7fVqmySRFgvvMD';
+        expect(data).toEqual(expected);
     });
 
     test("token2022Burn", async () => {
@@ -154,7 +191,9 @@ describe("address", () => {
         const rawTransaction = api.createRawTransaction(feePayerAddress, blockHash);
         await api.appendTokenBurnInstruction(rawTransaction, tokenAccountOwnerAddress, targetTokenAccountAddress, mint, amount, true);
         const data = await api.signTransaction(rawTransaction, feePayerPrivateKey, tokenAccountOwnerPrivateKey);
-        console.info(data);
+
+        const expected = '4gUVJP4uZ8sNi7wrZrSY2e9uBytsg58ymXrmTKarbHLraRcs9BgkmGfLHD5V2tYVzu74moCsENW41aKrmDR3PMgddhagNSsfQfnht6DzQ9UtJ9QjndzyN5VaG7uJBnL7EZvnydx4nHVQbLDio1z9iaYb6Jx5dp3ackwQFxefwn9Gjf4z24FVZoa8Qtkf9ZJjwTAEYd8u8vyTPBE1rBp88KLNhCMxFgU36vUTTXC2ti37Gry3vntQvU4PBeXeySSeWDG5EdGsRjEiKfk3PRQTSmF67624nLp2HHXFvDvTg8XN2zgqX2vxeo6ipRmkfZqrm31No4RqNtSonX';
+        expect(data).toEqual(expected);
     });
 
     test("message", async () => {
@@ -164,13 +203,33 @@ describe("address", () => {
         const blockHash = "G6WMViEhWA2TM8AwFwG5FfcVow2WrfqVN7HsnTEcKgYz";
         const mint = "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
 
+        // with ATA instruction
         const t = api.createRawTransaction(fromAddress, blockHash)
         await api.appendTokenTransferInstruction(t, fromAddress, toAddress, mint, amount, true)
-
         const message = t.serialize({requireAllSignatures: false, verifySignatures: false})
         const data = await api.signMessage(base.toBase58(message), privateKeyBase58)
 
-        console.info(data);
+        const expected = '4KF6tBuWsAjsXMWQaFgCm796D8pNaKpBMPFKjrWqknBNuQZ9JxNvtyZJzLHHUANq2oaZYeWd9GMvgHx3cXEXBbjr';
+        expect(data).toEqual(expected);
+
+
+        // no ATA instruction
+        const tx1 = api.createRawTransaction(fromAddress, blockHash)
+        await api.appendTokenTransferInstruction(tx1, fromAddress, toAddress, mint, amount, false)
+        const message1 = tx1.serialize({requireAllSignatures: false, verifySignatures: false})
+        const data1 = await api.signMessage(base.toBase58(message1), privateKeyBase58)
+
+        const expected1 = '4eHde93aFCzCykYja56DXbCXku9ApvuUYuC82ADyHvNTDcTJVAD2eYXkMWU6RcPEfHVghCe2fA7XRb24F8tsrnB5';
+        expect(data1).toEqual(expected1);
+    });
+
+    test("sigh message same with go sdk", async () => {
+        const privKey = '2nCvHtAjwgpHHuaRMHcq3atYxyLV1oYh2tzUA6N83Xxr3sVEebEPJuY2oAb6ZwfRCYbWkHRkvw1dfsTFmpvjq3T5';
+        const msg = '87PYrKY7ewJ25qaivxFzQ4g3fYH2ZT1CuRePJo9jCyEydJQMoVkxtS6pyAbKKBjSTxXT3PVGST3BpTpxvtEGMMQQMbbqeJAgzkF5TMNLkovkcEE7ZPm1qq6S9Ros4ZExAyckimPi8wfQW8rHhmMn9PnNaXS2bv4HJeHXXjEvzn2Ezi3CWbNQRvJs695KKtFfhGTqoabp9URM';
+        const data = await api.signMessage(msg, privKey)
+
+        const expected = '4q87dkdRhMkLn3TuxVXP1woCTAk2R4EbRP21yWtLaoZtHpgrLFEhuhmrGSZkXtcwMoaGqdgy7wZeayeXNtopDWzv';
+        expect(data).toEqual(expected);
     });
 
     test("deserializeMessages", async () => {
@@ -184,7 +243,7 @@ describe("address", () => {
     });
 
     test("pNftTransfer", async () => {
-        const privateKey = "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc";
+        const privateKey = "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePK";
         const from = api.getNewAddress(privateKey);
         const to = "9qinWp4oc3TvBocbwAvYZAZWfSswub2qM49Pn6rkCQ9q";
         const nft = {
@@ -221,7 +280,9 @@ describe("address", () => {
             blockhash: "8MnQifmv14ELwdkK5NJso9cofN8iNpHy6n6Nnxy7pn8v",
             lastValidBlockHeight: 181854107,
         });
-        console.log(signedTx);
+
+        const expected = 'VUbTXcDhjhX8TBAwKNR5GEWt5cr2SjAERYeQgMuNYRbRKQbkCQ8Wd3HyCeykPcKJ6TJ7juTh6CJgLtuD6NkmVm2JGAaKzswmKpmsr57kLVqJr8w1XrZVdHT4Dk6hooGwWLNr5txevF7fScW2zmiXWLMQg76woMhgokZL7AugCnZd8XtDyGaUxVR4ZruiRGrSGpvSW3aZzR5t6SCA5DuXfbRPiwC7rArF32H6Edjvba9FYaY8GL1uGy68r6WbZpKDD6EMZPG7G3GV85cJEACkfgbpSsMsyXj7L5qagTVQyKnHLfemqc5kbyVETLGKSLd8uCjXUNj6swNoX2y4NgA1Zdk6oEXibG65eDx4AKgr74NWZY6PMwnoE6YcuSi8G5B4rfAhJ2hTUUr3X9SjD53qMEazZKXcrdku4wjWX21m3xZ619aEAzx7jUx5rJb2hTufktZPV15R6DRzJHUeJfLagqm8sjd9M36oEJCGs5JMUPyswt13WMuhAvHjysqXp3TjSXVs58yuoYFwRs7H2TbbUhH1v9bXAG26coDivSx22aeiuFfK5CbcNtRCwa83ky1NvjTkM8XQuaTtCwiAJbzJYDs1qv1R9jpf8JJLwsgPAMaXjxC8DgJdxbdrnSHYGZzk72Zuxcd84jNkSgnHwfpZXDNDag54z3F8tZPAzAvf3D7nfuSGbFFBmdBW7uD6dQBgcw6tGkpgH4ntwC52pDLhdbqCwRg66WVqhjgETQRDacLE9cPEFFtZz6ghDPCrFBg7pKqLnFi8Qw5XRchB61462cLfiQdqGX6HkACKi347JdXoTQKXgfEDRxNu3e5LAw2yF33ttpVV8NQ3wGmW825nksHBkRhWRJofvQspjeew4c1SpD53ExHYiVng77WjxHR8xgu468r1GWb';
+        expect(signedTx).toEqual(expected);
     });
 
     test("mplTransfer", async () => {
@@ -327,4 +388,31 @@ describe("address", () => {
         let expected = `R1skTPrnLQL7Hg9BPsxT1PwcbSD3LPQPWm83qF33iTNZ7dLzH7TA5cdRb92gJRfy94zJqm3xNrJKJGh3rDHHbhiYRmSisjGFTNn6NpMiz4Eb1KB6H9i9LrWZcGaJEkJjcLtoyLvjDi55xX8ruewUbzaHrzTKgrW4yY2iLxaJ1CHzuYZHxRjyNkwmUMmjVZ5CRW7vRVdaVNCA4RokxJaFTC2v2GfsdUc82g5482b6a5zZ8ZuNFrj9v2Z6Pyu7Bvd1eG13pVD27ZbedBeVVY98uFPniZqmkBHwdLRESqv9BSdTpEC4q5RuTRQiMRjY9snNAxKg6mr1Lt6AHnGFvAowrD45wUMn5BXmFr2pyoXvgP3RogGfrF6kQqUJrQTJvTzve2VfGcCatRbhrs44gHwdGKto65ZLrB5JgBnk4ujLGprMvuMmFNFRK5jXETdKULhfhhbMm9qRSzco9pbkMPzM4wP83qJ2U9Wm2GqR2eNcNSMAGXr7ZR4iApMNdRToAPFWMe1NNgTG7BbQDtreq7HyMZGXwrkT6uVxD3BTzRNzg7MYjmPDuUVufThhs3LW6p1TNMRNcmK4FV7X5oaT8XwQFyKJmmmdLXiAGzVrk469R1tB42uHzYC2eRBsPk6VVZ7Yq3i5rKRLkcr6k4MnRqiJaSuRKzycLHSPNEuHABx4WPAi77z7gPppWrM2WqvhVwbyYVWpoAegMST2gDGUWZpsEMmQamygqC9FKggeCyvRENyLuUgL19u54848NFDgmnV2qb5w9L6aDoJddKKd7JtGZz5uuzzDRBu2ThchbTG6NyU5yFP6ipp9zNsidxznhwzA8X11`;
         expect(tx).toBe(expected);
     });
+
+    test("tokenTransfer getSerializedTransaction to PDA", async () => {
+        let wallet = new SolWallet()
+        let param = {
+            privateKey: '548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc',
+            data: {
+                // version: 0,
+                type: "tokenTransfer",
+                payer: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                blockHash: "8ghFXVhEfjPirMC4a57UoH1QYnKrA3Rah6y22jca5zPD",
+                from: "FZNZLT5diWHooSBjcng9qitykwcL9v3RiNrpC3fp9PU1",
+                to: "3HBR6etBCXSVYQwXMPL9i6ScWJjSAZfmczex1azzmX9T",
+                amount: 100000,
+                mint: "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo",
+                createAssociatedAddress: false,
+                token2022: true,
+                decimal: 6,
+                computeUnitLimit: 100000,
+                computeUnitPrice: 70539,
+                needPriorityFee: false
+            }
+        }
+        let tx = await wallet.getSerializedTransaction(param);
+        let expected = `FB7FmtvLSKcGuyHmZv2XEMA9ciZFLbHhtHjP7SRMD4sr1EpJnGo48gWBchCWFYqjU8DGavrQhqp8F1DunfhzMrW8N1oLE6eBvLcXjuTz7q17ZutX5tiDEGiRYgi8SJM8G7jtE81wRuyYB4HqCXk7V26eV4rUrdGgnuauQxRsFDpqCcC1aPuqvwYAiWmzcvD1KuB8RPijNxSbQjKUx9DNvEJuTCxKvakj7KCUXwa8D5F39sdVZP1yrJMbQdjJzVG982ZNZ6p6K8etXfJo3kyyQbXazGnY6nukCppPN2SFQsHxiWMr7ENRCicqyf12jVQzVs5RSBR44FgjxthJMhjFB2728xbLxYA72CqTn2n7An4Apjkwj5MeJJHiG5bT`;
+        expect(tx).toBe(expected);
+    });
+
 })

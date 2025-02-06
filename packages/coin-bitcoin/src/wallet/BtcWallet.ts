@@ -22,10 +22,10 @@ import {
     NewAddressError,
     NewAddressParams,
     secp256k1SignTest,
-    segwitType,
+    segwitType, SignCommonMsgParams,
     SignMsgError,
     SignTxError,
-    SignTxParams,
+    SignTxParams, SignType,
     TypedMessage,
     ValidAddressData,
     ValidAddressParams,
@@ -45,7 +45,8 @@ import {
     RuneWallet,
     RuneMainWallet,
     RuneMainTestWallet,
-    psbtDecode
+    CatWallet,
+    psbtDecode, privateKeyFromWIF
 } from "../index";
 
 
@@ -249,12 +250,19 @@ export class BtcWallet extends BaseWallet {
             } catch (e) {
                 return Promise.reject(SignTxError);
             }
-        }else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
+        } else if (type === bitcoin.BtcXrcTypes.ARC20) { // arc20
             try {
                 let wallet = new AtomicalWallet()
                 if (this.network() === networks.testnet) {
                     wallet = new AtomicalTestWallet()
                 }
+                return Promise.resolve(wallet.signTransaction(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type === bitcoin.BtcXrcTypes.CAT20) { // cat20
+            let wallet = new CatWallet()
+            try {
                 return Promise.resolve(wallet.signTransaction(param))
             } catch (e) {
                 return Promise.reject(SignTxError);
@@ -440,6 +448,17 @@ export class BtcWallet extends BaseWallet {
         }
     }
 
+    async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
+        let addr = await this.getNewAddress({privateKey:params.privateKey, addressType:params.addressType});
+        let publicKey = addr.compressedPublicKey? addr.compressedPublicKey : addr.publicKey;
+        if(publicKey.startsWith("0x")) {
+            publicKey = publicKey.substring(2);
+        }
+        let privateKey = privateKeyFromWIF(params.privateKey, this.network());
+        return super.signCommonMsg({privateKey:params.privateKey, privateKeyHex:privateKey,publicKey:publicKey,
+            addressType:params.addressType, message:params.message, signType:SignType.Secp256k1})
+    }
+
     async verifyMessage(param: VerifyMessageParams): Promise<boolean> {
         try {
             const typedMessage = param.data as TypedMessage;
@@ -509,6 +528,13 @@ export class BtcWallet extends BaseWallet {
                     if (this.network() === networks.testnet) {
                         wallet = new AtomicalTestWallet()
                     }
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
+            } else if (type === bitcoin.BtcXrcTypes.CAT20) { // cat20
+                try {
+                    let wallet = new CatWallet()
                     return Promise.resolve(wallet.estimateFee(param))
                 } catch (e) {
                     return Promise.reject(EstimateFeeError);

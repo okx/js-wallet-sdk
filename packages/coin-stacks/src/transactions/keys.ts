@@ -163,6 +163,9 @@ export function createStacksPrivateKey(key: string | Uint8Array): StacksPrivateK
     throw new Error('invalid key');
   }
   const data = privateKeyToBytes(key);
+  if (data.every(byte=>byte===0)){
+    throw new Error('invalid key');
+  }
   const compressed = data.length == PRIVATE_KEY_COMPRESSED_LENGTH;
   return { data, compressed };
 }
