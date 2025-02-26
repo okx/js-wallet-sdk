@@ -168,11 +168,12 @@ let tx = await wallet.signTransaction(param);
 sign message
 ```typescript
 import {SolWallet} from "@okxweb3/coin-solana";
+import {base} from "@okxweb3/crypto-lib";
 
 let wallet = new SolWallet()
 let param = {
     privateKey: "548yT115QRHH7Mpchg9JJ8YPX9RTKuan7oeB9ruMULDGhdqBmG18RBSv54Fpv2BvrC1yVpGdjzAPKHNYUwPBePKc", 
-    data: 'your message to sign'
+    data: base.base58.encode(new TextEncoder().encode('your message to sign'))
 }
 let tx = await wallet.signMessage(param);
 ```
