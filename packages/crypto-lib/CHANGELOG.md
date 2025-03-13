@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 # [1.0.11](https://github.com/okx/js-wallet-sdk) (2025-03-13)
 ### Optimize
 
-- **crypto-lib:** update elliptic fork to v6.6.1
+- **crypto-lib:** update elliptic fork to [v6.6.1](https://github.com/indutny/elliptic/tree/v6.6.1)
 
 
 
