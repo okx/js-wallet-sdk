@@ -32,14 +32,14 @@ npm install @okxweb3/coin-bitcoin
 ## Using BitCoin SDK
 
 ### Get Private Key
-get random private key
+**Get Random Private Key**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
 let wallet = new BtcWallet()
 let privateKey = await wallet.getRandomPrivateKey();
 ```
-get derived private key
+**Get Derived Private Key**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
@@ -53,7 +53,7 @@ let privateKey = await wallet.getDerivedPrivateKey(param);
 ```
 
 ### Get New Address
-get new address from private key
+**Get New Address From Private Key**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
@@ -87,7 +87,7 @@ let params4: NewAddressParams = {
 let address4 = await wallet.getNewAddress(params4);
 ```
 
-get new address from public key
+**Get New Address From Public Key**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
@@ -102,11 +102,11 @@ let address5 = await wallet.getAddressByPublicKey(params5);
 
 ### Sign Transaction
 
-[rune mint doc](./doc/rune.md)
+**Rune Mint:** [Doc](./doc/rune.md)
 
-[atomical token doc](./doc/atomical.md)
+**Atomical Token:** [Doc](./doc/atomical.md)
 
-sign transaction
+**Sign Transaction**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
@@ -140,7 +140,7 @@ let signParams: SignTxParams = {
 let tx = await wallet.signTransaction(signParams);
 ```
 
-sign legacy transaction
+**Sign Legacy Transaction**
 ```typescript
 import { BtcWallet } from "@okxweb3/coin-bitcoin";
 
@@ -177,7 +177,7 @@ let signParams: SignTxParams = {
 let tx = await wallet.signTransaction(signParams);
 ```
 
-Doginals inscribe
+**Doginals Inscribe**
 ```typescript
 import { DogeWallet } from "@okxweb3/coin-bitcoin";
 
@@ -210,7 +210,7 @@ let result = await wallet.signTransaction({privateKey: privateKey, data: request
 console.log(result);
 ```
 
-SRC20 inscribe
+**SRC20 Inscribe**
 
     you need replace TBtcWallet with BtcWallet when you run on mainnet not testnet.
 ```typescript
@@ -247,7 +247,7 @@ import { TBtcWallet } from "@okxweb3/coin-bitcoin";
         console.log(JSON.stringify(txs));
 ```
 
-BRC20 inscribe
+**BRC20 Inscribe**
 
 ```typescript
 test("inscribe", async () => {
@@ -321,7 +321,7 @@ test("inscribe", async () => {
 });
 ```
 
-Runes deploy
+**Runes Deploy**
 
 ```typescript
 let network = testnet;
@@ -371,8 +371,58 @@ expect(res.revealTxs.length).toEqual(1)
 expect(res.commitTxFee).toEqual(770)
 ```
 
-* [commit example](https://www.oklink.com/zh-hans/btc/tx/7d25c2be38b45d2dc37496fd4884e6a80881b753e437f93e909b94bf3efe154c)
-* [reveal example](https://www.oklink.com/zh-hans/btc/tx/7b5c77bdccad264b36d7bf1b0f8c38bc831eb921d9e77eba27855c5de9033569)
+* [Commit Example](https://www.oklink.com/zh-hans/btc/tx/7d25c2be38b45d2dc37496fd4884e6a80881b753e437f93e909b94bf3efe154c)
+* [Reveal Example](https://www.oklink.com/zh-hans/btc/tx/7b5c77bdccad264b36d7bf1b0f8c38bc831eb921d9e77eba27855c5de9033569)
 
+## Sign and Verify Message
+| Address Type            | ECDSA | BIP0322-Simple |   
+|-------------------------|-------|----------------|
+| Legacy (1...)           | ✅     | ❌              | 
+| Segwit Nested (3...)    | ✅     | ❌              |   
+| Segwit Native (bc1q...) | ✅     | ✅              |   
+| Taproot (bc1p...)       | ✅     | ✅              |   
+
+**Sign and Verify ECDSA and BIP0322 Message**
+```typescript
+import {
+    BITCOIN_MESSAGE_BIP0322_SIMPLE,
+    BITCOIN_MESSAGE_ECDSA,
+} from "./BtcWallet";
+
+const wallet = new BtcWallet()
+
+let message = "test message"
+
+let privateKey = 'KwTqEP5swztao5UdMWpxaAGtvmvQFjYGe1UDyrsZxjkLX9KVpN36'
+let publicKey = wif2Public(privateKey).toString('hex')
+let addressType = "segwit_taproot" // or "segwit_native" or "legacy" or "segwit_nested"
+let {address} = await wallet.getNewAddress({privateKey, addressType})
+
+let type = BITCOIN_MESSAGE_BIP0322_SIMPLE// or BITCOIN_MESSAGE_ECDSA  
+
+// Sign Message
+const signature = await wallet.signMessage({
+    privateKey,
+    data: {
+        type,
+        message,
+        address,
+    }
+})
+console.log(signature)
+
+// Verify Message
+let valid = await wallet.verifyMessage({
+    signature,
+    data: {
+        type,
+        message,
+        address,
+        publicKey,
+    }
+
+})
+console.log('valid:', valid) // true
+```
 
 ## License: MIT
