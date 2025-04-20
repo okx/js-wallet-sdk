@@ -503,6 +503,20 @@ describe('psbt key and script path', () => {
             true, // Must use correct merkle root
         )
         expect(valid).toBeTruthy()
+
+        const valid_unisat = await testSignTapScript(
+          privKey,
+          tapScript,
+          pubKeyX,
+          (signature) => [signature],
+          prevOutTxId,
+          1250,
+          pubKeyX,
+          true, // Must use correct merkle root
+          true, // disableTweakSigner has no effect when useTweakSigner is set
+          false // setting useTweakSigner to follow unisat behavior
+      )
+      expect(valid_unisat).toBeTruthy()
     });
 
     test('psbt script spend path pub key', async () => {
@@ -523,6 +537,30 @@ describe('psbt key and script path', () => {
         )
         expect(valid).toBeTruthy()
     });
+
+    test('psbt script key path tweak pub key', async () => {
+      const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
+      const {pubKeyX, tweakPubKeyX} = getPubKeys(privKey)
+
+      const tapScript = bitcoin.script.compile([
+          tweakPubKeyX,
+          bitcoin.script.OPS.OP_CHECKSIG,
+      ]);
+      const prevOutTxId = '3ca3765b28b9c23b1b13b3d63a8f295d9dc2e631fb49f99514564a42ef86be0f'
+      const valid = await testSignTapScript(
+          privKey,
+          tapScript,
+          tweakPubKeyX,
+          (signature) => [signature],
+          prevOutTxId,
+          1250,
+          tweakPubKeyX,
+          true, // Must use correct merkle root
+          false, // disableTweakSigner has no effect when useTweakSigner is set
+          true // setting useTweakSigner to follow unisat behavior
+      )
+      expect(valid).toBeTruthy()
+  });
 
     test('psbt script spend path tweak pub key', async () => {
         const privKey = 'L3tMcMa65VSvZNtSRAE75W2HKzkhB3Mqj8FjP5ct4QUaHcznHhYh'
