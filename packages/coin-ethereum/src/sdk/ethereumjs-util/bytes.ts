@@ -9,7 +9,14 @@ import {BN} from '@okxweb3/crypto-lib'
 import {base} from "@okxweb3/crypto-lib";
 import { intToBuffer, padToEven, isHexString } from './util'
 import { PrefixedHexString, TransformableToArray, TransformableToBuffer } from './types'
-import { assertIsBuffer, assertIsArray, assertIsHexString } from './helpers'
+import { assertIsBuffer, assertIsArray, assertIsHexString, assertIsBytes } from './helpers'
+import {
+  hexToBytes as nobleH2B,
+  bytesToHex as _bytesToUnprefixedHex,
+} from 'ethereum-cryptography/utils.js'
+import {BIGINT_0} from "./constants";
+
+export const bytesToUnprefixedHex = _bytesToUnprefixedHex
 
 /**
  * Returns a buffer filled with 0s.
@@ -45,6 +52,28 @@ const setLength = function(msg: Buffer, length: number, right: boolean) {
 }
 
 /**
+ * Pads a `Uint8Array` with zeros till it has `length` bytes.
+ * Truncates the beginning or end of input if its length exceeds `length`.
+ * @param {Uint8Array} msg the value to pad
+ * @param {number} length the number of bytes the output should be
+ * @param {boolean} right whether to start padding form the left or right
+ * @return {Uint8Array}
+ */
+const setLengthU8A = (msg: Uint8Array, length: number, right: boolean): Uint8Array => {
+  if (right) {
+    if (msg.length < length) {
+      return new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
+    }
+    return msg.subarray(0, length)
+  } else {
+    if (msg.length < length) {
+      return new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
+    }
+    return msg.subarray(-length)
+  }
+}
+
+/**
  * Left Pads a `Buffer` with leading zeros till it has `length` bytes.
  * Or it truncates the beginning if it exceeds.
  * @param msg the value to pad (Buffer)
@@ -61,7 +90,7 @@ export const setLengthLeft = function(msg: Buffer, length: number) {
  * @param a (Buffer|Array|String)
  * @return (Buffer|Array|String)
  */
-export const stripZeros = function(a: any): Buffer | number[] | string {
+export const stripZeros = function(a: any): Buffer | Uint8Array | number[] | string {
   let first = a[0]
   while (a.length > 0 && first.toString() === '0') {
     a = a.slice(1)
@@ -183,4 +212,101 @@ export const addHexPrefix = function(str: string): string {
   }
 
   return base.isHexPrefixed(str) ? str : '0x' + str
+}
+
+/**
+ * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
+ * @param {PrefixedHexString} hex The 0x-prefixed hex string to convert
+ * @returns {Uint8Array} The converted bytes
+ * @throws If the input is not a valid 0x-prefixed hex string
+ */
+export const hexToBytes = (hex: string) => {
+  if (!hex.startsWith('0x')) throw new Error('input string must be 0x prefixed')
+  return nobleH2B(padToEven(base.stripHexPrefix(hex)))
+}
+
+export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
+  if (bytes === undefined || bytes.length === 0) return '0x'
+  const unprefixedHex = bytesToUnprefixedHex(bytes)
+  return ('0x' + unprefixedHex) as PrefixedHexString
+}
+
+/**
+ * Trims leading zeros from a `Uint8Array`.
+ * @param {Uint8Array} a
+ * @return {Uint8Array}
+ */
+export const unpadBytes = (a: Uint8Array): Uint8Array => {
+  assertIsBytes(a)
+  return stripZeros(a) as Uint8Array
+}
+
+/**
+ * This mirrors the functionality of the `ethereum-cryptography` export except
+ * it skips the check to validate that every element of `arrays` is indeed a `uint8Array`
+ * Can give small performance gains on large arrays
+ * @param {Uint8Array[]} arrays an array of Uint8Arrays
+ * @returns {Uint8Array} one Uint8Array with all the elements of the original set
+ * works like `Buffer.concat`
+ */
+export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
+  if (arrays.length === 1) return arrays[0]
+  const length = arrays.reduce((a, arr) => a + arr.length, 0)
+  const result = new Uint8Array(length)
+  for (let i = 0, pad = 0; i < arrays.length; i++) {
+    const arr = arrays[i]
+    result.set(arr, pad)
+    pad += arr.length
+  }
+  return result
+}
+
+/**
+ * Checks provided Uint8Array for leading zeroes and throws if found.
+ *
+ * Examples:
+ *
+ * Valid values: 0x1, 0x, 0x01, 0x1234
+ * Invalid values: 0x0, 0x00, 0x001, 0x0001
+ *
+ * Note: This method is useful for validating that RLP encoded integers comply with the rule that all
+ * integer values encoded to RLP must be in the most compact form and contain no leading zero bytes
+ * @param values An object containing string keys and Uint8Array values
+ * @throws if any provided value is found to have leading zero bytes
+ */
+export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | Buffer | undefined }) => {
+  for (const [k, v] of Object.entries(values)) {
+    if (v !== undefined && v.length > 0 && v[0] === 0) {
+      throw new Error(`${k} cannot have leading zeroes, received: ${bytesToHex(v)}`)
+    }
+  }
+}
+
+// BigInt cache for the numbers 0 - 256*256-1 (two-byte bytes)
+const BIGINT_CACHE: bigint[] = []
+for (let i = 0; i <= 256 * 256 - 1; i++) {
+  BIGINT_CACHE[i] = BigInt(i)
+}
+
+/**
+ * Converts a {@link Uint8Array} to a {@link bigint}
+ * @param {Uint8Array} bytes the bytes to convert
+ * @returns {bigint}
+ */
+export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  if (littleEndian) {
+    bytes.reverse()
+  }
+  const hex = bytesToHex(bytes)
+  if (hex === '0x') {
+    return BIGINT_0
+  }
+  if (hex.length === 4) {
+    // If the byte length is 1 (this is faster than checking `bytes.length === 1`)
+    return BIGINT_CACHE[bytes[0]]
+  }
+  if (hex.length === 6) {
+    return BIGINT_CACHE[bytes[0] * 256 + bytes[1]]
+  }
+  return BigInt(hex)
 }

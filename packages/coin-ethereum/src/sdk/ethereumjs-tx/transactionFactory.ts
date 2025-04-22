@@ -13,8 +13,9 @@ import {
   TxData,
   AccessListEIP2930TxData,
   FeeMarketEIP1559TxData,
+  EOACodeEIP7702TxData,
 } from './types'
-import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction } from '.'
+import { Transaction, AccessListEIP2930Transaction, FeeMarketEIP1559Transaction, EOACodeEIP7702Transaction } from '.'
 
 export default class TransactionFactory {
   /**
@@ -35,6 +36,8 @@ export default class TransactionFactory {
         return AccessListEIP2930Transaction.fromTxData(<AccessListEIP2930TxData>txData)
       } else if (txType === 2) {
         return FeeMarketEIP1559Transaction.fromTxData(<FeeMarketEIP1559TxData>txData)
+      } else if (txType === 4) {
+        return EOACodeEIP7702Transaction.fromTxData(<EOACodeEIP7702TxData>txData)
       } else {
         throw new Error(`Tx instantiation with type ${txType} not supported`)
       }
@@ -58,11 +61,16 @@ export default class TransactionFactory {
         case 2:
           EIP = 1559
           break
+        case 4:
+          EIP = 7702
+          break
         default:
           throw new Error(`TypedTransaction with ID ${data[0]} unknown`)
       }
       if (EIP === 1559) {
         return FeeMarketEIP1559Transaction.fromSerializedTx(data)
+      } else if (EIP === 7702) {
+        return EOACodeEIP7702Transaction.fromSerializedTx(data)
       } else {
         // EIP === 2930
         return AccessListEIP2930Transaction.fromSerializedTx(data)

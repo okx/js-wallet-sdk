@@ -3,6 +3,12 @@
 
 All notable changes to this project will be documented in this file.
 
+# [1.1.1](https://github.com/okx/js-wallet-sdk)(2025-03-24)
+
+### New Features
+
+- **coin-ethereum:** support EIP-7702
+
 # [1.1.0](https://github.com/okx/js-wallet-sdk)(2024-01-15)
 
 ### New Features

@@ -9,6 +9,7 @@ import { AddressLike, BNLike, BufferLike, PrefixedHexString } from '../ethereumj
 import { default as Transaction } from './legacyTransaction'
 import { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 import { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
+import {EOACodeEIP7702Transaction} from "./index";
 
 
 /*
@@ -27,6 +28,9 @@ export type AccessListBufferItem = [Buffer, Buffer[]]
 export type AccessListBuffer = AccessListBufferItem[]
 export type AccessList = AccessListItem[]
 
+export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
+export type AccessListBytes = AccessListBytesItem[]
+
 export function isAccessListBuffer(
   input: AccessListBuffer | AccessList
 ): input is AccessListBuffer {
@@ -44,6 +48,25 @@ export function isAccessList(input: AccessListBuffer | AccessList): input is Acc
   return !isAccessListBuffer(input) // This is exactly the same method, except the output is negated.
 }
 
+export function isAuthorizationListBytes(
+    input: AuthorizationListBytes | AuthorizationList,
+): input is AuthorizationListBytes {
+  if (input.length === 0) {
+    return true
+  }
+  const firstItem = input[0]
+  if (Array.isArray(firstItem)) {
+    return true
+  }
+  return false
+}
+
+export function isAuthorizationList(
+    input: AuthorizationListBytes | AuthorizationList,
+): input is AuthorizationList {
+  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
+}
+
 /**
  * Encompassing type for all transaction types.
  *
@@ -54,6 +77,7 @@ export type TypedTransaction =
   | Transaction
   | AccessListEIP2930Transaction
   | FeeMarketEIP1559Transaction
+  | EOACodeEIP7702Transaction
 
 /**
  * Legacy {@link Transaction} Data
@@ -190,6 +214,25 @@ export type FeeMarketEIP1559ValuesArray = [
   Buffer?
 ]
 
+/**
+ * Bytes values array for a {@link EOACode7702Transaction}
+ */
+export type EOACode7702TxValuesArray = [
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  Buffer,
+  AccessListBuffer,
+  AuthorizationListBytes,
+  Buffer?,
+  Buffer?,
+  Buffer?,
+]
+
 type JsonAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -212,7 +255,39 @@ export interface JsonTx {
   value?: string
   chainId?: string
   accessList?: JsonAccessListItem[]
+  authorizationList?: AuthorizationList,
   type?: string
   maxPriorityFeePerGas?: string
   maxFeePerGas?: string
 }
+
+/**
+ * {@link EOACode7702Tx} data.
+ */
+export interface EOACodeEIP7702TxData extends FeeMarketEIP1559TxData {
+  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+}
+
+/**
+ * Authorization list types
+ */
+export type AuthorizationListItem = {
+  chainId: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString
+  yParity: PrefixedHexString
+  r: PrefixedHexString
+  s: PrefixedHexString
+}
+
+// Tuple of [chain_id, address, [nonce], y_parity, r, s]
+export type AuthorizationListBytesItem = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+]
+export type AuthorizationListBytes = AuthorizationListBytesItem[]
+export type AuthorizationList = AuthorizationListItem[]
