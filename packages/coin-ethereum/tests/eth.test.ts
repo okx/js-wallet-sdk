@@ -1366,4 +1366,236 @@ describe("eth walLet", () => {
         const expected = "0xbf0c8d5f1a1519a24fe3d717c54d3a69265e1afe8935808d7f79fc8eded79c095ab3d54a9df224331da76ffd5db3a1393dfc805ba9bbcfecf8eaeabdfa2e1f3d1b";
         expect(result).toEqual(expected);
     });
+
+    test("7702 tx sign", async () => {
+        let ethTxParams = {
+            gasLimit: base.toBigIntHex(new BigNumber(42000)),
+            to: "0x35b2438d33c7dc449ae9ffbda14f56dc39a4c6b8",
+            value: base.toBigIntHex(new BigNumber(100)),
+            nonce: base.toBigIntHex(new BigNumber(6)),
+            maxFeePerGas: base.toBigIntHex(new BigNumber(10000)),
+            maxPriorityFeePerGas: base.toBigIntHex(new BigNumber(10000)),
+            chainId: base.toBigIntHex(new BigNumber(1)),
+            authorizationList: [
+                {
+                    chainId: '0x1',
+                    address: '0x2020202020202020202020202020202020202020',
+                    nonce: '0x01',
+                    yParity: '0x01',
+                    r: '0x0101010101010101010101010101010101010101010101010101010101010101',
+                    s: '0x0101010101010101010101010101010101010101010101010101010101010101'
+                }
+            ],
+            data: '0x',
+            type: 4,
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: ethTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+
+        const expected = '0x04f8c4010682271082271082a4109435b2438d33c7dc449ae9ffbda14f56dc39a4c6b86480c0f85cf85a019420202020202020202020202020202020202020200101a00101010101010101010101010101010101010101010101010101010101010101a0010101010101010101010101010101010101010101010101010101010101010101a0ec785a952807cd1325167fcfcd658e865f47c64a55253e8508a08870bd283879a00e37fbda312f977105d8b3222a88b63218b6d6c3ded89bcaf44fb498a082c91c';
+        expect(tx).toEqual(expected);
+
+        // const k = {
+        //     tx: tx,
+        //     data: {
+        //         publicKey: publicKey,
+        //     }
+        // }
+        // const v = await wallet.validSignedTransaction(k);
+        // const expectedV = {
+        //     "chainId":"0x1",
+        //     "nonce":"0xb",
+        //     "maxPriorityFeePerGas":"0x77359400",
+        //     "maxFeePerGas":"0x826299e00",
+        //     "gasLimit":"0xa410",
+        //     "to":"0x35b2438d33c7dc449ae9ffbda14f56dc39a4c6b8",
+        //     "value":"0xde0b6b3a7640000",
+        //     "data":"0x",
+        //     "accessList":[],
+        //     "v":"0x0",
+        //     "r":"0x217cb7a42b633dc4d077e08e03b248a2e2b34b12a2775870f6e76148a1a18d9a",
+        //     "s":"0x50d0603c786975c8f6e93e588570f0846c5e2242822aa13e0cb949dc8754b574"
+        // };
+        // expect(JSON.parse(v)).toEqual(expectedV);
+    });
+
+    // cross validation
+    test("7702 auth sign", async () => {
+        let signAuthParams = {
+            address: '0x89aFB3EF13c03D0A816D6CDC20fdC21a915a4c24',
+            nonce: base.toBigIntHex(new BigNumber(21)),
+            chainId: base.toBigIntHex(new BigNumber(17000)),
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: signAuthParams,
+        };
+        let tx = await wallet.signAuthorizationListItem(signParams);
+        let expected = {
+            chainId: '0x4268',
+            address: '0x89aFB3EF13c03D0A816D6CDC20fdC21a915a4c24',
+            nonce: '0x15',
+            yParity: '0x',
+            r: '0xea66f1961df685f4b6f60b3e9f37bb49657529aba8918ecf876b552d41511d1a',
+            s: '0x7f6834454d6ae1f5cf6447391977573cc515569b4633bbfe5670706090c4eff3'
+        };
+        expect(tx).toEqual(expected);
+    });
+
+    test("7702 auth sign for RPC", async () => {
+        let signAuthParams = {
+            address: '0x89aFB3EF13c03D0A816D6CDC20fdC21a915a4c24',
+            nonce: base.toBigIntHex(new BigNumber(21)),
+            chainId: base.toBigIntHex(new BigNumber(17000)),
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: signAuthParams,
+        };
+        let tx = await wallet.signAuthorizationListItemForRPC(signParams);
+        let expected = {
+            chainId: '0x4268',
+            address: '0x89aFB3EF13c03D0A816D6CDC20fdC21a915a4c24',
+            nonce: '0x15',
+            yParity: '0x0',
+            r: '0xea66f1961df685f4b6f60b3e9f37bb49657529aba8918ecf876b552d41511d1a',
+            s: '0x7f6834454d6ae1f5cf6447391977573cc515569b4633bbfe5670706090c4eff3'
+        };
+        expect(tx).toEqual(expected);
+    });
+
+    // cross validation
+    test("7702 auth sign zero address/nonce/chainid", async () => {
+        // zero address -> used to clear code
+        // zero chainId -> take effect on all chains
+        // tips: MUST '0x', not '0x0' !!!
+        let signAuthParams = {
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x',
+            chainId: '0x',
+        };
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: signAuthParams,
+        };
+        let tx = await wallet.signAuthorizationListItem(signParams);
+
+        let expected = {
+            chainId: '0x',
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x',
+            yParity: '0x1',
+            r: '0xb5e00cde736cc1ebbb7754c07b8747af25ce078a286dedb5aea8cbb5d8012aac',
+            s: '0x1db4539dfba3019d3b5fe69e826a098d9c65af8853dc68ba90c4ccdac91dc063'
+        };
+        expect(tx).toEqual(expected);
+    });
+
+    test("7702 auth sign zero address/nonce/chainid for RPC", async () => {
+        let signAuthParams = {
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x',
+            chainId: '0x',
+        };
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: signAuthParams,
+        };
+        let tx = await wallet.signAuthorizationListItemForRPC(signParams);
+
+        let expected = {
+            chainId: '0x0',
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x0',
+            yParity: '0x1',
+            r: '0xb5e00cde736cc1ebbb7754c07b8747af25ce078a286dedb5aea8cbb5d8012aac',
+            s: '0x1db4539dfba3019d3b5fe69e826a098d9c65af8853dc68ba90c4ccdac91dc063'
+        };
+        expect(tx).toEqual(expected);
+    });
+
+    // cross validation
+    test("7702 sign tx with calldata", async () => {
+        let signAuthParams = {
+            address: '0x89aFB3EF13c03D0A816D6CDC20fdC21a915a4c24',
+            nonce: '0x1',
+            chainId: base.toBigIntHex(new BigNumber(17000))
+        };
+        let signParams0: SignTxParams = {
+            privateKey: privateKey,
+            data: signAuthParams,
+        };
+        let authItem = await wallet.signAuthorizationListItem(signParams0);
+
+        let ethTxParams = {
+            gasLimit: base.toBigIntHex(new BigNumber(100000)),
+            to: address,
+            value: base.toBigIntHex(new BigNumber(0)),
+            nonce: base.toBigIntHex(new BigNumber(0)),
+            maxFeePerGas: base.toBigIntHex(new BigNumber(10000)),
+            maxPriorityFeePerGas: base.toBigIntHex(new BigNumber(10000)),
+            chainId: base.toBigIntHex(new BigNumber(17000)),
+            authorizationList: [
+                authItem
+            ],
+            data: '0xa6d0ad610000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000069fae14e50e379d80b1924c6abf66fd7a95dfab00000000000000000000000000000000000000000000000000071afd498d00000000000000000000000000000000000000000000000000000000000000000000',
+            type: 4,
+        };
+
+        let signParams: SignTxParams = {
+            privateKey: privateKey,
+            data: ethTxParams
+        };
+        let tx = await wallet.signTransaction(signParams);
+
+        const expected = '0x04f901ae82426880822710822710830186a094d74c65ad81aa8537327e9ba943011a8cec7a7b6b80b8e4a6d0ad610000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000060000000000000000000000000069fae14e50e379d80b1924c6abf66fd7a95dfab00000000000000000000000000000000000000000000000000071afd498d00000000000000000000000000000000000000000000000000000000000000000000c0f85ef85c8242689489afb3ef13c03d0a816d6cdc20fdc21a915a4c240180a0922917cd17934d45af6b0e5635ad6b3055d30cc16b80337c5bbe37d1512c7007a053e3bad8ba80f0dacb0a7479d49c189266b06f3dd3def8b40d58c7185c3285a101a04ebb94cdad18786391d10f784e4c2d7236b0fa463e9565eb72afc478a537a7eaa0713d1da2e20c3b61bdaa4520894a1647e837f229eea5aad943e72a38d91a258a';
+        expect(tx).toEqual(expected);
+    });
+
+    test("toRpcHex", () => {
+        expect(wallet.toRpcHex('0x')).toEqual('0x0');
+        expect(wallet.toRpcHex('0x01')).toEqual('0x1');
+        expect(wallet.toRpcHex('0x0012')).toEqual('0x12');
+        expect(wallet.toRpcHex('0x0')).toEqual('0x0');
+    });
+
+    test("toRpcAuth", () => {
+        let auth = {
+            chainId: '0x',
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x01',
+            yParity: '0x',
+            r: '0xb5e00cde736cc1ebbb7754c07b8747af25ce078a286dedb5aea8cbb5d8012aac',
+            s: '0x0db4539dfba3019d3b5fe69e826a098d9c65af8853dc68ba90c4ccdac91dc063'
+        };
+
+        let expected = {
+            chainId: '0x0',
+            address: '0x0000000000000000000000000000000000000000',
+            nonce: '0x1',
+            yParity: '0x0',
+            r: '0xb5e00cde736cc1ebbb7754c07b8747af25ce078a286dedb5aea8cbb5d8012aac',
+            s: '0xdb4539dfba3019d3b5fe69e826a098d9c65af8853dc68ba90c4ccdac91dc063'
+        };
+
+        expect(wallet.toRpcAuth(auth)).toEqual(expected);
+    });
+
+    // cross validation
+    test("7702 tx calTxHash", async () => {
+        const txHex = '0x04f8c83882010880808303345094819d3f4c17d50004c165d06f22418c4f28010eda80848129fc1cc0f85ef85c3894c6c5b35da1230c5e984ed369484570b9f64e66be82010901a03e0890ccc4d324d699204c980694aac9f746d759d3000e8897b4a9267f4daafba02bcc8297314c08a116c859697aaa88f42205abadb1338af856f418d57f8c564080a019e8b833f3e158a3d12b5e2fd0724176bed0719dac5f85a8d32c0c0796e3052d9fb4082c84456ccb89cd5e615ef85810f66e088de9aa2b96559bc83a954531aa';
+
+        const hash = await wallet.calcTxHash({
+            data: txHex,
+        });
+
+        const expected = '0x5e03ef312a829739adad161f8d8d4ea3f5e30d202da6bcf13cfa818dc2ad0dda';
+        expect(hash).toEqual(expected);
+    });
 });

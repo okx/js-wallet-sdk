@@ -25,6 +25,9 @@ import {
 } from '@okxweb3/coin-base';
 import {abi, base, BigNumber} from '@okxweb3/crypto-lib';
 import * as eth from './index';
+import {hexToBytes, unpadBytes, concatBytes, rlp as RLP} from './sdk/ethereumjs-util';
+import type {AuthorizationListItem} from './sdk/ethereumjs-tx/types';
+import {bytesToHex, unpadBuffer} from "./index";
 
 export type EthEncryptedData = eth.sigUtil.EthEncryptedData
 
@@ -48,6 +51,7 @@ export type EthTxParams = {
     // 0: without chainId
     // 1：with chainId；
     // 2：EIP-1559 transaction
+    // 4: EIP-7702 set code
     type: number;
 
     // EIP-2930; Type 1 & EIP-1559; Type 2
@@ -56,6 +60,9 @@ export type EthTxParams = {
     // EIP-1559; Type 2
     maxPriorityFeePerGas: string;
     maxFeePerGas: string;
+
+    // EIP-7702; Type 4
+    authorizationList: AuthorizationListItem[];
 }
 
 export class EthWallet extends BaseWallet {
@@ -117,6 +124,7 @@ export class EthWallet extends BaseWallet {
             type: data.type || 0,
             maxPriorityFeePerGas: this.convert2HexString(data.maxPriorityFeePerGas || 0),
             maxFeePerGas: this.convert2HexString(data.maxFeePerGas || 0),
+            authorizationList: data.authorizationList || [],
             useValue: data.useValue || false
         };
         return param as EthTxParams
@@ -191,6 +199,35 @@ export class EthWallet extends BaseWallet {
                     maxFeePerGas: txParams.maxFeePerGas,
                 };
                 return Promise.resolve(eth.signTransaction(privateKey, txData))
+            } else if (type === 4) {
+                // EIP-7702 set code
+                const tokenAddress = txParams.contractAddress;
+                let toAddress = txParams.to;
+                let value = txParams.value;
+                let data: string | undefined;
+                if (tokenAddress) {
+                    data = TOKEN_TRANSFER_FUNCTION_SIGNATURE + Array.prototype.map
+                        .call(abi.RawEncode(['address', 'uint256'], [toAddress, value],),
+                            (x: number) => `00${x.toString(16)}`.slice(-2),
+                        ).join('');
+                    value = '0x0';
+                    toAddress = tokenAddress;
+                } else {
+                    data = txParams.data;
+                }
+                const txData = {
+                    nonce: nonce,
+                    gasLimit: txParams.gasLimit,
+                    to: toAddress,
+                    value: value,
+                    data: data,
+                    chainId: chainId,
+                    type: type,
+                    maxPriorityFeePerGas: txParams.maxPriorityFeePerGas,
+                    maxFeePerGas: txParams.maxFeePerGas,
+                    authorizationList: txParams.authorizationList,
+                };
+                return Promise.resolve(eth.signTransaction(privateKey, txData))
             }
             return Promise.reject(SignTxError)
         } catch (e) {
@@ -201,6 +238,63 @@ export class EthWallet extends BaseWallet {
     // async signCommonMsg(params: SignCommonMsgParams): Promise<any> {
     //     return super.signCommonMsg({privateKey:params.privateKey, message:params.message, signType:SignType.Secp256k1})
     // }
+
+    async signAuthorizationListItem(param: SignTxParams): Promise<AuthorizationListItem> {
+        if (!param.privateKey) {
+            throw Error("privateKey is invalid");
+        }
+        const privateKey = base.fromHex(param.privateKey);
+        assertBufferLength(base.fromHex(param.privateKey), 32);
+
+        const { chainId, nonce, address } = param.data;
+
+        const chainIdBytes = eth.unpadBytes(eth.hexToBytes(chainId));
+        const nonceBytes =
+            nonce !== undefined ? eth.unpadBytes(eth.hexToBytes(nonce)) : new Uint8Array();
+
+        // don't remove pre-zero of address
+        const addressBytes = eth.hexToBytes(address);
+
+        const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes]);
+        const msgToSign = eth.keccak256(concatBytes(new Uint8Array([5]), rlpdMsg));
+        const signed = eth.ecdsaSign(msgToSign, privateKey);
+
+        // all values (except `address`) should be without pre-zero, see: validateNoLeadingZeroes()
+        const auth: AuthorizationListItem = {
+            chainId: bytesToHex(chainIdBytes),
+            address: address,
+            nonce: bytesToHex(nonceBytes),
+            yParity: (signed.v - 27) === 0 ? '0x' : '0x1',
+            r: base.toHex(unpadBuffer(signed.r), true),
+            s: base.toHex(unpadBuffer(signed.s), true),
+        };
+
+        return auth;
+    }
+
+    // as JSON-RPC param, there should not be pre-zero in hex of nonce/yParity/r/s
+    async signAuthorizationListItemForRPC(param: SignTxParams): Promise<AuthorizationListItem> {
+        const auth = await this.signAuthorizationListItem(param);
+        return this.toRpcAuth(auth);
+    }
+
+    // remove pre-zero of hex string
+    // 0x -> 0x0
+    toRpcAuth(auth: AuthorizationListItem): AuthorizationListItem {
+        const keys = ['chainId', 'nonce', 'yParity', 'r', 's'];
+        const ret: AuthorizationListItem = {...auth};
+        for (const key of keys) {
+            // @ts-ignore
+            ret[key] = this.toRpcHex(ret[key]);
+        }
+        return ret;
+    }
+
+    toRpcHex(hex: string): string {
+        const body = hex.slice(2);
+        const trimmedBody = body.replace(/^0+/, '') || '0';
+        return '0x' + trimmedBody;
+    }
 
     async signMessage(param: SignTxParams): Promise<string> {
         let privateKey;

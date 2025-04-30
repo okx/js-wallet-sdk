@@ -9,7 +9,9 @@ import {
   toBuffer,
   MAX_INTEGER,
   MAX_UINT64,
-  Address, ecdsaSign, bufferToHex,
+  Address,
+  ecdsaSign,
+  bufferToHex,
 } from '../ethereumjs-util'
 
 import { base, BN } from '@okxweb3/crypto-lib';
@@ -22,6 +24,7 @@ import {
   FeeMarketEIP1559ValuesArray,
   FeeMarketEIP1559TxData,
   TxValuesArray,
+  EOACode7702TxValuesArray,
 } from './types'
 import {Buffer} from "buffer";
 
@@ -128,7 +131,7 @@ export abstract class BaseTransaction<TransactionObject> {
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
    * representation for external signing use {@link BaseTransaction.getMessageToSign}.
    */
-  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray
+  abstract raw(): TxValuesArray | AccessListEIP2930ValuesArray | FeeMarketEIP1559ValuesArray | EOACode7702TxValuesArray
 
   /**
    * Returns the encoding of the transaction.

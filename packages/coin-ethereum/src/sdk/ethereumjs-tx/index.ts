@@ -9,4 +9,6 @@ export { default as Transaction } from './legacyTransaction'
 export { default as AccessListEIP2930Transaction } from './eip2930Transaction'
 export { default as TransactionFactory } from './transactionFactory'
 export { default as FeeMarketEIP1559Transaction } from './eip1559Transaction'
+export { default as EOACodeEIP7702Transaction } from './eip7702Transaction'
+
 export * from './types'
