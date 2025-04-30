@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-ethereum",
-  "version": "1.0.12",
+  "version": "1.1.1",
   "description": "An Ethereum SDK for building Web3 wallets and applications.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
