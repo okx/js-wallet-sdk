@@ -244,7 +244,7 @@ export function signTransaction(args: { signer: Account; transaction: AnyRawTran
 
 export async function simulateTransaction(
     args: { aptosConfig: AptosConfig } & InputSimulateTransactionData,
-): Promise<any> {
+): Promise<Uint8Array> {
     const {aptosConfig, transaction, signerPublicKey, secondarySignersPublicKeys, feePayerPublicKey, options} = args;
 
     return generateSignedTransactionForSimulation({

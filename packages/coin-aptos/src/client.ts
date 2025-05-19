@@ -1,32 +1,48 @@
-import { HexString, MaybeHexString } from './hex_string';
-import { AptosAccount } from './aptos_account';
+import {HexString} from './hex_string';
+import {AptosAccount} from './aptos_account';
 
 import {
-    TxnBuilderTypes,
-    TransactionBuilderEd25519,
+    ABIBuilderConfig,
     BCS,
     buildRawTransactionByABI,
-    ABIBuilderConfig,
     TransactionBuilder,
+    TransactionBuilderEd25519,
+    TxnBuilderTypes,
 } from './transaction_builder';
 import {
-    SignedTransaction, StructTag,
+    SignedTransaction,
+    StructTag,
     TransactionAuthenticatorEd25519,
-    TransactionPayload, TypeTag, TypeTagParser,
+    TransactionPayload,
 } from './transaction_builder/aptos_types';
-import {AnyNumber, bcsToBytes, Deserializer, Uint64, Uint8} from './transaction_builder/bcs';
-import {EntryFunctionId, MoveModuleBytecode, MoveType} from './transaction_builder/move_types';
-import { base, signUtil } from '@okxweb3/crypto-lib';
+import {AnyNumber, Deserializer, Uint32, Uint64, Uint8} from './transaction_builder/bcs';
+import {MoveModuleBytecode} from './transaction_builder/move_types';
+import {base, signUtil} from '@okxweb3/crypto-lib';
 import {
     Account,
     AccountAddress,
+    AccountAddressInput,
+    AnyRawTransaction,
     AptosConfig,
-    generateSignedTransaction,
+    Ed25519Account,
+    EntryFunctionABI,
+    generateSignedTransactionForSimulation,
+    generateTransactionPayload,
     getFunctionParts,
     Network,
+    PublicKey,
+    Serializer,
+    SignedTransaction as SignedTransactionV2,
     Transaction,
-    SignedTransaction as SignedTransactionV2, Serializer, generateSignedTransactionForSimulation, PublicKey
+    TransactionPayload as TransactionPayloadV2,
+    TransactionPayloadEntryFunction,
+    TransactionPayloadMultiSig,
+    TransactionPayloadScript,
+    TypeTagAddress,
+    TypeTagU64
 } from "./v2";
+import {buildRawTransaction} from "./v2/internal/transactionSubmission";
+
 declare const TextEncoder: any;
 
 /**
@@ -76,6 +92,67 @@ export function createRawTransaction(sender: HexString,
     );
 }
 
+export function signTransactionV2(senderAccount: Ed25519Account, rawTxn: AnyRawTransaction) {
+    const senderSignature = senderAccount.signTransactionWithAuthenticator(rawTxn)
+    if (rawTxn.secondarySignerAddresses || rawTxn.feePayerAddress) {
+        return {
+            rawTxn: rawTxn.bcsToHex().toString(),
+            accAuthenticator: senderSignature.bcsToHex().toString(),
+        }
+    }
+    let signedTx = new SignedTransactionV2(rawTxn.rawTransaction, senderSignature);
+    let buffer = new Serializer();
+    signedTx.serialize(buffer)
+    return base.toHex(buffer.toUint8Array());
+}
+
+export function createRawTransactionV2(sender: HexString, payload: TransactionPayloadV2,
+                                       sequenceNumber: Uint64, chainId: Uint8, maxGasAmount: Uint64, gasUnitPrice: Uint64, expirationTimestampSecs: Uint64,
+                                       withFeePayer?: boolean, secondarySignerAddresses?: AccountAddressInput[] | undefined) {
+    var anyPay;
+    if (payload instanceof TransactionPayloadEntryFunction) {
+        anyPay = payload as TransactionPayloadEntryFunction
+    } else if (payload instanceof TransactionPayloadScript) {
+        anyPay = payload as TransactionPayloadScript
+    } else {
+        anyPay = payload as TransactionPayloadMultiSig
+    }
+    if (secondarySignerAddresses) {
+        return buildRawTransaction({
+            aptosConfig: new AptosConfig(),
+            data: { //does not use
+                function: `0::0::0`,
+                functionArguments: [],
+            },
+            sender: AccountAddress.fromString(sender.hex()),
+            secondarySignerAddresses: secondarySignerAddresses,
+            options: {
+                maxGasAmount: Number(maxGasAmount),
+                gasUnitPrice: Number(gasUnitPrice),
+                expireTimestamp: Number(expirationTimestampSecs),
+                accountSequenceNumber: sequenceNumber,
+                chainId: chainId,
+            }, withFeePayer: withFeePayer
+        }, anyPay)
+    } else {
+        return buildRawTransaction({
+            aptosConfig: new AptosConfig(),
+            data: { //does not use
+                function: `0::0::0`,
+                functionArguments: [],
+            },
+            sender: AccountAddress.fromString(sender.hex()),
+            options: {
+                maxGasAmount: Number(maxGasAmount),
+                gasUnitPrice: Number(gasUnitPrice),
+                expireTimestamp: Number(expirationTimestampSecs),
+                accountSequenceNumber: sequenceNumber,
+                chainId: chainId,
+            }, withFeePayer: withFeePayer
+        }, anyPay)
+    }
+}
+
 export function simulateTransaction(account: AptosAccount,
                                     payload: TransactionPayload,
                                     sequenceNumber: Uint64,
@@ -87,6 +164,22 @@ export function simulateTransaction(account: AptosAccount,
     return generateBCSSimulateTransaction(account, rawTransaction)
 }
 
+export const APTOS_COIN = "0x1::aptos_coin::AptosCoin";
+const coinTransferAbi: EntryFunctionABI = {
+    typeParameters: [],
+    parameters: [new TypeTagAddress(), new TypeTagU64()],
+};
+
+// Move models must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
+export async function transferPayloadV2(recipientAddress: string, amount: AnyNumber) {
+    let config = new AptosConfig();
+    return generateTransactionPayload({
+        aptosConfig: config,
+        function: "0x1::aptos_account::transfer",
+        functionArguments: [AccountAddress.fromString(recipientAddress), amount as Uint32],
+        abi: coinTransferAbi,
+    })
+}
 
 // Move models must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
 export function transferPayload(recipientAddress: string | HexString, amount: AnyNumber) {
@@ -97,6 +190,21 @@ export function transferPayload(recipientAddress: string | HexString, amount: An
             [],
             [BCS.bcsToBytes(TxnBuilderTypes.AccountAddress.fromHex(recipientAddress)), BCS.bcsSerializeUint64(amount),
             ],
+        ),
+    );
+}
+
+// Move models must expose script functions for initializing and manipulating resources. The script can then be called from a transaction.
+export function migrateToFaStorePayload(typeArg:string) {
+    const token = new TxnBuilderTypes.TypeTagStruct(
+        TxnBuilderTypes.StructTag.fromString(typeArg),
+    );
+    return new TxnBuilderTypes.TransactionPayloadEntryFunction(
+        TxnBuilderTypes.EntryFunction.natural(
+            '0x1::coin',
+            'migrate_to_fungible_store',
+            [token],
+            [],
         ),
     );
 }
@@ -351,6 +459,20 @@ export function generateBCSTransaction(
     return txnBuilder.sign(rawTxn);
 }
 
+export function generateBCSTransactionV2(
+    accountFrom: AptosAccount,
+    rawTxn: TxnBuilderTypes.RawTransaction
+): Uint8Array {
+    const txnBuilder = new TransactionBuilderEd25519(
+        (signingMessage: TxnBuilderTypes.SigningMessage) => {
+            const sigHexStr = accountFrom.signBuffer(Buffer.from(signingMessage));
+            return new TxnBuilderTypes.Ed25519Signature(sigHexStr.toUint8Array());
+        },
+        accountFrom.pubKey().toUint8Array()
+    );
+    return txnBuilder.sign(rawTxn);
+}
+
 
 /** Generates a signed transaction that can be submitted to the chain for execution. */
 export function generateBCSSimulateTransaction(
@@ -366,6 +488,7 @@ export function generateBCSSimulateTransaction(
     );
     return txnBuilder.sign(rawTxn);
 }
+
 export function generateBCSSimulateTransactionWithPublicKey(
     publicKey: Uint8Array,
     rawTxn: TxnBuilderTypes.RawTransaction
@@ -399,15 +522,15 @@ export function createRawTransactionByABI(
         chainId: chainId,
     }
 
-  const data = JSON.parse(callData)
-  const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
-  return buildRawTransactionByABI(
-    modules,
-    builderConfig,
-    data.function,
-    data.type_arguments || data.typeArguments,
-    data.arguments || data.functionArguments
-  );
+    const data = JSON.parse(callData)
+    const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
+    return buildRawTransactionByABI(
+        modules,
+        builderConfig,
+        data.function,
+        data.type_arguments || data.typeArguments,
+        data.arguments || data.functionArguments
+    );
 }
 
 
@@ -419,68 +542,101 @@ export function createRawTransactionByABIV2(
     gasUnitPrice: Uint64,
     expirationTimestampSecs: Uint64,
     callData: string,
-    moduleAbi: string
+    moduleAbi: string, withFeePayer?: boolean, secondarySignerAddresses?: AccountAddressInput[] | undefined
 ) {
     const dataP = JSON.parse(callData)
     const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
-    const { moduleAddress, moduleName, functionName } = getFunctionParts(dataP.function);
-    let moceModule = modules.find((item)=>{
-        if(moduleAddress === item.abi?.address && moduleName == item.abi.name ) {
-            let res = item.abi?.exposed_functions.find((func) => {
-                return functionName == func.name
-            });
-            if (res){
-                return item;
+    const {moduleAddress, moduleName, functionName} = getFunctionParts(dataP.function);
+    let moduleAddressRaw = AccountAddress.fromString(moduleAddress)
+    let moveModule = modules.find((item) => {
+        if (moduleName == item.abi?.name) {
+            if (moduleAddressRaw.equals(AccountAddress.fromString(item.abi.address))){
+                let res = item.abi?.exposed_functions.find((func) => {
+                    return functionName == func.name
+                });
+                if (res) {
+                    return item;
+                }
             }
         }
     });
-    const aptosConfig = new AptosConfig({network: Network.CUSTOM, moveModule: JSON.stringify(moceModule)});
+    const aptosConfig = new AptosConfig({network: Network.CUSTOM, moveModule: JSON.stringify(moveModule)});
     const transaction = new Transaction(aptosConfig);
-    const rawTxn = transaction.build.simple({
-        sender: sender.accountAddress,
-        withFeePayer: false,
-        data: {
-            function: dataP.function,
-            typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
-            functionArguments: dataP.arguments || dataP.functionArguments,
-        },
-        options: {
-            maxGasAmount: Number(maxGasAmount),
-            gasUnitPrice: Number(gasUnitPrice),
-            expireTimestamp: Number(expirationTimestampSecs),
-            chainId: Number(chainId),
-            accountSequenceNumber: Number(sequenceNumber),
-        },
-    }).then(rawTx => {
-        const senderSignature = transaction.sign({signer: sender, transaction: rawTx});
-        let signedTx = new SignedTransactionV2(rawTx.rawTransaction, senderSignature);
-        let buffer = new Serializer();
-        signedTx.serialize(buffer)
-        return base.toHex(buffer.toUint8Array());
-    });
-    return rawTxn;
+    if (secondarySignerAddresses) {
+        return transaction.build.multiAgent({
+            sender: sender.accountAddress,
+            withFeePayer: withFeePayer,
+            data: {
+                function: dataP.function,
+                typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
+                functionArguments: dataP.arguments || dataP.functionArguments,
+            },
+            secondarySignerAddresses: secondarySignerAddresses,
+            options: {
+                maxGasAmount: Number(maxGasAmount),
+                gasUnitPrice: Number(gasUnitPrice),
+                expireTimestamp: Number(expirationTimestampSecs),
+                chainId: Number(chainId),
+                accountSequenceNumber: Number(sequenceNumber),
+            },
+        }).then((multiAgentTx) => {
+            const senderSignature = transaction.sign({signer: sender, transaction: multiAgentTx});
+            return {
+                rawTxn: multiAgentTx.bcsToHex().toString(), //
+                accAuthenticator: senderSignature.bcsToHex().toString(),// sender 签名
+            }
+        })
+    } else {
+        const rawTxn = transaction.build.simple({
+            sender: sender.accountAddress,
+            withFeePayer: withFeePayer,
+            data: {
+                function: dataP.function,
+                typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
+                functionArguments: dataP.arguments || dataP.functionArguments,
+            },
+            options: {
+                maxGasAmount: Number(maxGasAmount),
+                gasUnitPrice: Number(gasUnitPrice),
+                expireTimestamp: Number(expirationTimestampSecs),
+                chainId: Number(chainId),
+                accountSequenceNumber: Number(sequenceNumber),
+            },
+        }).then(rawTx => {
+            const senderSignature = transaction.sign({signer: sender, transaction: rawTx});
+            let signedTx = new SignedTransactionV2(rawTx.rawTransaction, senderSignature);
+            let buffer = new Serializer();
+            signedTx.serialize(buffer)
+            return base.toHex(buffer.toUint8Array());
+        });
+        return rawTxn;
+    }
 }
+
 export function createSimulateRawTransactionByABIV2(
     sender: AccountAddress,
-    signerPublicKey:PublicKey,
+    signerPublicKey: PublicKey,
     sequenceNumber: Uint64,
     chainId: Uint8,
     maxGasAmount: Uint64,
     gasUnitPrice: Uint64,
     expirationTimestampSecs: Uint64,
     callData: string,
-    moduleAbi: string
+    moduleAbi: string, withFeePayer?: boolean,
 ) {
     const dataP = JSON.parse(callData)
     const modules: MoveModuleBytecode[] = JSON.parse(moduleAbi)
     const { moduleAddress, moduleName, functionName } = getFunctionParts(dataP.function);
+    let moduleAddressRaw = AccountAddress.fromString(moduleAddress)
     let moceModule = modules.find((item)=>{
-        if(moduleAddress === item.abi?.address && moduleName == item.abi.name ) {
-            let res = item.abi?.exposed_functions.find((func) => {
-                return functionName == func.name
-            });
-            if (res){
-                return item;
+        if(moduleName == item.abi?.name ) {
+            if (moduleAddressRaw.equals(AccountAddress.fromString(item.abi.address))){
+                let res = item.abi?.exposed_functions.find((func) => {
+                    return functionName == func.name
+                });
+                if (res){
+                    return item;
+                }
             }
         }
     });
@@ -488,7 +644,7 @@ export function createSimulateRawTransactionByABIV2(
     const transaction = new Transaction(aptosConfig);
     const rawTxn = transaction.build.simple({
         sender: sender,
-        withFeePayer: false,
+        withFeePayer: withFeePayer,
         data: {
             function: dataP.function,
             typeArguments: dataP.tyArg || dataP.typeArguments || dataP.type_arguments,
@@ -531,3 +687,18 @@ export function validSignedTransaction(tx: string, skipCheckSig: boolean) {
     return transaction;
 }
 
+const PrivateKeyEd25519Prefix = "ed25519-priv-"
+const PrivateKeySecp256k1Prefix = "secp256k1-priv-"
+export function checkPrivateKey(privateKey:string):boolean {
+    if(privateKey.startsWith(PrivateKeySecp256k1Prefix)){
+        return false;
+    }
+    return base.validateHexString(stripPrivateKeyPrefix(privateKey));
+}
+export function stripPrivateKeyPrefix(privateKey:string):string{
+    if(privateKey.startsWith(PrivateKeyEd25519Prefix)){
+        return privateKey.replace(PrivateKeyEd25519Prefix, "")
+    } else {
+        return privateKey
+    }
+}

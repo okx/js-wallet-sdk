@@ -42,23 +42,25 @@ export function isLargeNumber(arg: SimpleEntryFunctionArgumentTypes): arg is num
 export function isNull(arg: SimpleEntryFunctionArgumentTypes): arg is null | undefined {
   return arg === null || arg === undefined;
 }
-
+export function isEmptyOption(arg: SimpleEntryFunctionArgumentTypes): arg is null | undefined {
+  return arg === null || arg === undefined;
+}
 export function isEncodedEntryFunctionArgument(
-  arg: EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes,
+    arg: EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes,
 ): arg is EntryFunctionArgumentTypes {
   return (
-    isBcsBool(arg) ||
-    isBcsU8(arg) ||
-    isBcsU16(arg) ||
-    isBcsU32(arg) ||
-    isBcsU64(arg) ||
-    isBcsU128(arg) ||
-    isBcsU256(arg) ||
-    isBcsAddress(arg) ||
-    isBcsString(arg) ||
-    isBcsFixedBytes(arg) ||
-    arg instanceof MoveVector ||
-    arg instanceof MoveOption
+      isBcsBool(arg) ||
+      isBcsU8(arg) ||
+      isBcsU16(arg) ||
+      isBcsU32(arg) ||
+      isBcsU64(arg) ||
+      isBcsU128(arg) ||
+      isBcsU256(arg) ||
+      isBcsAddress(arg) ||
+      isBcsString(arg) ||
+      isBcsFixedBytes(arg) ||
+      arg instanceof MoveVector ||
+      arg instanceof MoveOption
   );
 }
 
@@ -67,7 +69,7 @@ export function isBcsBool(arg: EntryFunctionArgumentTypes | SimpleEntryFunctionA
 }
 
 export function isBcsAddress(
-  arg: EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes,
+    arg: EntryFunctionArgumentTypes | SimpleEntryFunctionArgumentTypes,
 ): arg is AccountAddress {
   return arg instanceof AccountAddress;
 }
@@ -105,7 +107,7 @@ export function isBcsU256(arg: EntryFunctionArgumentTypes | SimpleEntryFunctionA
 }
 
 export function isScriptDataInput(
-  arg: InputGenerateTransactionPayloadDataWithRemoteABI | InputGenerateTransactionPayloadData,
+    arg: InputGenerateTransactionPayloadDataWithRemoteABI | InputGenerateTransactionPayloadData,
 ): arg is InputScriptData {
   return "bytecode" in arg;
 }
@@ -127,15 +129,4 @@ export function findFirstNonSignerArg(functionAbi: MoveFunction): number {
     return functionAbi.params.length;
   }
   return index;
-}
-
-export function getFunctionParts(functionArg: MoveFunctionId) {
-  const funcNameParts = functionArg.split("::");
-  if (funcNameParts.length !== 3) {
-    throw new Error(`Invalid function ${functionArg}`);
-  }
-  const moduleAddress = funcNameParts[0];
-  const moduleName = funcNameParts[1];
-  const functionName = funcNameParts[2];
-  return { moduleAddress, moduleName, functionName };
 }
