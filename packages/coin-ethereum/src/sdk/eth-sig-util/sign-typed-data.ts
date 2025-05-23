@@ -404,7 +404,7 @@ export const getLength = (type: string): number => {
  * @property primaryType - The type of the message.
  * @property domain - Signing domain metadata. The signing domain is the intended context for the
  * signature (e.g. the dapp, protocol, etc. that it's intended for). This data is used to
- * construct the domain seperator of the message.
+ * construct the domain separator of the message.
  * @property domain.name - The name of the signing domain.
  * @property domain.version - The current major version of the signing domain.
  * @property domain.chainId - The chain ID of the signing domain.

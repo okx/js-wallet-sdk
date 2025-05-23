@@ -32,7 +32,7 @@ export type Mapper<T> = (i: T[]) => T[];
 // - every window point is collected from window's table & added to accumulator
 // - since windows are different, same point inside tables won't be accessed more than once per calc
 // - each multiplication is 'Math.ceil(CURVE_ORDER / 𝑊) + 1' point additions (fixed for any scalar)
-// - +1 window is neccessary for wNAF
+// - +1 window is necessary for wNAF
 // - wNAF reduces table size: 2x less memory + 2x faster generation, but 10% slower multiplication
 // TODO: Research returning 2d JS array of windows, instead of a single window. This would allow
 // windows to be in different memory locations

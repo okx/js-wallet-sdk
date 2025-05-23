@@ -7,7 +7,7 @@
     "build": "run-s clean build:main",
     "build:main": "tsc -p tsconfig.json",
     "clean": "rimraf dist tsconfig.tsbuildinfo",
-    "prepublishOnly": "node ../../scripts/dep-verison-check.js",
+    "prepublishOnly": "node ../../scripts/dep-version-check.js",
     "test": "jest"
   },
   "repository": {
@@ -24,7 +24,8 @@
     "transaction",
     "signing",
     "address",
-    "private-key"],
+    "private-key"
+  ],
   "author": "okx",
   "license": "MIT",
   "files": [

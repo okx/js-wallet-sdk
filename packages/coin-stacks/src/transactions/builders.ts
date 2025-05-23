@@ -279,7 +279,7 @@ export interface MultiSigOptions {
 export interface TokenTransferOptions {
   /** the address of the recipient of the token transfer */
   recipient: string | PrincipalCV;
-  /** the amount to be transfered in microstacks */
+  /** the amount to be transferred in microstacks */
   amount: IntegerType;
   /** the transaction fee in microstacks */
   fee?: IntegerType;
@@ -293,7 +293,7 @@ export interface TokenTransferOptions {
   /** an arbitrary string to include in the transaction, must be less than 34 bytes */
   memo?: string;
   /** the post condition mode, specifying whether or not post-conditions must fully cover all
-   * transfered assets */
+   * transferred assets */
   postConditionMode?: PostConditionMode;
   /** a list of post conditions to add to the transaction */
   postConditions?: PostCondition[];
@@ -338,7 +338,7 @@ export interface BaseContractDeployOptions {
    * included in an anchor block or a microblock */
   anchorMode: AnchorModeName | AnchorMode;
   /** the post condition mode, specifying whether or not post-conditions must fully cover all
-   * transfered assets */
+   * transferred assets */
   postConditionMode?: PostConditionMode;
   /** a list of post conditions to add to the transaction */
   postConditions?: PostCondition[];
@@ -376,7 +376,7 @@ export interface ContractCallOptions {
    * included in an anchor block or a microblock */
   anchorMode: AnchorModeName | AnchorMode;
   /** the post condition mode, specifying whether or not post-conditions must fully cover all
-   * transfered assets */
+   * transferred assets */
   postConditionMode?: PostConditionMode;
   /** a list of post conditions to add to the transaction */
   postConditions?: PostCondition[];

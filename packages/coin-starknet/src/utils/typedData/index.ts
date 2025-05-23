@@ -90,7 +90,7 @@ function getMerkleTreeType(types: TypedData['types'], ctx: Context) {
 }
 
 /**
- * Encode a type to a string. All dependant types are alphabetically sorted.
+ * Encode a type to a string. All dependent types are alphabetically sorted.
  *
  * @param {TypedData} typedData
  * @param {string} type
@@ -173,7 +173,7 @@ export const encodeValue = (
 
 /**
  * Encode the data to an ABI encoded Buffer. The data should be a key -> value object with all the required values. All
- * dependant types are automatically encoded.
+ * dependent types are automatically encoded.
  *
  * @param {TypedData} typedData
  * @param {string} type
@@ -208,7 +208,7 @@ export const encodeData = <T extends TypedData>(
 };
 
 /**
- * Get encoded data as a hash. The data should be a key -> value object with all the required values. All dependant
+ * Get encoded data as a hash. The data should be a key -> value object with all the required values. All dependent
  * types are automatically encoded.
  *
  * @param {TypedData} typedData

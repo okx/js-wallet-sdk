@@ -113,7 +113,7 @@ let wallet = new AptosWallet()
   let tx = await wallet.signTransaction(signParams);
 ```
 
-### transfer token-transfering
+### transfer token-transferring
 ```typescript
 import {AptosWallet} from "@okxweb3/coin-aptos";
 
