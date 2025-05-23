@@ -16,4 +16,6 @@ export enum BtcXrcTypes {
     PSBT_DEODE = 104,
     ARC20 = 114,
     CAT20 = 115,
+    // TODO need ok dev team confirm
+    CAT20V2 = 116,
 }

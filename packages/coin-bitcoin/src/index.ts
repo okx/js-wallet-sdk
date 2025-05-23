@@ -14,4 +14,5 @@ export * from "./wallet/index"
 export * from "./onekey"
 export * from "./common"
 export * from "./cat20"
+export * from './cat20V2'
 export * from "./taproot"

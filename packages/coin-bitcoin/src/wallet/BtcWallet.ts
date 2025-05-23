@@ -46,6 +46,7 @@ import {
     RuneMainWallet,
     RuneMainTestWallet,
     CatWallet,
+    CatWalletV2,
     psbtDecode, privateKeyFromWIF
 } from "../index";
 
@@ -262,6 +263,13 @@ export class BtcWallet extends BaseWallet {
             }
         } else if (type === bitcoin.BtcXrcTypes.CAT20) { // cat20
             let wallet = new CatWallet()
+            try {
+                return Promise.resolve(wallet.signTransaction(param))
+            } catch (e) {
+                return Promise.reject(SignTxError);
+            }
+        } else if (type == bitcoin.BtcXrcTypes.CAT20V2) { // cat20V2
+            let wallet = new CatWalletV2()
             try {
                 return Promise.resolve(wallet.signTransaction(param))
             } catch (e) {
@@ -539,7 +547,15 @@ export class BtcWallet extends BaseWallet {
                 } catch (e) {
                     return Promise.reject(EstimateFeeError);
                 }
-            } else {
+            } else if (type === bitcoin.BtcXrcTypes.CAT20V2) { // cat20V2
+                try {
+                    let wallet = new CatWalletV2()
+                    return Promise.resolve(wallet.estimateFee(param))
+                } catch (e) {
+                    return Promise.reject(EstimateFeeError);
+                }
+            } 
+            else {
                 const utxoTx = convert2UtxoTx(param.data);
                 const fee = bitcoin.estimateBtcFee(utxoTx, this.network());
                 return Promise.resolve(fee);
