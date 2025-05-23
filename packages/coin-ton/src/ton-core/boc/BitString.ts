@@ -126,7 +126,7 @@ export class BitString {
             throw new Error(`Offset ${offset} is out of bounds`);
         }
         if (offset + length > this._length) {
-            throw new Error(`Offset + Lenght = ${offset + length} is out of bounds`);
+            throw new Error(`Offset + Length = ${offset + length} is out of bounds`);
         }
 
         // Check alignment

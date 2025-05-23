@@ -180,7 +180,7 @@ export interface BnsError {
 }
 
 /**
- * Fetch a user’s raw zone file. This only works for RFC-compliant zone files. This method returns an error for names that have non-standard zone files.
+ * Fetch a user's raw zone file. This only works for RFC-compliant zone files. This method returns an error for names that have non-standard zone files.
  */
 export type BnsFetchFileZoneResponse =
   | {
@@ -286,7 +286,7 @@ export interface BnsNamesOwnByAddressResponse {
 }
 
 /**
- * Fetches the list of subdomain operations processed by a given transaction. The returned array includes subdomain operations that have not yet been accepted as part of any subdomain’s history (checkable via the accepted field). If the given transaction ID does not correspond to a Blockstack transaction that introduced new subdomain operations, and empty array will be returned.
+ * Fetches the list of subdomain operations processed by a given transaction. The returned array includes subdomain operations that have not yet been accepted as part of any subdomain's history (checkable via the accepted field). If the given transaction ID does not correspond to a Blockstack transaction that introduced new subdomain operations, and empty array will be returned.
  */
 export type BnsGetSubdomainAtTx = {
   accepted?: number;
@@ -1805,7 +1805,7 @@ export interface RosettaOptions {
    */
   token_transfer_recipient_address?: string;
   /**
-   * Amount to be transfered.
+   * Amount to be transferred.
    */
   amount?: string;
   /**

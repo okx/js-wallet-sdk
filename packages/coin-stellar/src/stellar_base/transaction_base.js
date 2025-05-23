@@ -182,7 +182,7 @@ export class TransactionBase {
     }
 
     if (preimage.length > 64) {
-      throw new Error('preimage cannnot be longer than 64 bytes');
+      throw new Error('preimage cannot be longer than 64 bytes');
     }
 
     const signature = preimage;

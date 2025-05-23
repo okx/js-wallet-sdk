@@ -119,7 +119,7 @@ let res = await wallet.signMessage(signParams)
 ### verifyMessage
 
 ```typescript
-let veryParams: VerifyMessageParams = {
+let verifyParams: VerifyMessageParams = {
   signature: res,
   data: {
     message: "hello world!",
@@ -127,8 +127,8 @@ let veryParams: VerifyMessageParams = {
     publicKey: address.compressedPublicKey,
   }
 };
-let veryfied = await wallet.verifyMessage(veryParams)
-console.log(veryfied)
+let verified = await wallet.verifyMessage(verifyParams)
+console.log(verified)
 ```
 
 ### Sign Transaction
