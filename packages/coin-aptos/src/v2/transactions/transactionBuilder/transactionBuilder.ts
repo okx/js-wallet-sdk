@@ -8,18 +8,14 @@
  */
 import { sha3_256 as sha3Hash } from "@noble/hashes/sha3";
 import { AptosConfig } from "../../api/aptosConfig";
-import { AccountAddress, AccountAddressInput, Hex, PublicKey } from "../../core";
+import { AccountAddress, AccountAddressInput, PublicKey } from "../../core";
 import { AnyPublicKey, AnySignature, Secp256k1PublicKey, Secp256k1Signature } from "../../core/crypto";
 import { Ed25519PublicKey, Ed25519Signature } from "../../core/crypto/ed25519";
-// import { getInfo } from "../../internal/account";
-// import { getLedgerInfo } from "../../internal/general";
-// import { getGasPriceEstimation } from "../../internal/transaction";
-import { NetworkToChainId } from "../../utils/apiEndpoints";
 import { DEFAULT_MAX_GAS_AMOUNT, DEFAULT_TXN_EXP_SEC_FROM_NOW } from "../../utils/const";
 import { normalizeBundle } from "../../utils/normalizeBundle";
 import {
     AccountAuthenticator,
-    AccountAuthenticatorEd25519,
+    AccountAuthenticatorEd25519, AccountAuthenticatorNoAccountAuthenticator,
     AccountAuthenticatorSingleKey,
 } from "../authenticator/account";
 import {
@@ -60,16 +56,15 @@ import {
     InputGenerateTransactionPayloadDataWithABI,
     InputEntryFunctionDataWithABI,
     InputMultiSigDataWithABI,
-    InputViewFunctionDataWithRemoteABI,
-    InputViewFunctionDataWithABI,
     FunctionABI,
 } from "../types";
 import { convertArgument, fetchEntryFunctionAbi, /*fetchViewFunctionAbi,*/ standardizeTypeTags } from "./remoteAbi";
 import { memoizeAsync } from "../../utils/memoize";
-import { getFunctionParts, isScriptDataInput } from "./helpers";
+import { isScriptDataInput } from "./helpers";
 import { SimpleTransaction } from "../instances/simpleTransaction";
 import { MultiAgentTransaction } from "../instances/multiAgentTransaction";
-
+import {Hex} from "../../core/hex";
+import {getFunctionParts} from "../../utils";
 /**
  * We are defining function signatures, each with its specific input and output.
  * These are the possible function signature for our `generateTransactionPayload` function.
@@ -216,7 +211,7 @@ export function generateTransactionPayloadWithABI(
 
 function generateTransactionPayloadScript(args: InputScriptData) {
     return new TransactionPayloadScript(
-        new Script(Hex.fromHexInput(args.bytecode).toUint8Array(), args.typeArguments ?? [], args.functionArguments),
+        new Script(Hex.fromHexInput(args.bytecode).toUint8Array(), standardizeTypeTags(args.typeArguments), args.functionArguments),
     );
 }
 
@@ -246,13 +241,13 @@ export async function generateRawTransaction(args: {
         return { chainId: info.chain_id };
     };*/
 
-   /* const getGasUnitPrice = async () => {
-        if (options?.gasUnitPrice) {
-            return { gasEstimate: options.gasUnitPrice };
-        }
-        const estimation = await getGasPriceEstimation({ aptosConfig });
-        return { gasEstimate: estimation.gas_estimate };
-    };*/
+    /* const getGasUnitPrice = async () => {
+         if (options?.gasUnitPrice) {
+             return { gasEstimate: options.gasUnitPrice };
+         }
+         const estimation = await getGasPriceEstimation({ aptosConfig });
+         return { gasEstimate: estimation.gas_estimate };
+     };*/
 
     /*const getSequenceNumberForAny = async () => {
         const getSequenceNumber = async () => {
@@ -465,7 +460,11 @@ export function generateSignedTransactionForSimulation(args: InputSimulateTransa
     return new SignedTransaction(transaction.rawTransaction, transactionAuthenticator).bcsToBytes();
 }
 
-export function getAuthenticatorForSimulation(publicKey: PublicKey) {
+export function getAuthenticatorForSimulation(publicKey?: PublicKey) {
+    if (!publicKey) {
+        AccountAuthenticatorEd25519
+        return new AccountAuthenticatorNoAccountAuthenticator();
+    }
     // TODO add support for AnyMultiKey
     if (publicKey instanceof AnyPublicKey) {
         if (publicKey.publicKey instanceof Ed25519PublicKey) {

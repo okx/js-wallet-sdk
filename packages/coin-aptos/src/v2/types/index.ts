@@ -4,6 +4,8 @@ import { Network } from "../utils/apiEndpoints";
 import { OrderBy, TokenStandard } from "./indexer";
 
 export * from "./indexer";
+export { CallArgument } from "@aptos-labs/script-composer-pack";
+
 
 export enum MimeType {
   /**
@@ -59,6 +61,7 @@ export enum ScriptTransactionArgumentVariants {
   U16 = 6,
   U32 = 7,
   U256 = 8,
+  Serialized = 9,
 }
 
 /**
@@ -93,7 +96,7 @@ export enum TransactionAuthenticatorVariant {
 }
 
 /**
- * Transaction Authenticator enum as they are represented in Rust
+ * Variants of account authenticators used in transactions.
  * {@link https://github.com/aptos-labs/aptos-core/blob/main/types/src/transaction/authenticator.rs#L414}
  */
 export enum AccountAuthenticatorVariant {
@@ -101,16 +104,30 @@ export enum AccountAuthenticatorVariant {
   MultiEd25519 = 1,
   SingleKey = 2,
   MultiKey = 3,
+  NoAccountAuthenticator = 4,
+  Abstraction = 5,
+}
+
+/**
+ * Variants of private keys that can comply with the AIP-80 standard.
+ * {@link https://github.com/aptos-foundation/AIPs/blob/main/aips/aip-80.md}
+ */
+export enum PrivateKeyVariants {
+  Ed25519 = "ed25519",
+  Secp256k1 = "secp256k1",
 }
 
 export enum AnyPublicKeyVariant {
   Ed25519 = 0,
   Secp256k1 = 1,
+  Keyless = 3,
+  FederatedKeyless = 4,
 }
 
 export enum AnySignatureVariant {
   Ed25519 = 0,
   Secp256k1 = 1,
+  Keyless = 3,
 }
 
 /**
@@ -280,10 +297,10 @@ export enum TransactionResponseType {
 
 export type TransactionResponse = PendingTransactionResponse | CommittedTransactionResponse;
 export type CommittedTransactionResponse =
-  | UserTransactionResponse
-  | GenesisTransactionResponse
-  | BlockMetadataTransactionResponse
-  | StateCheckpointTransactionResponse;
+    | UserTransactionResponse
+    | GenesisTransactionResponse
+    | BlockMetadataTransactionResponse
+    | StateCheckpointTransactionResponse;
 
 export function isPendingTransactionResponse(response: TransactionResponse): response is PendingTransactionResponse {
   return response.type === TransactionResponseType.Pending;
@@ -298,13 +315,13 @@ export function isGenesisTransactionResponse(response: TransactionResponse): res
 }
 
 export function isBlockMetadataTransactionResponse(
-  response: TransactionResponse,
+    response: TransactionResponse,
 ): response is BlockMetadataTransactionResponse {
   return response.type === TransactionResponseType.BlockMetadata;
 }
 
 export function isStateCheckpointTransactionResponse(
-  response: TransactionResponse,
+    response: TransactionResponse,
 ): response is StateCheckpointTransactionResponse {
   return response.type === TransactionResponseType.StateCheckpoint;
 }
@@ -453,12 +470,12 @@ export type StateCheckpointTransactionResponse = {
  */
 
 export type WriteSetChange =
-  | WriteSetChangeDeleteModule
-  | WriteSetChangeDeleteResource
-  | WriteSetChangeDeleteTableItem
-  | WriteSetChangeWriteModule
-  | WriteSetChangeWriteResource
-  | WriteSetChangeWriteTableItem;
+    | WriteSetChangeDeleteModule
+    | WriteSetChangeDeleteResource
+    | WriteSetChangeDeleteTableItem
+    | WriteSetChangeWriteModule
+    | WriteSetChangeWriteResource
+    | WriteSetChangeWriteTableItem;
 
 export type WriteSetChangeDeleteModule = {
   type: string;
@@ -592,11 +609,11 @@ export type MoveScriptBytecode = {
  * These are the JSON representations of transaction signatures returned from the node API.
  */
 export type TransactionSignature =
-  | TransactionEd25519Signature
-  | TransactionSecp256k1Signature
-  | TransactionMultiEd25519Signature
-  | TransactionMultiAgentSignature
-  | TransactionFeePayerSignature;
+    | TransactionEd25519Signature
+    | TransactionSecp256k1Signature
+    | TransactionMultiEd25519Signature
+    | TransactionMultiAgentSignature
+    | TransactionFeePayerSignature;
 
 export function isEd25519Signature(signature: TransactionSignature): signature is TransactionFeePayerSignature {
   return "signature" in signature && signature.signature === "ed25519_signature";
@@ -615,7 +632,7 @@ export function isFeePayerSignature(signature: TransactionSignature): signature 
 }
 
 export function isMultiEd25519Signature(
-  signature: TransactionSignature,
+    signature: TransactionSignature,
 ): signature is TransactionMultiEd25519Signature {
   return signature.type === "multi_ed25519_signature";
 }
@@ -681,9 +698,9 @@ export type TransactionFeePayerSignature = {
  * The union of all single account signatures.
  */
 export type AccountSignature =
-  | TransactionEd25519Signature
-  | TransactionSecp256k1Signature
-  | TransactionMultiEd25519Signature;
+    | TransactionEd25519Signature
+    | TransactionSecp256k1Signature
+    | TransactionMultiEd25519Signature;
 
 export type WriteSet = ScriptWriteSet | DirectWriteSet;
 
@@ -738,18 +755,18 @@ export type MoveFunctionId = MoveStructId;
 export type MoveStructType = {};
 
 export type MoveType =
-  | boolean
-  | string
-  | MoveUint8Type
-  | MoveUint16Type
-  | MoveUint32Type
-  | MoveUint64Type
-  | MoveUint128Type
-  | MoveUint256Type
-  | MoveAddressType
-  | MoveObjectType
-  | MoveStructType
-  | Array<MoveType>;
+    | boolean
+    | string
+    | MoveUint8Type
+    | MoveUint16Type
+    | MoveUint32Type
+    | MoveUint64Type
+    | MoveUint128Type
+    | MoveUint256Type
+    | MoveAddressType
+    | MoveObjectType
+    | MoveStructType
+    | Array<MoveType>;
 
 /**
  * Possible Move values acceptable by move functions (entry, view)
@@ -775,19 +792,19 @@ export type MoveType =
  * `Option -> MoveValue | null | undefined`
  */
 export type MoveValue =
-  | boolean
-  | string
-  | MoveUint8Type
-  | MoveUint16Type
-  | MoveUint32Type
-  | MoveUint64Type
-  | MoveUint128Type
-  | MoveUint256Type
-  | MoveAddressType
-  | MoveObjectType
-  | MoveStructId
-  | MoveOptionType
-  | Array<MoveValue>;
+    | boolean
+    | string
+    | MoveUint8Type
+    | MoveUint16Type
+    | MoveUint32Type
+    | MoveUint64Type
+    | MoveUint128Type
+    | MoveUint256Type
+    | MoveAddressType
+    | MoveObjectType
+    | MoveStructId
+    | MoveOptionType
+    | Array<MoveValue>;
 
 /**
  * Move module id is a string representation of Move module.
