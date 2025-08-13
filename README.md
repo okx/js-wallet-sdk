@@ -1,4 +1,4 @@
-# OKX Web3 JS Wallet SDK
+# OKX Web3 JS Wallet SDK6
 
 [![npm version](https://img.shields.io/npm/v/@okxweb3/coin-base.svg)](https://www.npmjs.com/package/@okxweb3/coin-base)
 [![License](https://img.shields.io/npm/l/@okxweb3/coin-base.svg)](https://github.com/okx/js-wallet-sdk/blob/main/LICENSE)
