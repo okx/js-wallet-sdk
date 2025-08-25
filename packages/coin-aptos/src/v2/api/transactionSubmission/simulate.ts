@@ -34,7 +34,7 @@ export class Simulate {
     transaction: AnyRawTransaction;
     feePayerPublicKey?: PublicKey;
     options?: InputSimulateTransactionOptions;
-  }): Promise<Array<UserTransactionResponse>> {
+  }): Promise<Uint8Array> {
     return simulateTransaction({ aptosConfig: this.config, ...args });
   }
 
@@ -56,7 +56,7 @@ export class Simulate {
     secondarySignersPublicKeys: Array<PublicKey>;
     feePayerPublicKey?: PublicKey;
     options?: InputSimulateTransactionOptions;
-  }): Promise<Array<UserTransactionResponse>> {
+  }): Promise<Uint8Array> {
     return simulateTransaction({ aptosConfig: this.config, ...args });
   }
 }

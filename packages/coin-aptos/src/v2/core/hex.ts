@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
-import { ParsingError, ParsingResult } from "./common";
+import { ParsingError, ParsingResult } from "../core/common";
 import { HexInput } from "../types";
 
 /**
- * This enum is used to explain why parsing might have failed.
+ * Provides reasons for parsing failures related to hexadecimal values.
+ * @group Implementation
+ * @category Serialization
  */
 export enum HexInvalidReason {
   TOO_SHORT = "too_short",
@@ -15,30 +17,30 @@ export enum HexInvalidReason {
 }
 
 /**
- * NOTE: Do not use this class when working with account addresses, use AccountAddress.
+ * NOTE: Do not use this class when working with account addresses; use AccountAddress instead.
+ * When accepting hex data as input to a function, prefer to accept HexInput and
  *
- * NOTE: When accepting hex data as input to a function, prefer to accept HexInput and
+ * A helper class for working with hex data. Hex data, when represented as a string,
+ * generally looks like this, for example: 0xaabbcc, 45cd32, etc.
+ *
  * then use the static helper methods of this class to convert it into the desired
  * format. This enables the greatest flexibility for the developer.
  *
- * Hex is a helper class for working with hex data. Hex data, when represented as a
- * string, generally looks like this, for example: 0xaabbcc, 45cd32, etc.
- *
- * You might use this class like this:
- *
- * ```ts
+ * Example usage:
+ * ```typescript
  * getTransactionByHash(txnHash: HexInput): Promise<Transaction> {
  *   const txnHashString = Hex.fromHexInput(txnHash).toString();
  *   return await getTransactionByHashInner(txnHashString);
  * }
  * ```
- *
  * This call to `Hex.fromHexInput().toString()` converts the HexInput to a hex string
  * with a leading 0x prefix, regardless of what the input format was.
  *
- * These are some other ways to chain the functions together:
+ * Other ways to chain the functions together:
  * - `Hex.fromHexString({ hexInput: "0x1f" }).toUint8Array()`
  * - `new Hex([1, 3]).toStringWithoutPrefix()`
+ * @group Implementation
+ * @category Serialization
  */
 export class Hex {
   private readonly data: Uint8Array;
@@ -46,7 +48,9 @@ export class Hex {
   /**
    * Create a new Hex instance from a Uint8Array.
    *
-   * @param data Uint8Array
+   * @param data - The Uint8Array containing the data to initialize the Hex instance.
+   * @group Implementation
+   * @category Serialization
    */
   constructor(data: Uint8Array) {
     this.data = data;
@@ -57,10 +61,11 @@ export class Hex {
   // ===
 
   /**
-   * Get the inner hex data. The inner data is already a Uint8Array so no conversion
-   * is taking place here, it just returns the inner data.
+   * Get the inner hex data as a Uint8Array. The inner data is already a Uint8Array, so no conversion takes place.
    *
    * @returns Hex data as Uint8Array
+   * @group Implementation
+   * @category Serialization
    */
   toUint8Array(): Uint8Array {
     return this.data;
@@ -70,6 +75,8 @@ export class Hex {
    * Get the hex data as a string without the 0x prefix.
    *
    * @returns Hex string without 0x prefix
+   * @group Implementation
+   * @category Serialization
    */
   toStringWithoutPrefix(): string {
     return bytesToHex(this.data);
@@ -79,6 +86,8 @@ export class Hex {
    * Get the hex data as a string with the 0x prefix.
    *
    * @returns Hex string with 0x prefix
+   * @group Implementation
+   * @category Serialization
    */
   toString(): string {
     return `0x${this.toStringWithoutPrefix()}`;
@@ -89,11 +98,15 @@ export class Hex {
   // ===
 
   /**
-   * Static method to convert a hex string to Hex
+   * Converts a hex string into a Hex instance, allowing for both prefixed and non-prefixed formats.
    *
-   * @param str A hex string, with or without the 0x prefix
+   * @param str - A hex string, with or without the 0x prefix.
    *
-   * @returns Hex
+   * @throws ParsingError - If the hex string is too short, has an odd number of characters, or contains invalid hex characters.
+   *
+   * @returns Hex - The resulting Hex instance created from the provided string.
+   * @group Implementation
+   * @category Serialization
    */
   static fromHexString(str: string): Hex {
     let input = str;
@@ -104,8 +117,8 @@ export class Hex {
 
     if (input.length === 0) {
       throw new ParsingError(
-        "Hex string is too short, must be at least 1 char long, excluding the optional leading 0x.",
-        HexInvalidReason.TOO_SHORT,
+          "Hex string is too short, must be at least 1 char long, excluding the optional leading 0x.",
+          HexInvalidReason.TOO_SHORT,
       );
     }
 
@@ -117,22 +130,71 @@ export class Hex {
       return new Hex(hexToBytes(input));
     } catch (error: any) {
       throw new ParsingError(
-        `Hex string contains invalid hex characters: ${error?.message}`,
-        HexInvalidReason.INVALID_HEX_CHARS,
+          `Hex string contains invalid hex characters: ${error?.message}`,
+          HexInvalidReason.INVALID_HEX_CHARS,
       );
     }
   }
 
   /**
-   * Static method to convert an instance of HexInput to Hex
+   * Converts an instance of HexInput, which can be a string or a Uint8Array, into a Hex instance.
+   * This function is useful for transforming hexadecimal representations into a structured Hex object for further manipulation.
    *
-   * @param hexInput A HexInput (string or Uint8Array)
-   *
-   * @returns Hex
+   * @param hexInput - A HexInput which can be a string or Uint8Array.
+   * @returns A Hex instance created from the provided hexInput.
+   * @group Implementation
+   * @category Serialization
    */
   static fromHexInput(hexInput: HexInput): Hex {
+    if (hexInput instanceof Buffer) return new Hex(new Uint8Array(hexInput));
     if (hexInput instanceof Uint8Array) return new Hex(hexInput);
-    return Hex.fromHexString(hexInput);
+    if (typeof hexInput === "string") return Hex.fromHexString(hexInput);
+    throw new Error(`Invalid hex input type: ${typeof hexInput}`);
+  }
+
+  /**
+   * Converts an instance of HexInput, which can be a string or a Uint8Array, into a Uint8Array.
+   *
+   * @param hexInput - A HexInput which can be a string or Uint8Array.
+   * @returns A Uint8Array created from the provided hexInput.
+   */
+  static hexInputToUint8Array(hexInput: HexInput): Uint8Array {
+    if (hexInput instanceof Uint8Array) return hexInput;
+    return Hex.fromHexString(hexInput).toUint8Array();
+  }
+
+  /**
+   * Converts a HexInput (string or Uint8Array) to a hex string with '0x' prefix.
+   *
+   * @param hexInput - The input to convert, either a hex string (with/without '0x' prefix) or Uint8Array
+   * @returns A hex string with '0x' prefix (e.g., "0x1234")
+   *
+   * @example
+   * ```typescript
+   * Hex.hexInputToString("1234")        // returns "0x1234"
+   * Hex.hexInputToString("0x1234")      // returns "0x1234"
+   * Hex.hexInputToString(new Uint8Array([0x12, 0x34])) // returns "0x1234"
+   * ```
+   */
+  static hexInputToString(hexInput: HexInput): string {
+    return Hex.fromHexInput(hexInput).toString();
+  }
+
+  /**
+   * Converts a HexInput (string or Uint8Array) to a hex string without '0x' prefix.
+   *
+   * @param hexInput - The input to convert, either a hex string (with/without '0x' prefix) or Uint8Array
+   * @returns A hex string without '0x' prefix (e.g., "1234")
+   *
+   * @example
+   * ```typescript
+   * Hex.hexInputToStringWithoutPrefix("1234")        // returns "1234"
+   * Hex.hexInputToStringWithoutPrefix("0x1234")      // returns "1234"
+   * Hex.hexInputToStringWithoutPrefix(new Uint8Array([0x12, 0x34])) // returns "1234"
+   * ```
+   */
+  static hexInputToStringWithoutPrefix(hexInput: HexInput): string {
+    return Hex.fromHexInput(hexInput).toStringWithoutPrefix();
   }
 
   // ===
@@ -140,13 +202,16 @@ export class Hex {
   // ===
 
   /**
-   * Check if the string is valid hex.
+   * Check if the provided string is a valid hexadecimal representation.
    *
-   * @param str A hex string representing byte data.
+   * @param str - A hex string representing byte data.
    *
-   * @returns valid = true if the string is valid, false if not. If the string is not
-   * valid, invalidReason and invalidReasonMessage will be set explaining why it is
-   * invalid.
+   * @returns An object containing:
+   *  - valid: A boolean indicating whether the string is valid.
+   *  - invalidReason: The reason for invalidity if the string is not valid.
+   *  - invalidReasonMessage: A message explaining why the string is invalid.
+   * @group Implementation
+   * @category Serialization
    */
   static isValid(str: string): ParsingResult<HexInvalidReason> {
     try {
@@ -162,11 +227,12 @@ export class Hex {
   }
 
   /**
-   * Return whether Hex instances are equal. Hex instances are considered equal if
-   * their underlying byte data is identical.
+   * Determine if two Hex instances are equal by comparing their underlying byte data.
    *
    * @param other The Hex instance to compare to.
    * @returns true if the Hex instances are equal, false if not.
+   * @group Implementation
+   * @category Serialization
    */
   equals(other: Hex): boolean {
     if (this.data.length !== other.data.length) return false;

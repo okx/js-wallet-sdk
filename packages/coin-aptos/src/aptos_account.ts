@@ -9,7 +9,9 @@ import { derivePath } from "./utils/hd_key";
 import {  Memoize } from "./utils";
 import {AccountAddress, AuthenticationKey, Ed25519PublicKey} from "./transaction_builder/aptos_types";
 import {bcsToBytes} from "./transaction_builder/bcs";
-import {TextEncoder} from "util";
+
+declare const TextEncoder: any;
+
 export interface AptosAccountObject {
   address?: MoveTypes.HexEncodedBytes;
   publicKeyHex?: MoveTypes.HexEncodedBytes;

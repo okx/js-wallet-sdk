@@ -33,6 +33,8 @@
     "ts-node": "^10.7.0"
   },
   "dependencies": {
+    "js-base64": "3.7.7",
+    "@aptos-labs/script-composer-pack": "0.0.9",
     "@noble/curves": "1.8.0",
     "@noble/hashes": "1.7.1",
     "@scure/bip32": "1.6.2",

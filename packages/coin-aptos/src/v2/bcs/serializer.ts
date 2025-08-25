@@ -10,8 +10,8 @@ import {
   MAX_U8_NUMBER,
   MAX_U256_BIG_INT,
 } from "./consts";
-import { Hex } from "../core/hex";
 import { AnyNumber, Uint16, Uint32, Uint8 } from "../types";
+import {Hex} from "../core/hex";
 declare const TextEncoder: any;
 
 // This class is intended to be used as a base class for all serializable types.
@@ -71,9 +71,9 @@ export class Serializer {
   }
 
   private serializeWithFunction(
-    fn: (byteOffset: number, value: number, littleEndian?: boolean) => void,
-    bytesLength: number,
-    value: number,
+      fn: (byteOffset: number, value: number, littleEndian?: boolean) => void,
+      bytesLength: number,
+      value: number,
   ) {
     this.ensureBufferWillHandleSize(bytesLength);
     const dv = new DataView(this.buffer, this.offset);
@@ -326,7 +326,7 @@ export function ensureBoolean(value: unknown): asserts value is boolean {
 }
 
 export const outOfRangeErrorMessage = (value: AnyNumber, min: AnyNumber, max: AnyNumber) =>
-  `${value} is out of range: [${min}, ${max}]`;
+    `${value} is out of range: [${min}, ${max}]`;
 
 export function validateNumberInRange<T extends AnyNumber>(value: T, minValue: T, maxValue: T) {
   const valueBigInt = BigInt(value);
