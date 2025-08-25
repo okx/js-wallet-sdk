@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/coin-stellar",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -51,7 +51,7 @@
     "@okxweb3/crypto-lib": "^1.0.10",
     "@stellar/js-xdr": "3.1.2",
     "base32.js": "0.1.0",
-    "sha.js": "2.3.6",
+    "sha.js": "2.4.12",
     "tweetnacl": "1.0.3",
     "sodium-native": "4.1.1"
   },
