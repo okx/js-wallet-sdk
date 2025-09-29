@@ -1,5 +1,5 @@
 import * as bitcoin from "../index";
-import {SignMsgError, SignTxError, SignTxParams, TypedMessage, VerifyMessageParams} from "@okxweb3/coin-base";
+import {GetDerivedPathParam, SignMsgError, SignTxError, SignTxParams, TypedMessage, VerifyMessageParams} from "@okxweb3/coin-base";
 import {BtcWallet} from "./BtcWallet";
 
 export const dogeCoin: bitcoin.Network = {
@@ -18,6 +18,11 @@ export const dogeCoin: bitcoin.Network = {
 export class DogeWallet extends BtcWallet {
     network() {
         return dogeCoin
+    }
+
+
+    async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
+        return `m/44'/3'/0'/0/${param.index}`;
     }
 
     async signTransaction(param: SignTxParams): Promise<any> {
