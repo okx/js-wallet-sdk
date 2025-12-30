@@ -49,7 +49,7 @@ import {signData} from "./message";
 
 export class AdaWallet extends BaseWallet {
     async getDerivedPath(param: GetDerivedPathParam): Promise<any> {
-        return `m/1852'/1815'/0'/0/${param.index}`;
+        return `m/1852'/1815'/${param.index}'/0/0`;
     }
 
     async getRandomPrivateKey(): Promise<any> {
