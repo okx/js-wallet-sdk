@@ -55,6 +55,6 @@
     "@okxweb3/crypto-lib": "2.0.5",
     "ethers": "^6.13.5",
     "ethers6": "npm:ethers@6.13.5",
-    "lodash": "4.17.21"
+    "lodash": "4.18.1"
   }
 }
