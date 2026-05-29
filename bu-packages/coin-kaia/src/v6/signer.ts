@@ -7,7 +7,7 @@ import {
   ProgressCallback,
   keccak256,
   assert,
-} from "ethers6";
+} from "ethers";
 import _ from "lodash";
 
 import {

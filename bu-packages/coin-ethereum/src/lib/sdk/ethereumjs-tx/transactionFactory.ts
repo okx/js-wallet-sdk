@@ -6,7 +6,7 @@
  */
 
 import { toBuffer } from '../ethereumjs-util'
-import { BN } from '@okxweb3/coin-base'
+import { BN } from "@okxweb3/coin-base"
 
 import {
   TypedTransaction,

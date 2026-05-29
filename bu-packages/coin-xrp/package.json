@@ -41,8 +41,8 @@
     "nock": "^14.0.4"
   },
   "dependencies": {
-    "@okxweb3/coin-base": "^2.0.6",
-    "@okxweb3/crypto-lib": "2.0.5",
+    "@okxweb3/coin-base": "^2.0.7",
+    "@okxweb3/crypto-lib": "2.0.6",
     "ripple-keypairs": "2.0.0",
     "xrpl": "4.2.5"
   }

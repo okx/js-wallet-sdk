@@ -7,7 +7,7 @@
 
 import { keccak } from './hash'
 import { assertIsBuffer } from './helpers'
-import {base, BN} from '@okxweb3/coin-base';
+import {base, BN} from "@okxweb3/coin-base";
 import {signUtil} from "@okxweb3/crypto-lib";
 import {toType, TypeOutput} from "./types";
 import {Buffer} from "buffer";

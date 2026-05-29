@@ -18,7 +18,7 @@ import {
 import { TxData, JsonTx, TxValuesArray } from './types';
 import { BaseTransaction } from './baseTransaction'
 
-import { BN } from '@okxweb3/coin-base'
+import { BN } from "@okxweb3/coin-base"
 
 const TRANSACTION_TYPE = 0
 

@@ -191,6 +191,7 @@ export class SrcInscriptionTool {
                 0
             ) {
                 this.mustCommitTxFee = fee;
+                this.mustRevealTxFees.push(totalRevealPrevOutputValue);
                 return true;
             }
         }

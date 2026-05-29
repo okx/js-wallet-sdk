@@ -8,7 +8,7 @@ import {
     createTransactionInternals,
     minAdaRequired,
 } from '@cardano-sdk/tx-construction';
-import { SelectionResult } from '@cardano-sdk/input-selection';
+import { Selection } from '@cardano-sdk/input-selection';
 import * as Crypto from '@cardano-sdk/crypto';
 import { HexBlob } from '@cardano-sdk/util';
 import { DefaultMainnetProtocolParameters } from './parameters';
@@ -42,6 +42,19 @@ export type TxData = {
     type?: string;
     tx?: string;
     privateKey?: string;
+    max?: boolean; // When true, first output receives maximum ADA
+};
+
+export type MinFeeData = {
+    valid: boolean; // Whether transaction has sufficient funds
+    fee: string; // Calculated fee in lovelace
+    change: string; // Multi-asset change output ADA (0 if no MA change)
+};
+
+export type SelectionResult = {
+    selection: Selection;
+    valid: boolean;
+    maChangeAda: bigint;
 };
 
 export function getMultiAsset(multiAsset?: MultiAssetData) {
@@ -95,6 +108,75 @@ export function hasSufficientAda(output: Cardano.TxOut) {
     return output.value.coins >= requiredAda;
 }
 
+/**
+ * Calculate remaining assets after output (input assets - output assets)
+ */
+export function calculateChangeAssets(
+    utxos: Cardano.Utxo[],
+    outputAssets?: Map<Cardano.AssetId, bigint>
+): Map<Cardano.AssetId, bigint> {
+    const changeAssets = new Map<Cardano.AssetId, bigint>();
+
+    // Sum all input assets
+    for (const utxo of utxos) {
+        const assets = utxo[1].value.assets;
+        if (assets) {
+            for (const [assetId, qty] of assets.entries()) {
+                changeAssets.set(
+                    assetId,
+                    (changeAssets.get(assetId) ?? 0n) + qty
+                );
+            }
+        }
+    }
+
+    // Subtract output assets
+    if (outputAssets) {
+        for (const [assetId, qty] of outputAssets.entries()) {
+            const remaining = (changeAssets.get(assetId) ?? 0n) - qty;
+            if (remaining < 0n) {
+                throw new Error(`not enough input assets ${assetId}`);
+            }
+            if (remaining === 0n) {
+                changeAssets.delete(assetId);
+            } else {
+                changeAssets.set(assetId, remaining);
+            }
+        }
+    }
+
+    return changeAssets;
+}
+
+/**
+ * Build multi-asset change output if there are leftover tokens.
+ * @returns TxOut or undefined if no token change
+ */
+export function buildMultiAssetChangeOutput(
+    changeAddress: string,
+    changeAssets: Map<Cardano.AssetId, bigint>
+): Cardano.TxOut | undefined {
+    if (changeAssets.size === 0) {
+        return undefined;
+    }
+
+    const output: Cardano.TxOut = {
+        address: Cardano.PaymentAddress(changeAddress),
+        value: {
+            coins: 0n,
+            assets: changeAssets,
+        },
+    };
+
+    const minAda = minAdaRequired(
+        output,
+        BigInt(DefaultMainnetProtocolParameters.coinsPerUtxoByte)
+    );
+    output.value.coins = minAda;
+
+    return output;
+}
+
 export async function signTxBody(
     txBody: Serialization.TransactionBody,
     auxilaryData?: Serialization.AuxiliaryData,
@@ -125,152 +207,195 @@ export async function signTxBody(
     return new Serialization.Transaction(txBody, witnessSet, auxilaryData);
 }
 
-export async function getSelection(txData: TxData, withChangeAda = true) {
+export function makeSelectionResult(
+    selection: Selection,
+    maChangeAda: bigint,
+    fee: bigint,
+    valid: boolean
+): SelectionResult {
+    selection.fee = fee;
+    return { selection, valid, maChangeAda };
+}
+
+export async function calcSelectionMinFee(
+    selection: Selection,
+    ttl?: string,
+    privateKey?: string
+): Promise<bigint> {
+    const buildTx = async (sel: any) => {
+        const txBody = createTransactionInternals({
+            inputSelection: sel,
+            validityInterval: {
+                invalidHereafter: ttl
+                    ? Cardano.Slot(parseInt(ttl))
+                    : undefined,
+            },
+        });
+        const tx = await signTxBody(
+            Serialization.TransactionBody.fromCore(txBody.body),
+            undefined,
+            privateKey
+        );
+        return tx.toCore();
+    };
+    return (
+        await computeMinimumCost(
+            DefaultMainnetProtocolParameters,
+            buildTx,
+            { evaluate: () => Promise.resolve([]) },
+            {}
+        )(selection)
+    ).fee;
+}
+
+export async function finalizeWithoutAdaChange(
+    selection: Selection,
+    maChangeAda: bigint,
+    changeAda: bigint,
+    machgOutput: Cardano.TxOut | undefined,
+    ttl?: string,
+    privateKey?: string
+): Promise<SelectionResult> {
+    const minFee = await calcSelectionMinFee(selection, ttl, privateKey);
+    if (changeAda < minFee) {
+        return makeSelectionResult(selection, maChangeAda, minFee, false);
+    }
+
+    if (machgOutput) {
+        // Add extra ADA to multi-asset change output (sender gets it back)
+        machgOutput.value.coins += changeAda - minFee;
+        return makeSelectionResult(selection, maChangeAda, minFee, true);
+    } else {
+        // No machg to receive extra ADA, burn as fee
+        return makeSelectionResult(selection, maChangeAda, changeAda, true);
+    }
+}
+
+export async function getSelection(
+    txData: TxData
+): Promise<{ selection: Selection; valid: boolean; maChangeAda: bigint }> {
     const utxoToSpend = getUtxos(txData.inputs);
+
+    const totalInputAda = txData.inputs.reduce(
+        (acc, input) => acc + BigInt(input.amount),
+        0n
+    );
+    const outputAda = txData.max ? 0n : BigInt(txData.amount);
 
     const output: Cardano.TxOut = {
         address: Cardano.PaymentAddress(txData.address),
         value: {
-            coins: BigInt(txData.amount),
+            coins: outputAda,
         },
     };
     const outputAssets = getMultiAsset(txData.multiAsset);
     if (outputAssets.size > 0) {
         output.value.assets = outputAssets;
     }
-    if (!hasSufficientAda(output)) {
-        throw new Error(`not enough ada for output`);
+
+    // Validate output minAda (skip for max mode - will be set later)
+    if (!txData.max) {
+        if (!hasSufficientAda(output)) {
+            throw new Error('not enough ada for output');
+        }
+        if (totalInputAda < outputAda) {
+            throw new Error('not enough input ada');
+        }
     }
 
-    const totalInputLovelace = txData.inputs.reduce(
-        (acc, input) => acc + BigInt(input.amount),
-        BigInt(0)
+    const changeAssets = calculateChangeAssets(
+        utxoToSpend,
+        output.value.assets
     );
-    const totalOutputLovelace = BigInt(txData.amount);
-    let totalChangeLovelace = totalInputLovelace - totalOutputLovelace;
 
-    if (totalChangeLovelace < 0) {
-        throw new Error(`not enough input ada`);
-    }
+    let changeAda = totalInputAda - outputAda;
+    let maChangeAda = 0n;
+    let minFee = 300000n;
 
-    const changeAssets = new Map<Cardano.AssetId, Cardano.Lovelace>();
-    for (const utxo of utxoToSpend) {
-        const assets = utxo[1].value.assets;
-        if (assets) {
-            for (const [assetId, quantity] of assets.entries()) {
-                const currentQuantity = changeAssets.get(assetId) ?? BigInt(0n);
-                changeAssets.set(assetId, currentQuantity + quantity);
-            }
-        }
-    }
-    if (output.value.assets) {
-        for (const [assetId, quantity] of output.value.assets.entries()) {
-            const newQuantity =
-                (changeAssets.get(assetId) ?? BigInt(0n)) - quantity;
-            if (newQuantity < 0) {
-                throw new Error(`not enough input assets ${assetId}`);
-            }
-            if (newQuantity === 0n) {
-                changeAssets.delete(assetId);
-            } else {
-                changeAssets.set(assetId, newQuantity);
-            }
-        }
-    }
-
-    let changeAssetOutput: Cardano.TxOut | undefined;
-    if (changeAssets.size > 0) {
-        changeAssetOutput = {
-            address: Cardano.PaymentAddress(txData.changeAddress),
-            value: {
-                coins: BigInt(300000),
-                assets: changeAssets,
-            },
-        };
-        const changeAssetOutputAda = minAdaRequired(
-            changeAssetOutput,
-            BigInt(DefaultMainnetProtocolParameters.coinsPerUtxoByte)
-        );
-        changeAssetOutput.value.coins = changeAssetOutputAda;
-        totalChangeLovelace = totalChangeLovelace - changeAssetOutputAda;
-
-        if (totalChangeLovelace < 0) {
-            throw new Error(`not enough input ada`);
-        }
-    }
-
-    let selection: SelectionResult['selection'] = {
+    const selection: Selection = {
         change: [],
-        fee: BigInt(300000),
+        fee: 300000n,
         inputs: new Set([...utxoToSpend]),
         outputs: new Set([output]),
     };
 
-    if (changeAssetOutput) {
-        selection.outputs.add(changeAssetOutput);
+    const makeResult = (fee: bigint, valid: boolean) =>
+        makeSelectionResult(selection, maChangeAda, fee, valid);
+
+    const calcMinFee = () => calcSelectionMinFee(selection, txData.ttl, txData.privateKey);
+
+    const machgOutput = buildMultiAssetChangeOutput(
+        txData.changeAddress,
+        changeAssets
+    );
+    if (machgOutput) {
+        maChangeAda = machgOutput.value.coins;
+        changeAda -= machgOutput.value.coins;
+        selection.outputs.add(machgOutput);
+
+        if (changeAda < 0n) {
+            minFee = await calcMinFee();
+            return makeResult(minFee, false);
+        }
     }
 
-    const changeAdaOutput = {
+    // === MAX MODE ===
+    if (txData.max) {
+        output.value.coins = changeAda;
+        minFee = await calcMinFee();
+
+        const maxAda = changeAda - minFee;
+        if (maxAda <= 0n) {
+            return makeResult(minFee, false);
+        }
+
+        output.value.coins = maxAda;
+
+        if (!hasSufficientAda(output)) {
+            return makeResult(minFee, false);
+        }
+
+        return makeResult(minFee, true);
+    }
+
+    const adachgOutput: Cardano.TxOut = {
         address: Cardano.PaymentAddress(txData.changeAddress),
-        value: {
-            coins: totalChangeLovelace,
-        },
+        value: { coins: changeAda },
     };
-    if (withChangeAda && hasSufficientAda(changeAdaOutput)) {
-        selection.change.push(changeAdaOutput);
-    }
 
-    // Estimate
-    const buildTransaction = async (selection: any) => {
-        const txBodyWithHash = createTransactionInternals({
-            inputSelection: selection,
-            validityInterval: {
-                invalidHereafter: txData.ttl
-                    ? Cardano.Slot(parseInt(txData.ttl))
-                    : undefined,
-            },
-        });
-        const transaction = await signTxBody(
-            Serialization.TransactionBody.fromCore(txBodyWithHash.body),
-            undefined,
+    if (!hasSufficientAda(adachgOutput)) {
+        // ADA change too small for own output - finalize without it
+        return await finalizeWithoutAdaChange(
+            selection,
+            maChangeAda,
+            changeAda,
+            machgOutput,
+            txData.ttl,
             txData.privateKey
         );
-        return transaction.toCore();
-    };
+    }
 
-    let minFee = (
-        await computeMinimumCost(
-            DefaultMainnetProtocolParameters,
-            buildTransaction,
-            { evaluate: (tx, resolvedInputs) => Promise.resolve([]) },
-            {}
-        )(selection)
-    ).fee;
+    selection.change.push(adachgOutput);
+    minFee = await calcMinFee();
 
-    if (selection.change.length > 0) {
-        selection.fee = minFee;
-        selection.change[0].value.coins = totalChangeLovelace - minFee;
-        if (hasSufficientAda(selection.change[0])) {
-            return { selection, minFee, valid: true };
+    if (changeAda > minFee) {
+        adachgOutput.value.coins = changeAda - minFee;
+
+        if (hasSufficientAda(adachgOutput)) {
+            return makeResult(minFee, true);
         }
-        selection.change = [];
-        minFee = (
-            await computeMinimumCost(
-                DefaultMainnetProtocolParameters,
-                buildTransaction,
-                { evaluate: (tx, resolvedInputs) => Promise.resolve([]) },
-                {}
-            )(selection)
-        ).fee;
     }
 
-    if (totalChangeLovelace < minFee) {
-        selection.fee = minFee;
-        return { selection, minFee, valid: false };
-    }
-
-    selection.fee = totalChangeLovelace;
-    return { selection, minFee, valid: true };
+    // ADA change insufficient after fee - remove it and finalize
+    selection.change = [];
+    return await finalizeWithoutAdaChange(
+        selection,
+        maChangeAda,
+        changeAda,
+        machgOutput,
+        txData.ttl,
+        txData.privateKey
+    );
 }
 
 export async function buildTx(txData: TxData) {
@@ -331,17 +456,16 @@ export async function calcMinAda(address: string, multiAsset?: MultiAssetData) {
     ).toString();
 }
 
-export async function calcMinFee(txData: TxData) {
-    // we assume that there is no change output for smaller tx size and  fee
-    const { minFee } = await getSelection(txData, false);
-    return minFee.toString();
+export async function calcMinFee(txData: TxData): Promise<MinFeeData> {
+    const { selection, valid, maChangeAda } = await getSelection(txData);
+    return {
+        valid,
+        fee: selection.fee.toString(),
+        change: maChangeAda.toString(),
+    };
 }
 
-export async function signTx(
-    tx: string,
-    privateKey: string,
-    partialSign: boolean = false
-) {
+export async function signTx(tx: string, privateKey: string) {
     const transaction = Serialization.Transaction.fromCbor(
         Serialization.TxCBOR(tx)
     );

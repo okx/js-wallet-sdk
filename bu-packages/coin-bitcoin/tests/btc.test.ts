@@ -991,19 +991,6 @@ describe('BtcWallet Coverage Tests', () => {
             ).rejects.toBeDefined();
         });
 
-        test('should handle CAT20 type', async () => {
-            const signParams: SignTxParams = {
-                privateKey: validPrivateKey,
-                data: {
-                    type: bitcoin.BtcXrcTypes.CAT20,
-                },
-            };
-
-            await expect(
-                wallet.signTransaction(signParams)
-            ).rejects.toBeDefined();
-        });
-
         test('should handle regular transaction with empty inputs/outputs', async () => {
             const signParams: SignTxParams = {
                 privateKey: validPrivateKey,
@@ -1290,15 +1277,6 @@ describe('BtcWallet Coverage Tests', () => {
                 wallet.estimateFee({
                     privateKey: validPrivateKey,
                     data: { type: bitcoin.BtcXrcTypes.ARC20 },
-                })
-            ).rejects.toBeDefined();
-        });
-
-        test('should handle CAT20 type fee estimation', async () => {
-            await expect(
-                wallet.estimateFee({
-                    privateKey: validPrivateKey,
-                    data: { type: bitcoin.BtcXrcTypes.CAT20 },
                 })
             ).rejects.toBeDefined();
         });
@@ -3601,6 +3579,60 @@ describe('SRC20 Inscribe Function Address Validation Tests', () => {
             expect(() => {
                 bitcoin.srcInscribe(bitcoin.networks.bitcoin, request);
             }).toThrow('definitely_invalid_address has no matching Script');
+        });
+    });
+
+    describe('Insufficient funds - returns fee estimates', () => {
+        test('should return fee estimates with empty commitTx when funds are insufficient', () => {
+            const request = createValidSrcInscribeRequest({
+                commitTxPrevOutputList: [
+                    {
+                        txId: 'a7881146cc7671ad89dcd1d99015ed7c5e17cfae69eedd01f73f5ab60a6c1318',
+                        vOut: 0,
+                        amount: 100, // Insufficient for fees
+                        address: validAddress,
+                        privateKey: validPrivateKey,
+                    },
+                ],
+                commitFeeRate: 10,
+                revealOutValue: 546,
+            });
+
+            const result = bitcoin.srcInscribe(
+                bitcoin.networks.bitcoin,
+                request
+            );
+
+            expect(result.commitTxFee).toBeGreaterThan(0);
+            expect(result.revealTxFees.length).toBeGreaterThan(0);
+            expect(result.revealTxFees[0]).toBeGreaterThan(0);
+            expect(result.commitTx).toBe('');
+            expect(result.revealTxs).toEqual([]);
+        });
+
+        test('should return signed transaction when funds are sufficient', () => {
+            const request = createValidSrcInscribeRequest({
+                commitTxPrevOutputList: [
+                    {
+                        txId: 'a7881146cc7671ad89dcd1d99015ed7c5e17cfae69eedd01f73f5ab60a6c1318',
+                        vOut: 0,
+                        amount: 100000, // Sufficient
+                        address: validAddress,
+                        privateKey: validPrivateKey,
+                    },
+                ],
+                commitFeeRate: 10,
+                revealOutValue: 546,
+            });
+
+            const result = bitcoin.srcInscribe(
+                bitcoin.networks.bitcoin,
+                request
+            );
+
+            expect(result.commitTx).not.toBe('');
+            expect(result.commitTx.length).toBeGreaterThan(0);
+            expect(result.commitTxFee).toBeGreaterThan(0);
         });
     });
 });

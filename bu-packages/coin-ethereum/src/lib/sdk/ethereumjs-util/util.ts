@@ -5,7 +5,7 @@
  * file LICENSE or https://opensource.org/license/mpl-2-0/.
  */
 
-import {base} from '@okxweb3/coin-base';
+import {base} from "@okxweb3/coin-base";
 
 /**
  * Pads a `String` to have an even length

@@ -2585,38 +2585,38 @@ describe('validAddress comprehensive tests', () => {
     });
 
     test('validAddress edge cases', async () => {
-       // Test null/undefined handling - should return invalid
-       const result1 = await wallet.validAddress({ address: null as any });
-       expect(result1.isValid).toBe(false);
-       expect(result1.msg).toBe(
-           'Eth address should match ^0x[0-9a-fA-F]{40}$'
-       );
+        // Test null/undefined handling - should return invalid
+        const result1 = await wallet.validAddress({ address: null as any });
+        expect(result1.isValid).toBe(false);
+        expect(result1.msg).toBe(
+            'Eth address should match ^0x[0-9a-fA-F]{40}$'
+        );
 
-       const result2 = await wallet.validAddress({
-           address: undefined as any,
-       });
-       expect(result2.isValid).toBe(false);
-       expect(result2.msg).toBe(
-           'Eth address should match ^0x[0-9a-fA-F]{40}$'
-       );
+        const result2 = await wallet.validAddress({
+            address: undefined as any,
+        });
+        expect(result2.isValid).toBe(false);
+        expect(result2.msg).toBe(
+            'Eth address should match ^0x[0-9a-fA-F]{40}$'
+        );
 
-       // Test with spaces - should return invalid
-       const result3 = await wallet.validAddress({
-           address: ' 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1 ',
-       });
-       expect(result3.isValid).toBe(false);
-       expect(result3.msg).toBe(
-           'Eth address should match ^0x[0-9a-fA-F]{40}$'
-       );
+        // Test with spaces - should return invalid
+        const result3 = await wallet.validAddress({
+            address: ' 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1 ',
+        });
+        expect(result3.isValid).toBe(false);
+        expect(result3.msg).toBe(
+            'Eth address should match ^0x[0-9a-fA-F]{40}$'
+        );
 
-       // Test with special characters - should return invalid
-       const result4 = await wallet.validAddress({
-           address: '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1\n',
-       });
-       expect(result4.isValid).toBe(false);
-       expect(result4.msg).toBe(
-           'Eth address should match ^0x[0-9a-fA-F]{40}$'
-       );
+        // Test with special characters - should return invalid
+        const result4 = await wallet.validAddress({
+            address: '0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1\n',
+        });
+        expect(result4.isValid).toBe(false);
+        expect(result4.msg).toBe(
+            'Eth address should match ^0x[0-9a-fA-F]{40}$'
+        );
     });
 });
 

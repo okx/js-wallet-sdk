@@ -690,16 +690,15 @@ describe('bip371.ts coverage tests', () => {
             '3f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c2425'
         );
 
-        // Test with 32-byte x-only pubkey (note: the imported toXOnly from src always slices 1:33)
+        // Test with 32-byte x-only pubkey (already x-only, returned as-is)
         const xOnlyPubkey = Buffer.from(
             '3f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c2425',
             'hex'
         );
         const result = toXOnly(xOnlyPubkey);
-        // The main src toXOnly always slices, so we expect a 31-byte result missing the first byte
-        expect(result.length).toBe(31);
+        expect(result.length).toBe(32);
         expect(result.toString('hex')).toBe(
-            '25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c2425'
+            '3f25a35d20804305e70f4223ed6b3aeb268b6781b95b6e5f7c84465f283c2425'
         );
     });
 

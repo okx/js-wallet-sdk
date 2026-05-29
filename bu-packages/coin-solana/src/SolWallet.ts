@@ -25,13 +25,14 @@ import {
     SignType,
     ValidAddressData,
 } from '@okxweb3/coin-base';
+
+type ValidAddressDataWithMsg = ValidAddressData & { msg: string };
+
 import { base } from '@okxweb3/coin-base';
 import { signUtil } from '@okxweb3/crypto-lib';
 import { api, web3 } from './index';
 import { ComputeBudgetProgram } from './lib/web3/programs/compute-budget';
 import { TokenStandard } from './lib/metaplex';
-
-type ValidAddressDataWithMsg = ValidAddressData & { msg: string };
 
 export type TransactionType = 'transfer' | 'tokenTransfer' | 'mplTransfer';
 export type SolSignParam = {

@@ -34,3 +34,4 @@ export const validSignedTransactionError = 'valid signed transaction error';
 export const EstimateFeeError = 'estimate fee error';
 export const SignCommonMsgError = 'sign common msg error';
 export const InvalidPrivateKeyError = 'invalid private key error';
+export const PassphraseNotSupportedError = 'passphrase not supported yet';
