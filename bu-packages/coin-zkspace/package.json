@@ -39,8 +39,8 @@
   "devDependencies": {},
   "dependencies": {
     "@ethersproject/bignumber": "5.7.0",
-    "@okxweb3/coin-ethereum": "^2.4.8",
-    "@okxweb3/crypto-lib": "2.0.5",
-    "@okxweb3/coin-base": "^2.0.6"
+    "@okxweb3/coin-ethereum": "2.4.12",
+    "@okxweb3/crypto-lib": "2.0.6",
+    "@okxweb3/coin-base": "^2.0.7"
   }
 }

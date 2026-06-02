@@ -40,8 +40,8 @@
   "dependencies": {
     "@metaplex-foundation/beet": "0.7.2",
     "@noble/curves": "1.8.0",
-    "@okxweb3/coin-base": "^2.0.6",
-    "@okxweb3/crypto-lib": "2.0.5",
+    "@okxweb3/coin-base": "^2.0.7",
+    "@okxweb3/crypto-lib": "2.0.6",
     "borsh": "0.7.0"
   }
 }

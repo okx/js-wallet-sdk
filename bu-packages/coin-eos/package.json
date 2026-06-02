@@ -44,7 +44,7 @@
     "@polkadot/x-textdecoder": "9.7.2",
     "@polkadot/x-textencoder": "9.7.2",
     "pako": "2.1.0",
-    "@okxweb3/crypto-lib": "2.0.5",
-    "@okxweb3/coin-base": "^2.0.6"
+    "@okxweb3/crypto-lib": "2.0.6",
+    "@okxweb3/coin-base": "^2.0.7"
   }
 }

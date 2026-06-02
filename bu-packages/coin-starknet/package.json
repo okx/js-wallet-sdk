@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "pako": "2.1.0",
-    "@okxweb3/crypto-lib": "2.0.5",
-    "@okxweb3/coin-base": "^2.0.6"
+    "@okxweb3/crypto-lib": "2.0.6",
+    "@okxweb3/coin-base": "^2.0.7"
   },
   "description": "A starknet SDK for building Web3 wallets and applications."
 }

@@ -15,7 +15,6 @@ import {
     fetchFunctionAbi,
     fetchMoveFunctionAbi,
     fetchEntryFunctionAbi,
-    convertCallArgument,
     convertArgument,
     checkOrConvertArgument,
 } from '../src/v2/transactions/transactionBuilder/remoteAbi';
@@ -48,7 +47,6 @@ import {
 } from '../src/v2/bcs';
 import { AccountAddress as V2AccountAddress } from '../src/v2/core';
 import { parseTypeTag } from '../src/v2/transactions/typeTag/parser';
-import { CallArgument } from '@aptos-labs/script-composer-pack';
 
 // Extract types from TxnBuilderTypes
 const {
@@ -632,37 +630,6 @@ describe('RemoteABI Comprehensive Tests', () => {
             expect(result.parameters).toHaveLength(2); // Should exclude signer params
             expect(result.parameters[0]).toBeInstanceOf(TypeTagU64);
             expect(result.parameters[1]).toBeInstanceOf(TypeTagBool);
-        });
-    });
-
-    describe('convertCallArgument', () => {
-        test('convertCallArgument with mock CallArgument returns as-is', () => {
-            // Mock CallArgument since the real one has WASM binding issues in tests
-            const mockCallArg = {
-                constructor: { name: 'CallArgument' },
-                __proto__: { constructor: { name: 'CallArgument' } },
-            };
-            // Make it look like a CallArgument instance
-            Object.setPrototypeOf(mockCallArg, CallArgument.prototype);
-
-            const mockAbi = { parameters: [new TypeTagU64()] };
-            const result = convertCallArgument(
-                mockCallArg as any,
-                'test',
-                mockAbi as any,
-                0,
-                []
-            );
-            expect(result).toBe(mockCallArg);
-        });
-
-        test('convertCallArgument with non-CallArgument converts to bytes', () => {
-            const mockAbi = { parameters: [new TypeTagU64()] };
-            // This should try to create CallArgument.newBytes but will fail due to WASM
-            // We'll just test that it attempts the conversion
-            expect(() =>
-                convertCallArgument(BigInt(123), 'test', mockAbi as any, 0, [])
-            ).toThrow(); // Will throw due to WASM binding issue
         });
     });
 

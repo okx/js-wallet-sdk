@@ -1,6 +1,6 @@
 {
   "name": "@okxweb3/crypto-lib",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "A base package for @okxweb3/coin-*",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -54,7 +54,7 @@
     "@scure/bip32": "1.7.0",
     "asmcrypto.js": "2.3.2",
     "bignumber.js": "9.1.2",
-    "bn.js": "4.12.0",
+    "bn.js": "4.12.3",
     "brorand": "1.1.0",
     "hash.js": "1.1.7",
     "hmac-drbg": "1.0.1",
@@ -62,7 +62,7 @@
     "long": "5.2.4",
     "minimalistic-assert": "1.0.1",
     "minimalistic-crypto-utils": "1.0.1",
-    "protobufjs": "7.4.0",
+    "protobufjs": "7.5.5",
     "randombytes": "2.1.0",
     "typeforce": "1.18.0",
     "wif": "2.0.6"

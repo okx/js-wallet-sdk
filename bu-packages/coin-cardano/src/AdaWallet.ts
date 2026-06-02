@@ -18,7 +18,6 @@ import {
     base,
 } from '@okxweb3/coin-base';
 import {
-    CalcTxHashError,
     GenPrivateKeyError,
     NewAddressError,
     SignTxError,
@@ -40,6 +39,7 @@ import {
     MultiAssetData,
     TxData,
     calcMinFee,
+    MinFeeData,
     signTx,
     TxInput,
     getFilteredUtxos,
@@ -183,7 +183,7 @@ export class AdaWallet extends BaseWallet {
         }
     }
 
-    static async minFee(param: SignTxParams): Promise<string> {
+    static async minFee(param: SignTxParams): Promise<MinFeeData> {
         try {
             const data: TxData = param.data;
             return await calcMinFee(data);

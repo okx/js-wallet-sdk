@@ -14,3 +14,4 @@ export { address, crypto, networks, payments, script, bip0322, psbt };
 export { Transaction } from './transaction';
 export { Network } from './networks';
 export { BufferWriter } from './bufferutils';
+export { toXOnly } from './psbt/bip371';

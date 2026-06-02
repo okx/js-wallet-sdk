@@ -41,7 +41,7 @@
   "dependencies": {
     "@cosmjs/encoding": "0.32.4",
     "@cosmjs/math": "0.32.4",
-    "@okxweb3/crypto-lib": "2.0.5",
-    "@okxweb3/coin-base": "^2.0.6"
+    "@okxweb3/crypto-lib": "2.0.6",
+    "@okxweb3/coin-base": "^2.0.7"
   }
 }

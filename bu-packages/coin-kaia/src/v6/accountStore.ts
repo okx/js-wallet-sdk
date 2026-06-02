@@ -1,4 +1,4 @@
-import { BigNumberish, computeAddress, getAddress, SigningKey } from 'ethers6';
+import { BigNumberish, computeAddress, getAddress, SigningKey } from 'ethers';
 
 import { HexStr } from '@kaiachain/js-ext-core';
 

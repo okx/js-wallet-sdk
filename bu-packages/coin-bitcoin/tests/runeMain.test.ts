@@ -36,7 +36,6 @@ import {
     getSpacersVal,
     removeSpacers,
 } from '../src/runestones';
-import { btc } from '@cat-protocol/cat-smartcontracts';
 describe('rune test', () => {
     test('test buildRuneMainDeployData', async () => {
         let etching = {

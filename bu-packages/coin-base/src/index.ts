@@ -2,6 +2,7 @@ export * from './common';
 export * from './currency';
 export * from './error';
 export * from './wallet';
+export * from './wallet-identity';
 export * from './basic';
 
 // hash/codec implemnt such as sha256/base58/base64/hex/bech32.

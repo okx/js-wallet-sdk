@@ -3,7 +3,7 @@ import {
   decryptKeystoreJson,
   decryptKeystoreJsonSync,
   getAddress,
-} from "ethers6";
+} from "ethers";
 import _ from "lodash";
 
 import { isKIP3Json, splitKeystoreKIP3 } from "@kaiachain/js-ext-core";
